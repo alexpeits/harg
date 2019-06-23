@@ -1,3 +1,6 @@
+{-# LANGUAGE PatternSynonyms      #-}
+{-# LANGUAGE StandaloneDeriving   #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Het.HList where
 
 import           Data.Kind                   (Type, Constraint)

@@ -1,3 +1,5 @@
+{-# LANGUAGE PatternSynonyms      #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Het.AssocList where
 
 import           Data.Kind                   (Type, Constraint)

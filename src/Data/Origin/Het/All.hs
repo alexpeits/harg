@@ -1,3 +1,4 @@
+{-# LANGUAGE PolyKinds #-}
 module Data.Origin.Het.All where
 
 import           Data.Kind                   (Type, Constraint)

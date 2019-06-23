@@ -1,3 +1,5 @@
+{-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Options.Operations where
 
 import           Data.Kind                    (Type)

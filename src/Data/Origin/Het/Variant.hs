@@ -1,3 +1,6 @@
+{-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE StandaloneDeriving   #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Het.Variant where
 
 import           Data.Kind                   (Type, Constraint)

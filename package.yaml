@@ -20,32 +20,18 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/alexpeits/origin#readme>
 
 default-extensions:
-- AllowAmbiguousTypes
 - DataKinds
-- DeriveAnyClass
-- DeriveGeneric
-- DeriveTraversable
-- DerivingStrategies
-- DerivingVia
-- DuplicateRecordFields
 - FlexibleContexts
 - FlexibleInstances
 - GADTs
-- GeneralizedNewtypeDeriving
 - LambdaCase
 - MultiParamTypeClasses
-- NamedFieldPuns
 - OverloadedStrings
-- PatternSynonyms
-- PolyKinds
-- RankNTypes
 - RecordWildCards
 - ScopedTypeVariables
-- StandaloneDeriving
 - TypeApplications
 - TypeFamilies
 - TypeOperators
-- UndecidableInstances
 
 dependencies:
 - base >= 4.7 && < 5
@@ -71,12 +57,13 @@ tests:
     - origin
 
 executables:
-  justestin:
-    main:                Main.hs
-    source-dirs:         app
+  example:
+    main:                Example.hs
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -main-is
+    - Example
     dependencies:
     - origin

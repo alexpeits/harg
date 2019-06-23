@@ -1,3 +1,7 @@
+{-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE PolyKinds            #-}
+{-# LANGUAGE RankNTypes           #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Het where
 
 import           Data.Kind                   (Type)
@@ -6,7 +10,6 @@ import           Data.Type.Equality
 import           Data.Origin.Het.AssocList
 import           Data.Origin.Het.HList
 import           Data.Origin.Het.Variant
-
 
 class MapVariantF (xs :: [(Type -> Type) -> Type]) where
   mapVariantF :: VariantF xs g -> HListF xs f -> VariantF xs f

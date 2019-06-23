@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternSynonyms #-}
 module Data.Origin.Options
   ( Opt (..)
   , OptValue

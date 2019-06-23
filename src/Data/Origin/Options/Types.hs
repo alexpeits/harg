@@ -1,4 +1,11 @@
-{-# LANGUAGE TypeFamilyDependencies #-}
+{-# LANGUAGE AllowAmbiguousTypes        #-}
+{-# LANGUAGE DeriveFunctor              #-}
+{-# LANGUAGE DeriveTraversable          #-}
+{-# LANGUAGE DerivingVia                #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE TypeFamilyDependencies     #-}
+{-# LANGUAGE UndecidableInstances       #-}
 module Data.Origin.Options.Types where
 
 import           Data.Coerce          (Coercible, coerce)
