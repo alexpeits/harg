@@ -1,4 +1,4 @@
-module Configuration.Options.Operations where
+module Data.Origin.Options.Operations where
 
 import           Data.Kind                    (Type)
 import           Data.Maybe                   (catMaybes)
@@ -10,14 +10,14 @@ import qualified Data.Aeson                   as JSON
 import qualified Data.Barbie                  as B
 import qualified Options.Applicative          as Args
 
-import           Configuration.Het
-import           Configuration.Het.All
-import           Configuration.Het.AssocList
-import           Configuration.Het.HList
-import           Configuration.Het.Nat
-import           Configuration.Het.Variant
-import           Configuration.Options.Pretty
-import           Configuration.Options.Types
+import           Data.Origin.Het
+import           Data.Origin.Het.All
+import           Data.Origin.Het.AssocList
+import           Data.Origin.Het.HList
+import           Data.Origin.Het.Nat
+import           Data.Origin.Het.Variant
+import           Data.Origin.Options.Pretty
+import           Data.Origin.Options.Types
 
 -- constructing options
 option

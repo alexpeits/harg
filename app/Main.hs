@@ -1,21 +1,21 @@
 {-# LANGUAGE BlockArguments #-}
 module Main where
 
-import           Data.Char                        (toUpper)
-import           Data.Function                    ((&))
-import           GHC.Generics                     (Generic)
-import           System.Environment               (setEnv)
-import           Text.Read                        (readMaybe)
+import           Data.Char                      (toUpper)
+import           Data.Function                  ((&))
+import           GHC.Generics                   (Generic)
+import           System.Environment             (setEnv)
+import           Text.Read                      (readMaybe)
 
-import qualified Data.Aeson                       as JSON
-import qualified Data.Barbie                      as B
-import qualified Data.Validation                  as V
+import qualified Data.Aeson                     as JSON
+import qualified Data.Barbie                    as B
+import qualified Data.Validation                as V
 
-import           Configuration.Options
-import           Configuration.Options.Operations (getOpt)
-import           Configuration.Options.Types      ( SomeOpt(..)
-                                             , OptError(..)
-                                             , OptInvalidDetail(..))
+import           Data.Origin.Options
+import           Data.Origin.Options.Operations (getOpt)
+import           Data.Origin.Options.Types      ( SomeOpt(..)
+                                                , OptError(..)
+                                                , OptInvalidDetail(..))
 
 -- just for debugging
 instance Show SomeOpt where

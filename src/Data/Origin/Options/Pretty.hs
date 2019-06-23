@@ -1,8 +1,8 @@
-module Configuration.Options.Pretty where
+module Data.Origin.Options.Pretty where
 
 import           Data.List                   (intercalate)
 
-import           Configuration.Options.Types
+import           Data.Origin.Options.Types
 
 ppError :: OptError -> String
 ppError

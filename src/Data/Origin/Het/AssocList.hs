@@ -1,4 +1,4 @@
-module Configuration.Het.AssocList where
+module Data.Origin.Het.AssocList where
 
 import           Data.Kind                   (Type, Constraint)
 import           Data.Functor.Identity       (Identity)
@@ -6,8 +6,8 @@ import           GHC.TypeLits                (ErrorMessage(..), TypeError, Symbo
 
 import qualified Data.Barbie                 as B
 
-import           Configuration.Het.All
-import           Configuration.Options.Types
+import           Data.Origin.Het.All
+import           Data.Origin.Options.Types
 
 data AssocListF
     (ts :: [Symbol])

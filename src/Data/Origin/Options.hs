@@ -1,4 +1,4 @@
-module Configuration.Options
+module Data.Origin.Options
   ( Opt (..)
   , OptValue
   , Barbie (..)
@@ -36,10 +36,10 @@ module Configuration.Options
   , (:->)
   ) where
 
-import           Configuration.Het.AssocList
-import           Configuration.Het.HList
-import           Configuration.Het.Variant
-import           Configuration.Options.Helpers
-import           Configuration.Options.Operations
-import           Configuration.Options.Pretty
-import           Configuration.Options.Types
+import           Data.Origin.Het.AssocList
+import           Data.Origin.Het.HList
+import           Data.Origin.Het.Variant
+import           Data.Origin.Options.Helpers
+import           Data.Origin.Options.Operations
+import           Data.Origin.Options.Pretty
+import           Data.Origin.Options.Types

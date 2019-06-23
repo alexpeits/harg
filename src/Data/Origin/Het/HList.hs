@@ -1,12 +1,12 @@
-module Configuration.Het.HList where
+module Data.Origin.Het.HList where
 
 import           Data.Kind                   (Type, Constraint)
 import           Data.Functor.Identity       (Identity)
 
 import qualified Data.Barbie                 as B
 
-import           Configuration.Het.All
-import           Configuration.Options.Types
+import           Data.Origin.Het.All
+import           Data.Origin.Options.Types
 
 
 data HListF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where

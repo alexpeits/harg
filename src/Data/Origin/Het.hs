@@ -1,11 +1,11 @@
-module Configuration.Het where
+module Data.Origin.Het where
 
 import           Data.Kind                   (Type)
 import           Data.Type.Equality
 
-import           Configuration.Het.AssocList
-import           Configuration.Het.HList
-import           Configuration.Het.Variant
+import           Data.Origin.Het.AssocList
+import           Data.Origin.Het.HList
+import           Data.Origin.Het.Variant
 
 
 class MapVariantF (xs :: [(Type -> Type) -> Type]) where

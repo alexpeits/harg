@@ -1,4 +1,4 @@
-module Configuration.Het.All where
+module Data.Origin.Het.All where
 
 import           Data.Kind                   (Type, Constraint)
 

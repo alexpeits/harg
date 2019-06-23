@@ -1,6 +1,6 @@
-name:                configuration
+name:                origin
 version:             0.1.0.0
-github:              "alexpeits/configuration"
+github:              "alexpeits/origin"
 license:             BSD3
 author:              "Alex Peitsinis"
 maintainer:          "alexpeitsinis@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/alexpeits/configuration#readme>
+description:         Please see the README on GitHub at <https://github.com/alexpeits/origin#readme>
 
 default-extensions:
 - AllowAmbiguousTypes
@@ -60,7 +60,7 @@ library:
   source-dirs: src
 
 tests:
-  configuration-test:
+  origin-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -68,10 +68,10 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - configuration
+    - origin
 
 executables:
-  testin:
+  justestin:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -79,4 +79,4 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - configuration
+    - origin

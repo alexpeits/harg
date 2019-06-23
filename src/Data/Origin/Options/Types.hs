@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeFamilyDependencies #-}
-module Configuration.Options.Types where
+module Data.Origin.Options.Types where
 
 import           Data.Coerce          (Coercible, coerce)
 import           Data.Kind            (Type)

@@ -3,12 +3,12 @@ let
   pkgs = import <nixpkgs> {};
 in
 rec {
-  configuration = pkgs.haskellPackages.callPackage ./configuration.nix {
+  origin = pkgs.haskellPackages.callPackage ./origin.nix {
     higgledy = pkgs.haskellPackages.callPackage ./nix/higgledy.nix {};
   };
 
   shell = pkgs.mkShell {
-    inputsFrom = [ configuration.env ];
+    inputsFrom = [ origin.env ];
     buildInputs = [
       pkgs.haskellPackages.ghcid
     ];

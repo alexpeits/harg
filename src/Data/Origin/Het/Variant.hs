@@ -1,12 +1,12 @@
-module Configuration.Het.Variant where
+module Data.Origin.Het.Variant where
 
 import           Data.Kind                   (Type, Constraint)
 
 import qualified Data.Barbie                 as B
 
-import           Configuration.Het.All
-import           Configuration.Het.Nat
-import           Configuration.Options.Types
+import           Data.Origin.Het.All
+import           Data.Origin.Het.Nat
+import           Data.Origin.Options.Types
 
 
 data VariantF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where

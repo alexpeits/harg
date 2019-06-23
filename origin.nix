@@ -2,13 +2,13 @@
 , optparse-applicative, stdenv, text, validation
 }:
 mkDerivation {
-  pname = "configuration";
+  pname = "origin";
   version = "0.1.0.0";
   src = lib.sourceByRegex ./. [
     "app(.*)?"
     "src(.*)?"
     "test(.*)?"
-    "configuration.cabal"
+    "origin.cabal"
     "package.yaml"
   ];
   isLibrary = true;
@@ -24,6 +24,6 @@ mkDerivation {
     aeson barbies base higgledy optparse-applicative text validation
   ];
   preConfigure = "hpack";
-  homepage = "https://github.com/alexpeits/configuration#readme";
+  homepage = "https://github.com/alexpeits/origin#readme";
   license = stdenv.lib.licenses.bsd3;
 }

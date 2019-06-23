@@ -1,3 +1,3 @@
-# Changelog for configuration
+# Changelog for origin
 
 ## Unreleased changes
