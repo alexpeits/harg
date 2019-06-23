@@ -1,0 +1,9 @@
+.stack-work/
+configuration.cabal
+*~
+
+dist/
+dist-newstyle/
+result/
+result
+.ghc.environment*

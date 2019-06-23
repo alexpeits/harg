@@ -1,0 +1,82 @@
+name:                configuration
+version:             0.1.0.0
+github:              "alexpeits/configuration"
+license:             BSD3
+author:              "Alex Peitsinis"
+maintainer:          "alexpeitsinis@gmail.com"
+copyright:           "Copyright (c) 2019 Alex Peitsinis"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/alexpeits/configuration#readme>
+
+default-extensions:
+- AllowAmbiguousTypes
+- DataKinds
+- DeriveAnyClass
+- DeriveGeneric
+- DeriveTraversable
+- DerivingStrategies
+- DerivingVia
+- DuplicateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GADTs
+- GeneralizedNewtypeDeriving
+- LambdaCase
+- MultiParamTypeClasses
+- NamedFieldPuns
+- OverloadedStrings
+- PatternSynonyms
+- PolyKinds
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- UndecidableInstances
+
+dependencies:
+- base >= 4.7 && < 5
+- text
+- aeson
+- barbies
+- higgledy
+- optparse-applicative
+- validation
+
+library:
+  source-dirs: src
+
+tests:
+  configuration-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - configuration
+
+executables:
+  testin:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - configuration

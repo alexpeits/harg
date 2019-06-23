@@ -1,0 +1,8 @@
+resolver: lts-13.0
+
+packages:
+- .
+
+extra-deps:
+- higgledy-0.2.0.1@sha256:b36296a2c4e7ee6847361575316dad35c698988633dfbd9ef12abc7c64ddf569
+
