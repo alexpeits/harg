@@ -1,5 +1,6 @@
 .stack-work/
 origin.cabal
+cabal.project.local
 *~
 
 dist/
