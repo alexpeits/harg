@@ -8,6 +8,7 @@ mkDerivation {
     "app(.*)?"
     "src(.*)?"
     "test(.*)?"
+    "Example.hs"
     "origin.cabal"
     "package.yaml"
   ];
