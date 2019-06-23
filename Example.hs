@@ -5,7 +5,7 @@ module Example where
 import           Data.Function                  ((&))
 import           GHC.Generics                   (Generic)
 
-import           Data.Origin.Options
+import           Data.Origin
 
 mainSubparser :: IO ()
 mainSubparser = do

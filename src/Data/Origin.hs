@@ -1,5 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
-module Data.Origin.Options
+module Data.Origin
   ( Opt (..)
   , OptValue
   , Barbie (..)
