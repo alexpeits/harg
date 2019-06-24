@@ -1,5 +1,8 @@
 {-# LANGUAGE BlockArguments     #-}
+{-# LANGUAGE DataKinds          #-}
 {-# LANGUAGE DeriveGeneric      #-}
+{-# LANGUAGE TypeApplications   #-}
+{-# LANGUAGE TypeOperators      #-}
 module Example where
 
 import           Data.Function                  ((&))

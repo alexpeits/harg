@@ -1,4 +1,5 @@
-{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE PolyKinds    #-}
+{-# LANGUAGE TypeFamilies #-}
 module Data.Origin.Het.All where
 
 import           Data.Kind                   (Type, Constraint)

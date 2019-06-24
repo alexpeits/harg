@@ -1,5 +1,6 @@
 {-# LANGUAGE PatternSynonyms      #-}
 {-# LANGUAGE StandaloneDeriving   #-}
+{-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Het.HList where
 

@@ -20,7 +20,10 @@ imports:
 {-# LANGUAGE DeriveAnyClass     #-}
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE DerivingVia        #-}
+{-# LANGUAGE FlexibleInstances  #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeApplications   #-}
+{-# LANGUAGE TypeOperators      #-}
 
 import           Data.Function    ((&))
 import           GHC.Generics     (Generic)

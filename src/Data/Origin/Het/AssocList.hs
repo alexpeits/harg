@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms      #-}
+{-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Het.AssocList where
 

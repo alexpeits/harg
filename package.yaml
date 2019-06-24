@@ -19,20 +19,6 @@ extra-source-files:
 # common to point users to the README.md file.
 description:         Please see the README on GitHub at <https://github.com/alexpeits/origin#readme>
 
-default-extensions:
-- DataKinds
-- FlexibleContexts
-- FlexibleInstances
-- GADTs
-- LambdaCase
-- MultiParamTypeClasses
-- OverloadedStrings
-- RecordWildCards
-- ScopedTypeVariables
-- TypeApplications
-- TypeFamilies
-- TypeOperators
-
 ghc-options:
 - -Wall
 - -Wno-unticked-promoted-constructors
@@ -46,6 +32,18 @@ dependencies:
 
 library:
   source-dirs: src
+  default-extensions:
+  - DataKinds
+  - FlexibleContexts
+  - FlexibleInstances
+  - GADTs
+  - KindSignatures
+  - LambdaCase
+  - MultiParamTypeClasses
+  - RecordWildCards
+  - ScopedTypeVariables
+  - TypeApplications
+  - TypeOperators
 
 tests:
   origin-test:
