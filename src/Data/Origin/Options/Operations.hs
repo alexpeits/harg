@@ -19,61 +19,36 @@ import           Data.Origin.Het.Variant
 import           Data.Origin.Options.Pretty
 import           Data.Origin.Options.Types
 
--- constructing options
-option
-  :: String
-  -> (String -> Either String a)
-  -> Opt a
-option long parser
-  = Opt
-      { _optLong    = long
-      , _optShort   = Nothing
-      , _optHelp    = ""
-      , _optMetavar = Nothing
-      , _optEnvVar  = Nothing
-      , _optDefault = Nothing
-      , _optParser  = parser
-      }
-
-optShort :: Char -> Opt a -> Opt a
-optShort c opt
-  = opt { _optShort = Just c }
-
-optHelp :: String -> Opt a -> Opt a
-optHelp s opt
-  = opt { _optHelp = s }
-
-optMetavar :: String -> Opt a -> Opt a
-optMetavar s opt
-  = opt { _optMetavar = Just s }
-
-optEnvVar :: String -> Opt a -> Opt a
-optEnvVar s opt
-  = opt { _optEnvVar = Just s }
-
-optDefault :: a -> Opt a -> Opt a
-optDefault d opt
-  = opt { _optDefault = Just d }
 
 parseOpt :: Opt a -> String -> OptValue a
 parseOpt opt@Opt{..}
   = either (toOptInvalid opt) pure
   . _optParser
 
-
--- parsing and fetching options
 fromCmdLine :: Opt a -> Args.Parser (OptValue a)
 fromCmdLine opt@Opt{..}
-  = maybe (toOptNotPresent opt) (parseOpt opt)
-  <$> Args.optional
-        ( Args.strOption
-        $ mconcat . catMaybes
-        $ [ Just (Args.long _optLong)
-          , Args.short <$> _optShort
-          , Just (Args.help help)
-          , Args.metavar <$> _optMetavar
-          ]
-        )
+  = case _optType of
+      ArgOptType ->
+        maybe (toOptNotPresent opt) (parseOpt opt)
+        <$> Args.optional
+              ( Args.strOption
+              $ mconcat . catMaybes
+              $ [ Just (Args.long _optLong)
+                , Args.short <$> _optShort
+                , Just (Args.help help)
+                , Args.metavar <$> _optMetavar
+                ]
+              )
+      FlagOptType active ->
+        maybe (toOptNotPresent opt) pure
+        <$> Args.optional
+              ( Args.flag' active
+              $ mconcat . catMaybes
+              $ [ Just (Args.long _optLong)
+                , Args.short <$> _optShort
+                , Just (Args.help help)
+                ]
+              )
   where
     help = mkHelp opt
 

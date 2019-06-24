@@ -13,7 +13,7 @@ mainSubparser = do
   foldF conf
     (
       \(db :* srv :* hh :* _)
-        -> AppC <$> getNested db <*> getNested srv <*> getArg hh
+        -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
            & execOpt >>= print
     )
     (
@@ -47,7 +47,7 @@ mainParser = do
         = AppC
         <$> getNested db
         <*> getNested srv
-        <*> getArg hh
+        <*> getSingle hh
 
   execOpt ov >>= print
 
@@ -67,23 +67,25 @@ data AppC
 type AppConfig
   =  Nested DBConfig
   :* Nested ServiceConfig
-  :* Arg Int
+  :* Single Int
 
 appOpt :: AppConfig Opt
 appOpt
-  = dbConf :* srvConf :* arg something :* HNilF
+  = dbConf :* srvConf :* single something :* HNilF
   where
     srvConf
       = nested @ServiceConfig
-          ( option "port" readParser
+          ( mkOpt
+            $ arg "port" readParser
             & optHelp "Web service port"
           )
-          ( option "log" readParser
+          ( mkOpt
+            $ switch "log"
             & optHelp "Whether to log"
-            & optDefault True
           )
     something
-      = option "smth" readParser
+      = mkOpt
+        $ arg "smth" readParser
         & optHelp "Something?"
 
 data TestAppC
@@ -103,19 +105,19 @@ testAppOpt
   where
     testConf
       = nested @TestConfig
-          ( option "dir" strParser
+          ( mkOpt $ arg "dir" strParser
             & optShort 'd'
             & optHelp "Some directory"
             & optEnvVar "TEST_DIR"
           )
-          ( option "mock" readParser
+          ( mkOpt $ switch "mock"
             & optHelp "Whether to mock"
-            & optDefault False
+            & optEnvVar "MOCK"
           )
 
 type Config
-  =   "app" :-> AppConfig
-  :** "test" :-> TestAppConfig
+  =  "app" :-> AppConfig
+  :+ "test" :-> TestAppConfig
 
 configOpt :: Config Opt
 configOpt
@@ -146,12 +148,14 @@ data TestConfig
 dbConf :: Nested DBConfig Opt
 dbConf
   = nested @DBConfig
-      ( option "db-user" strParser
+      ( mkOpt
+        $ arg "db-user" strParser
         & optShort 'u'
         & optHelp "Database user"
         & optEnvVar "DB_USER"
       )
-      ( option "db-port" readParser
+      ( mkOpt
+        $ arg "db-port" readParser
         & optShort 'p'
         & optHelp "Database port"
         & optEnvVar "DB_PORT"

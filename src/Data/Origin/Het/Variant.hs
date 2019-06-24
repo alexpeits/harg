@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE PatternSynonyms      #-}
 {-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Het.Variant where
@@ -34,6 +35,21 @@ instance B.TraversableB (VariantF '[]) where
   btraverse _ _ = error "Impossible: empty variant"
 
 deriving instance AllF Show xs OptValue => Show (VariantF xs OptValue)
+
+pattern In1 :: x1 f -> VariantF (x1 ': xs) f
+pattern In1 x = HereF x
+
+pattern In2 :: x2 f -> VariantF (x1 ': x2 ': xs) f
+pattern In2 x = ThereF (In1 x)
+
+pattern In3 :: x3 f -> VariantF (x1 ': x2 ': x3 ': xs) f
+pattern In3 x = ThereF (In2 x)
+
+pattern In4 :: x4 f -> VariantF (x1 ': x2 ': x3 ': x4 ': xs) f
+pattern In4 x = ThereF (In3 x)
+
+pattern In5 :: x5 f -> VariantF (x1 ': x2 ': x3 ': x4 ': x5 ': xs) f
+pattern In5 x = ThereF (In4 x)
 
 -- TODO: does this instance make sense?
 instance AllF Semigroup xs OptValue => Semigroup (VariantF xs OptValue) where

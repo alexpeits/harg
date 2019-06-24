@@ -1,20 +1,29 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Data.Origin
-  ( Opt (..)
+  ( Opt
   , OptValue
   , Barbie (..)
-  , option
+  , getOptions
+  , Single (..)
+  , single
+  , Nested (..)
+  , nested
+  , getNested
+
+  , mkOpt
+  , arg
+  , argWith
+  , flag
+  , flagWith
+  , switch
+  , switchWith
+  , switch'
+  , switchWith'
   , optShort
   , optHelp
   , optMetavar
   , optEnvVar
   , optDefault
-  , getOptions
-  , Arg (..)
-  , arg
-  , Nested (..)
-  , nested
-  , getNested
 
   , ppError
 
@@ -25,14 +34,21 @@ module Data.Origin
   , strParser
 
   , VariantF (..)
+  , pattern In1
+  , pattern In2
+  , pattern In3
+  , pattern In4
+  , pattern In5
+
   , HListF (..)
+
   , AssocListF (..)
 
   , foldF
 
   , (:*)
   , pattern (:*)
-  , (:**)
+  , (:+)
   , pattern (:+)
   , (:->)
   ) where
@@ -40,6 +56,7 @@ module Data.Origin
 import           Data.Origin.Het.AssocList
 import           Data.Origin.Het.HList
 import           Data.Origin.Het.Variant
+import           Data.Origin.Options.Construct
 import           Data.Origin.Options.Helpers
 import           Data.Origin.Options.Operations
 import           Data.Origin.Options.Pretty
