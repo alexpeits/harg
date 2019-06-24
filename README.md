@@ -92,21 +92,21 @@ flatConfigOpt1
   = FlatConfigB hostOpt portOpt logOpt
   where
     hostOpt
-      = mkOpt
-      $ arg "host" strParser
-      & optShort 'h'
-      & optMetavar "HOST"
-      & optHelp "The database host"
+      = mkOpt ( arg "host" strParser
+              & optShort 'h'
+              & optMetavar "HOST"
+              & optHelp "The database host"
+              )
     portOpt
-      = mkOpt
-      $ arg "port" readParser
-      & optHelp "The database port"
-      & optEnvVar "DB_PORT"
-      & optDefault 5432
+      = mkOpt ( arg "port" readParser
+              & optHelp "The database port"
+              & optEnvVar "DB_PORT"
+              & optDefault 5432
+              )
     logOpt
-      = mkOpt
-      $ switch "log"
-      & optHelp "Whether to log or not"
+      = mkOpt ( switch "log"
+              & optHelp "Whether to log or not"
+              )
 ```
 
 Here, we use `arg` to define a command line argument that expects a value after it, and `switch` to
@@ -157,21 +157,21 @@ flatConfigOpt2
   = single hostOpt :* single portOpt :* single logOpt :* HNilF
   where
     hostOpt
-      = mkOpt
-      $ arg "host" strParser
-      & optShort 'h'
-      & optMetavar "HOST"
-      & optHelp "The database host"
+      = mkOpt ( arg "host" strParser
+              & optShort 'h'
+              & optMetavar "HOST"
+              & optHelp "The database host"
+              )
     portOpt
-      = mkOpt
-      $ arg "port" readParser
-      & optHelp "The database port"
-      & optEnvVar "DB_PORT"
-      & optDefault 5432
+      = mkOpt ( arg "port" readParser
+              & optHelp "The database port"
+              & optEnvVar "DB_PORT"
+              & optDefault 5432
+              )
     logOpt
-      = mkOpt
-      $ switch "log"
-      & optHelp "Whether to log or not"
+      = mkOpt ( switch "log"
+              & optHelp "Whether to log or not"
+              )
 
 getFlatConfig2 :: IO ()
 getFlatConfig2 = do
@@ -198,21 +198,21 @@ flatConfigOpt3
   = HKD.build @FlatConfig hostOpt portOpt logOpt
   where
     hostOpt
-      = mkOpt
-      $ arg "host" strParser
-      & optShort 'h'
-      & optMetavar "HOST"
-      & optHelp "The database host"
+      = mkOpt ( arg "host" strParser
+              & optShort 'h'
+              & optMetavar "HOST"
+              & optHelp "The database host"
+              )
     portOpt
-      = mkOpt
-      $ arg "port" readParser
-      & optHelp "The database port"
-      & optEnvVar "DB_PORT"
-      & optDefault 5432
+      = mkOpt ( arg "port" readParser
+              & optHelp "The database port"
+              & optEnvVar "DB_PORT"
+              & optDefault 5432
+              )
     logOpt
-      = mkOpt
-      $ switch "log"
-      & optHelp "Whether to log or not"
+      = mkOpt ( switch "log"
+              & optHelp "Whether to log or not"
+              )
 
 getFlatConfig3 :: IO ()
 getFlatConfig3 = do
