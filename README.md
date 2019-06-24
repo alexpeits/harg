@@ -34,7 +34,7 @@ import qualified Data.Generic.HKD as HKD
 import           Data.Origin
 
 main :: IO ()
-main = print "this is a literate haskell file"
+main = putStrLn "this is a literate haskell file"
 ```
 
 ## One flat (non-nested) datatype
