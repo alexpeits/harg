@@ -34,9 +34,7 @@ parseWith parser s
     err
       = "Unable to parse: " <> s
 
-readParser
-  :: Read a
-  => String -> Either String a
+readParser :: Read a => OptParser a
 readParser
   = parseWith readMaybe
 

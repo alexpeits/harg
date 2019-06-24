@@ -18,6 +18,8 @@ import qualified Data.Generic.HKD     as HKD
 import qualified Data.Validation      as V
 
 
+type OptParser a = String -> Either String a
+
 data Opt a
   = Opt
       { _optLong    :: String
@@ -26,7 +28,7 @@ data Opt a
       , _optMetavar :: Maybe String
       , _optEnvVar  :: Maybe String
       , _optDefault :: Maybe a
-      , _optParser  :: String -> Either String a
+      , _optParser  :: OptParser a
       , _optType    :: OptType a
       }
   deriving Functor
@@ -44,7 +46,7 @@ data ArgOpt a
       , _aMetavar :: Maybe String
       , _aEnvVar  :: Maybe String
       , _aDefault :: Maybe a
-      , _aParser  :: String -> Either String a
+      , _aParser  :: OptParser a
       }
 
 data FlagOpt a
@@ -56,7 +58,7 @@ data FlagOpt a
       , _sEnvVar  :: Maybe String
       , _sDefault :: a
       , _sActive  :: a
-      , _sParser  :: String -> Either String a
+      , _sParser  :: OptParser a
       }
 
 -- | Existentially quantified 'Opt', in order to be able to extract information

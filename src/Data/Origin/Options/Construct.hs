@@ -85,7 +85,7 @@ instance ToOpt FlagOpt where
 -- option constructors
 option
   :: String
-  -> (String -> Either String a)
+  -> OptParser a
   -> ArgOpt a
 option long p
   = ArgOpt
@@ -100,7 +100,7 @@ option long p
 
 optionWith
   :: String
-  -> (String -> Either String a)
+  -> OptParser a
   -> (ArgOpt a -> ArgOpt a)
   -> Opt a
 optionWith long p f
