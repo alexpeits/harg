@@ -7,29 +7,6 @@ import           GHC.Generics                   (Generic)
 
 import           Data.Origin
 
-import qualified Options.Applicative as OA
-
-data MyApp = MyApp { appGreet :: String
-                   , appSuperExcited :: String
-                   }
-
-runWithOptions :: MyApp -> IO ()
-runWithOptions opts =
-  putStrLn $ transform $
-    "Merry Christmas, " ++ appGreet opts ++ "!"
-
-  where
-    transform = (appSuperExcited opts <>)
-
-main :: IO ()
-main = OA.execParser opts >>= runWithOptions
-  where
-    parser = MyApp <$> OA.argument OA.str (OA.metavar "NAME")
-                   <*> OA.strOption (OA.short 'e' <>
-                                     OA.long "excited" <>
-                                     OA.help "Run in excited mode")
-    opts = OA.info (OA.helper <*> parser) mempty
-
 mainSubparser :: IO ()
 mainSubparser = do
   conf <- getOptions configOpt
@@ -74,8 +51,8 @@ mainParser = do
 
   execOpt ov >>= print
 
-_main :: IO ()
-_main
+main :: IO ()
+main
   -- = mainParser
   = mainSubparser
 
@@ -102,10 +79,15 @@ appOpt
             $ option "port" readParser
             & optHelp "Web service port"
           )
-          ( mkOpt
-            $ switch "log"
-            & optHelp "Whether to log"
+          -- alternative definition:
+          ( switchWith "log"
+          $ optHelp "Whether to log"
+          . optMetavar "LOG"
           )
+          -- ( mkOpt
+            -- $ switch "log"
+            -- & optHelp "Whether to log"
+          -- )
     something
       = mkOpt
         $ option "smth" readParser

@@ -19,171 +19,7 @@ import           Data.Origin.Het.Variant
 import           Data.Origin.Options.Pretty
 import           Data.Origin.Options.Types
 
-class Short (o :: Type -> Type) where
-  optShort :: Char -> o a -> o a
-  getShort :: o a -> Maybe Char
-  toShortOpt :: o a -> Maybe Char
 
-instance Short ArgOpt where
-  optShort c o = o { _aShort = Just c }
-  getShort = _aShort
-  toShortOpt = _aShort
-
-instance Short SwitchOpt where
-  optShort c o = o { _sShort = Just c }
-  getShort = _sShort
-  toShortOpt = _sShort
-
-class Help (o :: Type -> Type) where
-  optHelp :: String -> o a -> o a
-  getHelp :: o a -> String
-  toHelpOpt :: o a -> String
-
-instance Help ArgOpt where
-  optHelp s o = o { _aHelp = s }
-  getHelp = _aHelp
-  toHelpOpt = _aHelp
-
-instance Help SwitchOpt where
-  optHelp s o = o { _sHelp = s }
-  getHelp = _sHelp
-  toHelpOpt = _sHelp
-
-class Metavar (o :: Type -> Type) where
-  optMetavar :: String -> o a -> o a
-  getMetavar :: o a -> Maybe String
-  toMetavarOpt :: o a -> Maybe String
-
-instance Metavar ArgOpt where
-  optMetavar s o = o { _aMetavar = Just s }
-  getMetavar = _aMetavar
-  toMetavarOpt = _aMetavar
-
-instance Metavar SwitchOpt where
-  optMetavar s o = o { _sMetavar = Just s }
-  getMetavar = _sMetavar
-  toMetavarOpt = _sMetavar
-
-class EnvVar (o :: Type -> Type) where
-  optEnvVar :: String -> o a -> o a
-  getEnvVar :: o a -> Maybe String
-  toEnvVarOpt :: o a -> Maybe String
-
-instance EnvVar ArgOpt where
-  optEnvVar s o = o { _aEnvVar = Just s }
-  getEnvVar = _aEnvVar
-  toEnvVarOpt = _aEnvVar
-
-instance EnvVar SwitchOpt where
-  optEnvVar s o = o { _sEnvVar = Just s }
-  getEnvVar = _sEnvVar
-  toEnvVarOpt = _sEnvVar
-
-class Def (o :: Type -> Type) where
-  type DefType o a :: Type
-  optDefault :: a -> o a -> o a
-  getDef :: o a -> DefType o a
-  toDefOpt :: o a -> Maybe a
-
-instance Def ArgOpt where
-  type DefType ArgOpt a = Maybe a
-  optDefault a o = o { _aDefault = Just a }
-  getDef = _aDefault
-  toDefOpt = _aDefault
-
-class Parser (o :: Type -> Type) where
-  getParser :: o a -> (String -> Either String a)
-
-
-class ToOpt (o :: Type -> Type) where
-  mkOpt :: o a -> Opt a
-
-instance ToOpt ArgOpt where
-  mkOpt MkArgOpt{..}
-    = Opt
-        _aLong
-        _aShort
-        _aHelp
-        _aMetavar
-        _aEnvVar
-        _aDefault
-        _aParser
-        ArgOpt
-
-instance ToOpt SwitchOpt where
-  mkOpt MkSwitchOpt{..}
-    = Opt
-        _sLong
-        _sShort
-        _sHelp
-        _sMetavar
-        _sEnvVar
-        (Just _sDefault)
-        _sParser
-        (FlagOpt _sActive)
-
--- constructing options
-option
-  :: String
-  -> (String -> Either String a)
-  -> ArgOpt a
-option long p
-  = MkArgOpt
-      { _aLong    = long
-      , _aShort   = Nothing
-      , _aHelp    = ""
-      , _aMetavar = Nothing
-      , _aEnvVar  = Nothing
-      , _aDefault = Nothing
-      , _aParser  = p
-      }
-
-flag
-  :: String
-  -> a
-  -> a
-  -> SwitchOpt a
-flag long d active
-  = MkSwitchOpt
-      { _sLong    = long
-      , _sShort   = Nothing
-      , _sHelp    = ""
-      , _sMetavar = Nothing
-      , _sEnvVar  = Nothing
-      , _sDefault = d
-      , _sActive  = active
-      , _sParser  = const (pure d)
-      }
-
-switch :: String -> SwitchOpt Bool
-switch long
-  = flag long False True
-
-switch' :: String -> SwitchOpt Bool
-switch' long
-  = flag long True False
-
--- optShort :: Char -> Opt a -> Opt a
--- optShort c opt
---   = opt { _optShort = Just c }
-
--- optHelp :: String -> Opt a -> Opt a
--- optHelp s opt
---   = opt { _optHelp = s }
-
--- optMetavar :: String -> Opt a -> Opt a
--- optMetavar s opt
---   = opt { _optMetavar = Just s }
-
--- optEnvVar :: String -> Opt a -> Opt a
--- optEnvVar s opt
---   = opt { _optEnvVar = Just s }
-
--- optDefault :: a -> Opt a -> Opt a
--- optDefault d opt
---   = opt { _optDefault = Just d }
-
--- parsing and fetching options
 parseOpt :: Opt a -> String -> OptValue a
 parseOpt opt@Opt{..}
   = either (toOptInvalid opt) pure
@@ -192,7 +28,7 @@ parseOpt opt@Opt{..}
 fromCmdLine :: Opt a -> Args.Parser (OptValue a)
 fromCmdLine opt@Opt{..}
   = case _optType of
-      ArgOpt ->
+      ArgOptType ->
         maybe (toOptNotPresent opt) (parseOpt opt)
         <$> Args.optional
               ( Args.strOption
@@ -203,7 +39,7 @@ fromCmdLine opt@Opt{..}
                 , Args.metavar <$> _optMetavar
                 ]
               )
-      FlagOpt active ->
+      FlagOptType active ->
         maybe (toOptNotPresent opt) pure
         <$> Args.optional
               ( Args.flag' active

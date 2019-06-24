@@ -32,12 +32,12 @@ data Opt a
   deriving Functor
 
 data OptType a
-  = ArgOpt
-  | FlagOpt a  -- active value
+  = ArgOptType
+  | FlagOptType a  -- active value
   deriving Functor
 
 data ArgOpt a
-  = MkArgOpt
+  = ArgOpt
       { _aLong    :: String
       , _aShort   :: Maybe Char
       , _aHelp    :: String
@@ -47,8 +47,8 @@ data ArgOpt a
       , _aParser  :: String -> Either String a
       }
 
-data SwitchOpt a
-  = MkSwitchOpt
+data FlagOpt a
+  = FlagOpt
       { _sLong    :: String
       , _sShort   :: Maybe Char
       , _sHelp    :: String
