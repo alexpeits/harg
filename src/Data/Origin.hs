@@ -1,9 +1,11 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Data.Origin
-  ( Opt (..)
+  ( Opt
   , OptValue
   , Barbie (..)
   , option
+  , flag
+  , switch
   , optShort
   , optHelp
   , optMetavar

@@ -78,7 +78,7 @@ appOpt
           ( option "port" readParser
             & optHelp "Web service port"
           )
-          ( option "log" readParser
+          ( switch "log"
             & optHelp "Whether to log"
             & optDefault True
           )
@@ -108,8 +108,9 @@ testAppOpt
             & optHelp "Some directory"
             & optEnvVar "TEST_DIR"
           )
-          ( option "mock" readParser
+          ( switch "mock"
             & optHelp "Whether to mock"
+            & optEnvVar "MOCK"
             & optDefault False
           )
 

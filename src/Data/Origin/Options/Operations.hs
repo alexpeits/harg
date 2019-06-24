@@ -33,7 +33,35 @@ option long parser
       , _optEnvVar  = Nothing
       , _optDefault = Nothing
       , _optParser  = parser
+      , _optType    = ArgOpt
+      , _optActive  = Nothing
       }
+
+flag
+  :: String
+  -> a
+  -> a
+  -> Opt a
+flag long def active
+  = Opt
+      { _optLong    = long
+      , _optShort   = Nothing
+      , _optHelp    = ""
+      , _optMetavar = Nothing
+      , _optEnvVar  = Nothing
+      , _optDefault = Just def
+      , _optParser  = const (pure def)
+      , _optType    = FlagOpt
+      , _optActive  = Just active
+      }
+
+switch :: String -> Opt Bool
+switch long
+  = flag long False True
+
+switch' :: String -> Opt Bool
+switch' long
+  = flag long True False
 
 optShort :: Char -> Opt a -> Opt a
 optShort c opt
@@ -55,25 +83,40 @@ optDefault :: a -> Opt a -> Opt a
 optDefault d opt
   = opt { _optDefault = Just d }
 
+-- parsing and fetching options
 parseOpt :: Opt a -> String -> OptValue a
 parseOpt opt@Opt{..}
   = either (toOptInvalid opt) pure
   . _optParser
 
-
--- parsing and fetching options
 fromCmdLine :: Opt a -> Args.Parser (OptValue a)
 fromCmdLine opt@Opt{..}
-  = maybe (toOptNotPresent opt) (parseOpt opt)
-  <$> Args.optional
-        ( Args.strOption
-        $ mconcat . catMaybes
-        $ [ Just (Args.long _optLong)
-          , Args.short <$> _optShort
-          , Just (Args.help help)
-          , Args.metavar <$> _optMetavar
-          ]
-        )
+  = case _optType of
+      ArgOpt ->
+        maybe (toOptNotPresent opt) (parseOpt opt)
+        <$> Args.optional
+              ( Args.strOption
+              $ mconcat . catMaybes
+              $ [ Just (Args.long _optLong)
+                , Args.short <$> _optShort
+                , Just (Args.help help)
+                , Args.metavar <$> _optMetavar
+                ]
+              )
+      FlagOpt ->
+        case _optActive of
+          Nothing
+            -> pure $ toOptInvalid opt "A `flag` argument requires an active value"
+          Just active
+            -> maybe (toOptNotPresent opt) pure
+               <$> Args.optional
+                     ( Args.flag' active
+                     $ mconcat . catMaybes
+                     $ [ Just (Args.long _optLong)
+                       , Args.short <$> _optShort
+                       , Just (Args.help help)
+                       ]
+                     )
   where
     help = mkHelp opt
 

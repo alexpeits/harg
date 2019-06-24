@@ -27,8 +27,14 @@ data Opt a
       , _optEnvVar  :: Maybe String
       , _optDefault :: Maybe a
       , _optParser  :: String -> Either String a
+      , _optType    :: OptType
+      , _optActive  :: Maybe a
       }
   deriving Functor
+
+data OptType
+  = ArgOpt
+  | FlagOpt
 
 -- | Existentially quantified 'Opt', in order to be able to extract information
 -- not related to the wrapped type
