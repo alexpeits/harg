@@ -58,6 +58,23 @@ tests:
     dependencies:
     - origin
 
+  readme-test:
+    main:                README.lhs
+    ghc-options:
+    - -threaded
+    - -Wall
+    - -fno-warn-name-shadowing
+    - -fno-warn-missing-signatures
+    - -fno-warn-unused-top-binds
+    - -fno-warn-type-defaults
+    - -pgmL markdown-unlit
+    dependencies:
+    - origin
+    - barbies
+    - higgledy
+    build-tools:
+    - markdown-unlit
+
 executables:
   example:
     main:                Example.hs
