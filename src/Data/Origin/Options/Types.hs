@@ -36,6 +36,29 @@ data OptType a
   | FlagOpt a  -- active value
   deriving Functor
 
+data ArgOpt a
+  = MkArgOpt
+      { _aLong    :: String
+      , _aShort   :: Maybe Char
+      , _aHelp    :: String
+      , _aMetavar :: Maybe String
+      , _aEnvVar  :: Maybe String
+      , _aDefault :: Maybe a
+      , _aParser  :: String -> Either String a
+      }
+
+data SwitchOpt a
+  = MkSwitchOpt
+      { _sLong    :: String
+      , _sShort   :: Maybe Char
+      , _sHelp    :: String
+      , _sMetavar :: Maybe String
+      , _sEnvVar  :: Maybe String
+      , _sDefault :: a
+      , _sActive  :: a
+      , _sParser  :: String -> Either String a
+      }
+
 -- | Existentially quantified 'Opt', in order to be able to extract information
 -- not related to the wrapped type
 data SomeOpt where

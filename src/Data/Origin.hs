@@ -3,6 +3,7 @@ module Data.Origin
   ( Opt
   , OptValue
   , Barbie (..)
+  , mkOpt
   , option
   , flag
   , switch

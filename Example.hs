@@ -7,6 +7,29 @@ import           GHC.Generics                   (Generic)
 
 import           Data.Origin
 
+import qualified Options.Applicative as OA
+
+data MyApp = MyApp { appGreet :: String
+                   , appSuperExcited :: String
+                   }
+
+runWithOptions :: MyApp -> IO ()
+runWithOptions opts =
+  putStrLn $ transform $
+    "Merry Christmas, " ++ appGreet opts ++ "!"
+
+  where
+    transform = (appSuperExcited opts <>)
+
+main :: IO ()
+main = OA.execParser opts >>= runWithOptions
+  where
+    parser = MyApp <$> OA.argument OA.str (OA.metavar "NAME")
+                   <*> OA.strOption (OA.short 'e' <>
+                                     OA.long "excited" <>
+                                     OA.help "Run in excited mode")
+    opts = OA.info (OA.helper <*> parser) mempty
+
 mainSubparser :: IO ()
 mainSubparser = do
   conf <- getOptions configOpt
@@ -51,8 +74,8 @@ mainParser = do
 
   execOpt ov >>= print
 
-main :: IO ()
-main
+_main :: IO ()
+_main
   -- = mainParser
   = mainSubparser
 
@@ -75,15 +98,17 @@ appOpt
   where
     srvConf
       = nested @ServiceConfig
-          ( option "port" readParser
+          ( mkOpt
+            $ option "port" readParser
             & optHelp "Web service port"
           )
-          ( switch "log"
+          ( mkOpt
+            $ switch "log"
             & optHelp "Whether to log"
-            & optDefault True
           )
     something
-      = option "smth" readParser
+      = mkOpt
+        $ option "smth" readParser
         & optHelp "Something?"
 
 data TestAppC
@@ -103,15 +128,14 @@ testAppOpt
   where
     testConf
       = nested @TestConfig
-          ( option "dir" strParser
+          ( mkOpt $ option "dir" strParser
             & optShort 'd'
             & optHelp "Some directory"
             & optEnvVar "TEST_DIR"
           )
-          ( switch "mock"
+          ( mkOpt $ switch "mock"
             & optHelp "Whether to mock"
             & optEnvVar "MOCK"
-            & optDefault False
           )
 
 type Config
@@ -147,12 +171,14 @@ data TestConfig
 dbConf :: Nested DBConfig Opt
 dbConf
   = nested @DBConfig
-      ( option "db-user" strParser
+      ( mkOpt
+        $ option "db-user" strParser
         & optShort 'u'
         & optHelp "Database user"
         & optEnvVar "DB_USER"
       )
-      ( option "db-port" readParser
+      ( mkOpt
+        $ option "db-port" readParser
         & optShort 'p'
         & optHelp "Database port"
         & optEnvVar "DB_PORT"
