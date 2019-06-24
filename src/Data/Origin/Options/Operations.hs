@@ -34,7 +34,6 @@ option long parser
       , _optDefault = Nothing
       , _optParser  = parser
       , _optType    = ArgOpt
-      , _optActive  = Nothing
       }
 
 flag
@@ -51,8 +50,7 @@ flag long def active
       , _optEnvVar  = Nothing
       , _optDefault = Just def
       , _optParser  = const (pure def)
-      , _optType    = FlagOpt
-      , _optActive  = Just active
+      , _optType    = FlagOpt active
       }
 
 switch :: String -> Opt Bool
@@ -103,20 +101,16 @@ fromCmdLine opt@Opt{..}
                 , Args.metavar <$> _optMetavar
                 ]
               )
-      FlagOpt ->
-        case _optActive of
-          Nothing
-            -> pure $ toOptInvalid opt "A `flag` argument requires an active value"
-          Just active
-            -> maybe (toOptNotPresent opt) pure
-               <$> Args.optional
-                     ( Args.flag' active
-                     $ mconcat . catMaybes
-                     $ [ Just (Args.long _optLong)
-                       , Args.short <$> _optShort
-                       , Just (Args.help help)
-                       ]
-                     )
+      FlagOpt active ->
+        maybe (toOptNotPresent opt) pure
+        <$> Args.optional
+              ( Args.flag' active
+              $ mconcat . catMaybes
+              $ [ Just (Args.long _optLong)
+                , Args.short <$> _optShort
+                , Just (Args.help help)
+                ]
+              )
   where
     help = mkHelp opt
 

@@ -6,6 +6,7 @@ module Data.Origin
   , option
   , flag
   , switch
+  , switch'
   , optShort
   , optHelp
   , optMetavar
