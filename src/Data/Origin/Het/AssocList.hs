@@ -2,14 +2,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Het.AssocList where
 
-import           Data.Kind                   (Type, Constraint)
-import           Data.Functor.Identity       (Identity)
-import           GHC.TypeLits                (ErrorMessage(..), TypeError, Symbol, KnownSymbol, symbolVal)
-
-import qualified Data.Barbie                 as B
-
-import           Data.Origin.Het.All
-import           Data.Origin.Options.Types
+import           Data.Kind                   (Type)
+import           GHC.TypeLits                (ErrorMessage(..), TypeError, Symbol)
 
 data AssocListF
     (ts :: [Symbol])

@@ -1,5 +1,5 @@
-{ mkDerivation, aeson, barbies, base, higgledy, hpack, lib
-, optparse-applicative, stdenv, text, validation
+{ mkDerivation, barbies, base, higgledy, hpack, lib
+, optparse-applicative, stdenv, validation
 }:
 mkDerivation {
   pname = "origin";
@@ -15,14 +15,14 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson barbies base higgledy optparse-applicative text validation
+    barbies base higgledy optparse-applicative validation
   ];
   libraryToolDepends = [ hpack ];
   executableHaskellDepends = [
-    aeson barbies base higgledy optparse-applicative text validation
+    barbies base higgledy optparse-applicative validation
   ];
   testHaskellDepends = [
-    aeson barbies base higgledy optparse-applicative text validation
+    barbies base higgledy optparse-applicative validation
   ];
   preConfigure = "hpack";
   homepage = "https://github.com/alexpeits/origin#readme";

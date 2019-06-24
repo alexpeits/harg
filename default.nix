@@ -1,5 +1,4 @@
 let
-  # pkgs = import ./pinned-nixpkgs.nix {}
   pkgs = import <nixpkgs> {};
 in
 rec {

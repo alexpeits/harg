@@ -30,7 +30,7 @@ data Opt a
       }
   deriving Functor
 
--- | Existentially qualified 'Opt', in order to be able to extract information
+-- | Existentially quantified 'Opt', in order to be able to extract information
 -- not related to the wrapped type
 data SomeOpt where
   SomeOpt :: Opt a -> SomeOpt
@@ -122,7 +122,7 @@ type family Nest (a :: Type) (f :: Type -> Type) = (res :: Type) | res -> a wher
   Nest (HKD.HKD a f) f = Nested a f
 
 nested
-  :: forall b f k l.
+  :: forall b f k.
      ( HKD.Build b f k
      , Coercible (HKD.HKD b f) (Nested b f)
      , Coercible k (Nest k f)

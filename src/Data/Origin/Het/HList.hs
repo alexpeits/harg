@@ -3,7 +3,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Het.HList where
 
-import           Data.Kind                   (Type, Constraint)
+import           Data.Kind                   (Type)
 import           Data.Functor.Identity       (Identity)
 
 import qualified Data.Barbie                 as B
@@ -49,7 +49,7 @@ instance ( B.FunctorB x
 
 instance B.ProductB (HListF '[]) where
   HNilF `bprod` HNilF = HNilF
-  buniq fa = HNilF
+  buniq _ = HNilF
 
 instance ( B.TraversableB x
          , B.TraversableB (HListF xs)

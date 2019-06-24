@@ -8,14 +8,12 @@ import           Data.Proxy                   (Proxy(..))
 import           GHC.TypeLits                 (Symbol, KnownSymbol, symbolVal)
 import qualified System.Environment           as Env
 
-import qualified Data.Aeson                   as JSON
 import qualified Data.Barbie                  as B
 import qualified Options.Applicative          as Args
 
 import           Data.Origin.Het
 import           Data.Origin.Het.All
 import           Data.Origin.Het.AssocList
-import           Data.Origin.Het.HList
 import           Data.Origin.Het.Nat
 import           Data.Origin.Het.Variant
 import           Data.Origin.Options.Pretty
@@ -112,7 +110,7 @@ getOpt opts = do
   pure (aOpt <> eOpt <> dOpt)
 
 getOptSubcommand
-  :: forall a xs ts n.
+  :: forall xs ts.
      ( B.TraversableB (VariantF xs)
      , AllF Semigroup xs OptValue
      , Semigroup (VariantF xs OptValue)

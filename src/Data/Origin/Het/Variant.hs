@@ -3,14 +3,13 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Data.Origin.Het.Variant where
 
-import           Data.Kind                   (Type, Constraint)
+import           Data.Kind                   (Type)
 
 import qualified Data.Barbie                 as B
 
 import           Data.Origin.Het.All
 import           Data.Origin.Het.Nat
 import           Data.Origin.Options.Types
-
 
 data VariantF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where
   HereF  :: x f           -> VariantF (x ': xs) f
@@ -36,9 +35,12 @@ instance B.TraversableB (VariantF '[]) where
 
 deriving instance AllF Show xs OptValue => Show (VariantF xs OptValue)
 
+-- TODO: does this instance make sense?
 instance AllF Semigroup xs OptValue => Semigroup (VariantF xs OptValue) where
   HereF  x <> HereF  y = HereF  (x <> y)
   ThereF x <> ThereF y = ThereF (x <> y)
+  HereF  x <> ThereF _ = HereF x
+  ThereF _ <> HereF y  = HereF y
 
 type family FoldSignatureF (xs :: [(Type -> Type) -> Type]) r f where
   FoldSignatureF (x ': xs) r f = (x f -> r) -> FoldSignatureF xs r f

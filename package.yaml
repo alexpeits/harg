@@ -33,10 +33,12 @@ default-extensions:
 - TypeFamilies
 - TypeOperators
 
+ghc-options:
+- -Wall
+- -Wno-unticked-promoted-constructors
+
 dependencies:
 - base >= 4.7 && < 5
-- text
-- aeson
 - barbies
 - higgledy
 - optparse-applicative
