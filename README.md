@@ -185,7 +185,7 @@ getFlatConfig2 = do
 ```
 
 This looks aufully similar to the previous version, but without having to write another datatype
-and derive all the instances. `:*` is both a type-level constructor , and a value-level function
+and derive all the instances. `:*` is both a type-level constructor and a value-level function
 (actually pattern) that acts like list's `:`. Thanks to type families, there's no need to terminate
 it using a `nil` when writing the type signature (although a `HNilF` is required when writing values
 or when pattern matching).
