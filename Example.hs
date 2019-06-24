@@ -13,7 +13,7 @@ mainSubparser = do
   foldF conf
     (
       \(db :* srv :* hh :* _)
-        -> AppC <$> getNested db <*> getNested srv <*> getArg hh
+        -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
            & execOpt >>= print
     )
     (
@@ -47,7 +47,7 @@ mainParser = do
         = AppC
         <$> getNested db
         <*> getNested srv
-        <*> getArg hh
+        <*> getSingle hh
 
   execOpt ov >>= print
 
@@ -67,16 +67,16 @@ data AppC
 type AppConfig
   =  Nested DBConfig
   :* Nested ServiceConfig
-  :* Arg Int
+  :* Single Int
 
 appOpt :: AppConfig Opt
 appOpt
-  = dbConf :* srvConf :* arg something :* HNilF
+  = dbConf :* srvConf :* single something :* HNilF
   where
     srvConf
       = nested @ServiceConfig
           ( mkOpt
-            $ option "port" readParser
+            $ arg "port" readParser
             & optHelp "Web service port"
           )
           -- alternative definition:
@@ -90,7 +90,7 @@ appOpt
           -- )
     something
       = mkOpt
-        $ option "smth" readParser
+        $ arg "smth" readParser
         & optHelp "Something?"
 
 data TestAppC
@@ -110,7 +110,7 @@ testAppOpt
   where
     testConf
       = nested @TestConfig
-          ( mkOpt $ option "dir" strParser
+          ( mkOpt $ arg "dir" strParser
             & optShort 'd'
             & optHelp "Some directory"
             & optEnvVar "TEST_DIR"
@@ -121,8 +121,8 @@ testAppOpt
           )
 
 type Config
-  =   "app" :-> AppConfig
-  :** "test" :-> TestAppConfig
+  =  "app" :-> AppConfig
+  :+ "test" :-> TestAppConfig
 
 configOpt :: Config Opt
 configOpt
@@ -154,13 +154,13 @@ dbConf :: Nested DBConfig Opt
 dbConf
   = nested @DBConfig
       ( mkOpt
-        $ option "db-user" strParser
+        $ arg "db-user" strParser
         & optShort 'u'
         & optHelp "Database user"
         & optEnvVar "DB_USER"
       )
       ( mkOpt
-        $ option "db-port" readParser
+        $ arg "db-port" readParser
         & optShort 'p'
         & optHelp "Database port"
         & optEnvVar "DB_PORT"

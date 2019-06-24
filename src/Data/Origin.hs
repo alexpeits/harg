@@ -4,15 +4,15 @@ module Data.Origin
   , OptValue
   , Barbie (..)
   , getOptions
-  , Arg (..)
-  , arg
+  , Single (..)
+  , single
   , Nested (..)
   , nested
   , getNested
 
   , mkOpt
-  , option
-  , optionWith
+  , arg
+  , argWith
   , flag
   , flagWith
   , switch
@@ -34,14 +34,21 @@ module Data.Origin
   , strParser
 
   , VariantF (..)
+  , pattern In1
+  , pattern In2
+  , pattern In3
+  , pattern In4
+  , pattern In5
+
   , HListF (..)
+
   , AssocListF (..)
 
   , foldF
 
   , (:*)
   , pattern (:*)
-  , (:**)
+  , (:+)
   , pattern (:+)
   , (:->)
   ) where

@@ -118,31 +118,31 @@ newtype Barbie (barbie :: (Type -> Type) -> Type) (f :: Type -> Type)
 instance (B.FunctorB b, B.ProductB b) => Semigroup (Barbie b OptValue) where
   l <> r = B.bmap (\(P.Pair x y) -> x <> y) (l `B.bprod` r)
 
--- Arg
-newtype Arg (b :: Type) (f :: Type -> Type)
-  = Arg
-      { getArg :: f b
+-- Single
+newtype Single (b :: Type) (f :: Type -> Type)
+  = Single
+      { getSingle :: f b
       }
 
-arg :: f b -> Arg b f
-arg = Arg
+single :: f b -> Single b f
+single = Single
 
-deriving instance (Show b, Show (f b)) => Show (Arg b f)
-deriving newtype instance Generic (f b) => Generic (Arg b f)
-deriving via (Barbie (Arg b) OptValue)
-  instance ( B.FunctorB (Arg b)
-           , B.ProductB (Arg b)
-           ) => Semigroup (Arg b OptValue)
+deriving instance (Show b, Show (f b)) => Show (Single b f)
+deriving newtype instance Generic (f b) => Generic (Single b f)
+deriving via (Barbie (Single b) OptValue)
+  instance ( B.FunctorB (Single b)
+           , B.ProductB (Single b)
+           ) => Semigroup (Single b OptValue)
 
-instance B.FunctorB (Arg b) where
-  bmap nat (Arg p) = Arg (nat p)
+instance B.FunctorB (Single b) where
+  bmap nat (Single p) = Single (nat p)
 
-instance B.ProductB (Arg b) where
-  bprod (Arg l) (Arg r) = Arg (P.Pair l r)
-  buniq = Arg
+instance B.ProductB (Single b) where
+  bprod (Single l) (Single r) = Single (P.Pair l r)
+  buniq = Single
 
-instance B.TraversableB (Arg b) where
-  btraverse nat (Arg p) = Arg <$> nat p
+instance B.TraversableB (Single b) where
+  btraverse nat (Single p) = Single <$> nat p
 
 -- Nested
 newtype Nested (b :: Type) (f :: Type -> Type)

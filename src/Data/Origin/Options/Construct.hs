@@ -4,7 +4,6 @@ import           Data.Kind                 (Type)
 
 import           Data.Origin.Options.Types
 
-
 -- short
 class Short (o :: Type -> Type) where
   optShort :: Char -> o a -> o a
@@ -83,11 +82,11 @@ instance ToOpt FlagOpt where
         }
 
 -- option constructors
-option
+arg
   :: String
   -> OptParser a
   -> ArgOpt a
-option long p
+arg long p
   = ArgOpt
       { _aLong    = long
       , _aShort   = Nothing
@@ -98,13 +97,13 @@ option long p
       , _aParser  = p
       }
 
-optionWith
+argWith
   :: String
   -> OptParser a
   -> (ArgOpt a -> ArgOpt a)
   -> Opt a
-optionWith long p f
-  = mkOpt $ f (option long p)
+argWith long p f
+  = mkOpt $ f (arg long p)
 
 flag
   :: String
