@@ -52,6 +52,8 @@ data FlatConfig
   deriving (Show, Generic)
 ```
 
+(The `Generic` instance is required for section `3` later on)
+
 There are 3 ways to configure this datatype.
 
 ### 1. Using a `barbie` type
