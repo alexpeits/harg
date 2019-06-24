@@ -31,9 +31,6 @@ class Metavar (o :: Type -> Type) where
 instance Metavar ArgOpt where
   optMetavar s o = o { _aMetavar = Just s }
 
-instance Metavar FlagOpt where
-  optMetavar s o = o { _sMetavar = Just s }
-
 -- env var
 class EnvVar (o :: Type -> Type) where
   optEnvVar :: String -> o a -> o a
@@ -74,7 +71,7 @@ instance ToOpt FlagOpt where
         { _optLong    = _sLong
         , _optShort   = _sShort
         , _optHelp    = _sHelp
-        , _optMetavar = _sMetavar
+        , _optMetavar = Nothing
         , _optEnvVar  = _sEnvVar
         , _optDefault = Just _sDefault
         , _optParser  = _sParser
@@ -115,7 +112,6 @@ flag long d active
       { _sLong    = long
       , _sShort   = Nothing
       , _sHelp    = ""
-      , _sMetavar = Nothing
       , _sEnvVar  = Nothing
       , _sDefault = d
       , _sActive  = active

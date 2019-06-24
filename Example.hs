@@ -79,15 +79,10 @@ appOpt
             $ arg "port" readParser
             & optHelp "Web service port"
           )
-          -- alternative definition:
-          ( switchWith "log"
-          $ optHelp "Whether to log"
-          . optMetavar "LOG"
+          ( mkOpt
+            $ switch "log"
+            & optHelp "Whether to log"
           )
-          -- ( mkOpt
-            -- $ switch "log"
-            -- & optHelp "Whether to log"
-          -- )
     something
       = mkOpt
         $ arg "smth" readParser

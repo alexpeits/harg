@@ -54,7 +54,6 @@ data FlagOpt a
       { _sLong    :: String
       , _sShort   :: Maybe Char
       , _sHelp    :: String
-      , _sMetavar :: Maybe String
       , _sEnvVar  :: Maybe String
       , _sDefault :: a
       , _sActive  :: a
