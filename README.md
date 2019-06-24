@@ -128,7 +128,7 @@ parsing was successful, we get back the `FlatConfig` and print it.
 
 This is still a bit boilerplate-y. Let's look at another way.
 
-### Using an `HList`
+### 2. Using an `HList`
 
 Looking at `FlatConfigB`, it's only used because of it's `barbie`-like capabilities. Other than that,
 it's just a simple product type with the additional `f` before all its sub-types.
@@ -179,7 +179,7 @@ or when pattern matching).
 
 But the real value when having flat datatypes comes from the ability to use `higgledy`.
 
-### Using `HKD` from `higgledy`
+### 3. Using `HKD` from `higgledy`
 
 ``` haskell
 flatConfigOpt :: HKD.HKD FlatConfig Opt
