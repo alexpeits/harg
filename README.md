@@ -1,4 +1,4 @@
-# `harg`
+# `harg` :nut_and_bolt:
 
 `harg` is a library for configuring programs by scanning command line arguments, environment
 variables and default values. Under the hood, it uses a subset of `optparse-applicative` to expose
@@ -190,7 +190,14 @@ and derive all the instances. `:*` is both a type-level constructor and a value-
 it using a `nil` when writing the type signature (although a `HNilF` is required when writing values
 or when pattern matching).
 
-But the real value when having flat datatypes comes from the ability to use `higgledy`.
+The `Single` type constructor is used when talking about a single value, rather than a nested
+datatype. `Single a f` is a simple newtype over `f a`. The reason for using that is simply to
+switch the order of application, so that we can later apply the `f` (here `Opt`) to the compound
+type (which is the `HList`). In addition, `single` is used to wrap an `f a` into a `Single a f`, and
+`getSingle` is used to unwrap it. Later on we'll see how to construct nested configurations using
+`Nested`.
+
+However, the real value when having flat datatypes comes from the ability to use `higgledy`.
 
 ### 3. Using `HKD` from `higgledy`
 
@@ -224,6 +231,15 @@ getFlatConfig3 = do
 
   print config
 ```
+
+This is the most straightforward way to work with flat configuration types. The `build` function
+takes as arguments the options (`Opt a` where `a` is each type in `FlatConfig`) **in the order they
+appear in the datatype**, and returns the generic representation of a type that's exactly the same
+as `FlatConfigB`. This means that we get all the `barbie` instances for free.
+
+To go back from the `HKD` representation of a datatype to the base one, we use `construct`.
+`construct` uses the applicative instance of the `f` which wraps each type in `FlatConfig` to give
+back an `f FlatConfig` (in our case an `OptValue FlatConfig`).
 
 # Roadmap
 
