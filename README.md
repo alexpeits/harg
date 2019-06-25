@@ -1,10 +1,12 @@
 # `harg` :nut_and_bolt:
 
 `harg` is a library for configuring programs by scanning command line arguments, environment
-variables and default values. Under the hood, it uses a subset of `optparse-applicative` to expose
-regular arguments, switch arguments and subcommands. The library relies heavily on the use of higher
-kinded data (HKD), especially the `barbies` library. Using `higgledy` also allows for reducing
-boilerplate significantly.
+variables and default values. Under the hood, it uses a subset of
+[`optparse-applicative`](https://hackage.haskell.org/package/optparse-applicative) to expose regular
+arguments, switch arguments and subcommands. The library relies heavily on the use of higher kinded
+data (HKD), especially the [`barbies`](https://hackage.haskell.org/package/barbies) library. Using
+[`higgledy`](https://hackage.haskell.org/package/higgledy) also allows to have significantly less
+boilerplate code.
 
 The main goal while developing `harg` was to not have to go through the usual pattern of manually
 `mappend`ing the results of command line parsing, env vars and defaults.
@@ -222,5 +224,6 @@ back an `f FlatConfig` (in our case an `OptValue FlatConfig`).
 
 # Roadmap
 
-- Print errors using `optparse-applicative`'s internals
-- Be able to use the same type for many tagged subcommands
+- Better errors using `optparse-applicative`'s internals
+- Be able to provide and get back the same type for multiple subcommands (useful for testing)
+- Integrate config files (e.g. JSON using `aeson`)
