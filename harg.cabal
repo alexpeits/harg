@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 553276709486b2a4048375e6d26cf25259420450c69c541952ec3dc3b4050a0c
+-- hash: a4fc58fccd4142607edccf87a674241f3c02dfafdb38472bc7e8f3b8866987e3
 
 name:           harg
 version:        0.1.0.0
@@ -19,7 +19,7 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    ChangeLog.md
+    CHANGELOG.md
 
 source-repository head
   type: git

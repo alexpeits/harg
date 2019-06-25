@@ -5,54 +5,54 @@ import           Data.Kind                 (Type)
 import           Options.Harg.Types
 
 -- short
-class Short (o :: Type -> Type) where
+class HasShort (o :: Type -> Type) where
   optShort :: Char -> o a -> o a
 
-instance Short ArgOpt where
+instance HasShort ArgOpt where
   optShort c o = o { _aShort = Just c }
 
-instance Short FlagOpt where
+instance HasShort FlagOpt where
   optShort c o = o { _sShort = Just c }
 
 -- help
-class Help (o :: Type -> Type) where
+class HasHelp (o :: Type -> Type) where
   optHelp :: String -> o a -> o a
 
-instance Help ArgOpt where
+instance HasHelp ArgOpt where
   optHelp s o = o { _aHelp = s }
 
-instance Help FlagOpt where
+instance HasHelp FlagOpt where
   optHelp s o = o { _sHelp = s }
 
 -- metavar
-class Metavar (o :: Type -> Type) where
+class HasMetavar (o :: Type -> Type) where
   optMetavar :: String -> o a -> o a
 
-instance Metavar ArgOpt where
+instance HasMetavar ArgOpt where
   optMetavar s o = o { _aMetavar = Just s }
 
 -- env var
-class EnvVar (o :: Type -> Type) where
+class HasEnvVar (o :: Type -> Type) where
   optEnvVar :: String -> o a -> o a
 
-instance EnvVar ArgOpt where
+instance HasEnvVar ArgOpt where
   optEnvVar s o = o { _aEnvVar = Just s }
 
-instance EnvVar FlagOpt where
+instance HasEnvVar FlagOpt where
   optEnvVar s o = o { _sEnvVar = Just s }
 
 -- default
-class Default (o :: Type -> Type) where
+class HasDefault (o :: Type -> Type) where
   optDefault :: a -> o a -> o a
 
-instance Default ArgOpt where
+instance HasDefault ArgOpt where
   optDefault a o = o { _aDefault = Just a }
 
 -- convert from intermediate type to Opt
-class ToOpt (o :: Type -> Type) where
+class IsOpt (o :: Type -> Type) where
   mkOpt :: o a -> Opt a
 
-instance ToOpt ArgOpt where
+instance IsOpt ArgOpt where
   mkOpt ArgOpt{..}
     = Opt
         { _optLong    = _aLong
@@ -65,7 +65,7 @@ instance ToOpt ArgOpt where
         , _optType    = ArgOptType
         }
 
-instance ToOpt FlagOpt where
+instance IsOpt FlagOpt where
   mkOpt FlagOpt{..}
     = Opt
         { _optLong    = _sLong
