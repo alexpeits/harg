@@ -4,7 +4,7 @@
 variables and default values. Under the hood, it uses a subset of
 [`optparse-applicative`](https://hackage.haskell.org/package/optparse-applicative) to expose regular
 arguments, switch arguments and subcommands. The library relies heavily on the use of higher kinded
-data (HKD), especially the [`barbies`](https://hackage.haskell.org/package/barbies) library. Using
+data (HKD) thanks to the [`barbies`](https://hackage.haskell.org/package/barbies) library. Using
 [`higgledy`](https://hackage.haskell.org/package/higgledy) also allows to have significantly less
 boilerplate code.
 
