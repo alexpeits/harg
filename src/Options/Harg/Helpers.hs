@@ -1,12 +1,12 @@
-module Data.Harg.Options.Helpers where
+module Options.Harg.Helpers where
 
 import           System.Exit                  (exitFailure)
 import           Text.Read                    (readMaybe)
 
 import qualified Data.Validation              as V
 
-import           Data.Harg.Options.Pretty
-import           Data.Harg.Options.Types
+import           Options.Harg.Pretty
+import           Options.Harg.Types
 
 optValue
   :: (OptError -> r)

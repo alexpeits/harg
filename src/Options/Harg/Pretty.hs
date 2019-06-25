@@ -1,8 +1,8 @@
-module Data.Harg.Options.Pretty where
+module Options.Harg.Pretty where
 
 import           Data.List                   (intercalate)
 
-import           Data.Harg.Options.Types
+import           Options.Harg.Types
 
 ppError :: OptError -> String
 ppError

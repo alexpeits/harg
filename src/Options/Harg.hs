@@ -1,5 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
-module Data.Harg
+module Options.Harg
   ( Opt
   , OptValue
   , Barbie (..)
@@ -53,11 +53,11 @@ module Data.Harg
   , (:->)
   ) where
 
-import           Data.Harg.Het.AssocList
-import           Data.Harg.Het.HList
-import           Data.Harg.Het.Variant
-import           Data.Harg.Options.Construct
-import           Data.Harg.Options.Helpers
-import           Data.Harg.Options.Operations
-import           Data.Harg.Options.Pretty
-import           Data.Harg.Options.Types
+import           Options.Harg.Het.AssocList
+import           Options.Harg.Het.HList
+import           Options.Harg.Het.Variant
+import           Options.Harg.Construct
+import           Options.Harg.Helpers
+import           Options.Harg.Operations
+import           Options.Harg.Pretty
+import           Options.Harg.Types

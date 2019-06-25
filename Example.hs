@@ -8,7 +8,7 @@ module Example where
 import           Data.Function                  ((&))
 import           GHC.Generics                   (Generic)
 
-import           Data.Harg
+import           Options.Harg
 
 mainSubparser :: IO ()
 mainSubparser = do

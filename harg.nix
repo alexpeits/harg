@@ -5,7 +5,6 @@ mkDerivation {
   pname = "harg";
   version = "0.1.0.0";
   src = lib.sourceByRegex ./. [
-    "app(.*)?"
     "src(.*)?"
     "test(.*)?"
     "Example.hs"

@@ -1,8 +1,8 @@
-module Data.Harg.Options.Construct where
+module Options.Harg.Construct where
 
 import           Data.Kind                 (Type)
 
-import           Data.Harg.Options.Types
+import           Options.Harg.Types
 
 -- short
 class Short (o :: Type -> Type) where

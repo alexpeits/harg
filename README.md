@@ -31,7 +31,7 @@ import           GHC.Generics     (Generic)
 import qualified Data.Barbie      as B
 import qualified Data.Generic.HKD as HKD
 
-import           Data.Harg
+import           Options.Harg
 
 main :: IO ()
 main = putStrLn "this is a literate haskell file"

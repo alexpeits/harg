@@ -1,4 +1,4 @@
-module Data.Harg.Het.Nat where
+module Options.Harg.Het.Nat where
 
 data Nat = Z | S Nat
 

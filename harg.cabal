@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b3e9609e64bd980456ed27bcb030ad370dc8f923a7a6740c76c5d86c93f83560
+-- hash: 553276709486b2a4048375e6d26cf25259420450c69c541952ec3dc3b4050a0c
 
 name:           harg
 version:        0.1.0.0
@@ -27,18 +27,18 @@ source-repository head
 
 library
   exposed-modules:
-      Data.Harg
-      Data.Harg.Het
-      Data.Harg.Het.All
-      Data.Harg.Het.AssocList
-      Data.Harg.Het.HList
-      Data.Harg.Het.Nat
-      Data.Harg.Het.Variant
-      Data.Harg.Options.Construct
-      Data.Harg.Options.Helpers
-      Data.Harg.Options.Operations
-      Data.Harg.Options.Pretty
-      Data.Harg.Options.Types
+      Options.Harg
+      Options.Harg.Construct
+      Options.Harg.Helpers
+      Options.Harg.Het
+      Options.Harg.Het.All
+      Options.Harg.Het.AssocList
+      Options.Harg.Het.HList
+      Options.Harg.Het.Nat
+      Options.Harg.Het.Variant
+      Options.Harg.Operations
+      Options.Harg.Pretty
+      Options.Harg.Types
   other-modules:
       Paths_harg
   hs-source-dirs:
