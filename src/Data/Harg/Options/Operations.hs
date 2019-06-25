@@ -1,7 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes  #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Data.Origin.Options.Operations where
+module Data.Harg.Options.Operations where
 
 import           Data.Kind                    (Type)
 import           Data.Maybe                   (catMaybes)
@@ -12,13 +12,13 @@ import qualified System.Environment           as Env
 import qualified Data.Barbie                  as B
 import qualified Options.Applicative          as Args
 
-import           Data.Origin.Het
-import           Data.Origin.Het.All
-import           Data.Origin.Het.AssocList
-import           Data.Origin.Het.Nat
-import           Data.Origin.Het.Variant
-import           Data.Origin.Options.Pretty
-import           Data.Origin.Options.Types
+import           Data.Harg.Het
+import           Data.Harg.Het.All
+import           Data.Harg.Het.AssocList
+import           Data.Harg.Het.Nat
+import           Data.Harg.Het.Variant
+import           Data.Harg.Options.Pretty
+import           Data.Harg.Options.Types
 
 
 parseOpt :: Opt a -> String -> OptValue a

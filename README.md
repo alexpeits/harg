@@ -1,12 +1,12 @@
-# `origin`
+# `harg`
 
-`origin` is a library for configuring programs by scanning command line arguments, environment
+`harg` is a library for configuring programs by scanning command line arguments, environment
 variables and default values. Under the hood, it uses a subset of `optparse-applicative` to expose
 regular arguments, switch arguments and subcommands. The library relies heavily on the use of higher
 kinded data (HKD), especially the `barbies` library. Using `higgledy` also allows for reducing
 boilerplate significantly.
 
-The main goal while developing `origin` was to not have to go through the usual pattern of manually
+The main goal while developing `harg` was to not have to go through the usual pattern of manually
 `mappend`ing the results of command line parsing, env vars and defaults.
 
 # Usage
@@ -31,7 +31,7 @@ import           GHC.Generics     (Generic)
 import qualified Data.Barbie      as B
 import qualified Data.Generic.HKD as HKD
 
-import           Data.Origin
+import           Data.Harg
 
 main :: IO ()
 main = putStrLn "this is a literate haskell file"
@@ -146,7 +146,7 @@ Looking at `FlatConfigB`, it's only used because of it's `barbie`-like capabilit
 it's just a simple product type with the additional `f` before all its sub-types.
 
 An `HList` (heterogeneous list) is like an arbitrary length tuple. For example,
-`HList '[Int, Bool, String]` is exactly the same as `(Int, Bool, String)`. `origin` defines an
+`HList '[Int, Bool, String]` is exactly the same as `(Int, Bool, String)`. `harg` defines an
 enhanced version of `HList` called `HListF`, which stores barbie-like types and also keeps the `f`
 handy: `data HListF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where ...`. `HListF` is
 also easily made an instance of `Generic`, `FunctorB`, `TraversableB`, `ProductB` and `Semigroup`

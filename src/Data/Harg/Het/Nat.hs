@@ -1,4 +1,4 @@
-module Data.Origin.Het.Nat where
+module Data.Harg.Het.Nat where
 
 data Nat = Z | S Nat
 

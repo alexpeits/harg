@@ -1,0 +1,102 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: b3e9609e64bd980456ed27bcb030ad370dc8f923a7a6740c76c5d86c93f83560
+
+name:           harg
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/alexpeits/harg#readme>
+homepage:       https://github.com/alexpeits/harg#readme
+bug-reports:    https://github.com/alexpeits/harg/issues
+author:         Alex Peitsinis
+maintainer:     alexpeitsinis@gmail.com
+copyright:      Copyright (c) 2019 Alex Peitsinis
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/alexpeits/harg
+
+library
+  exposed-modules:
+      Data.Harg
+      Data.Harg.Het
+      Data.Harg.Het.All
+      Data.Harg.Het.AssocList
+      Data.Harg.Het.HList
+      Data.Harg.Het.Nat
+      Data.Harg.Het.Variant
+      Data.Harg.Options.Construct
+      Data.Harg.Options.Helpers
+      Data.Harg.Options.Operations
+      Data.Harg.Options.Pretty
+      Data.Harg.Options.Types
+  other-modules:
+      Paths_harg
+  hs-source-dirs:
+      src
+  default-extensions: DataKinds FlexibleContexts FlexibleInstances GADTs KindSignatures LambdaCase MultiParamTypeClasses RecordWildCards ScopedTypeVariables TypeApplications TypeOperators
+  ghc-options: -Wall -Wno-unticked-promoted-constructors
+  build-depends:
+      barbies
+    , base >=4.7 && <5
+    , higgledy
+    , optparse-applicative
+    , validation
+  default-language: Haskell2010
+
+executable example
+  main-is: Example.hs
+  other-modules:
+      Paths_harg
+  ghc-options: -Wall -Wno-unticked-promoted-constructors -threaded -rtsopts -with-rtsopts=-N -main-is Example
+  build-depends:
+      barbies
+    , base >=4.7 && <5
+    , harg
+    , higgledy
+    , optparse-applicative
+    , validation
+  default-language: Haskell2010
+
+test-suite harg-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_harg
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wno-unticked-promoted-constructors -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      barbies
+    , base >=4.7 && <5
+    , harg
+    , higgledy
+    , optparse-applicative
+    , validation
+  default-language: Haskell2010
+
+test-suite readme-test
+  type: exitcode-stdio-1.0
+  main-is: README.lhs
+  other-modules:
+      Paths_harg
+  ghc-options: -Wall -Wno-unticked-promoted-constructors -threaded -Wall -fno-warn-name-shadowing -fno-warn-missing-signatures -fno-warn-unused-top-binds -fno-warn-type-defaults -pgmL markdown-unlit
+  build-tool-depends:
+      markdown-unlit:markdown-unlit
+  build-depends:
+      barbies
+    , base >=4.7 && <5
+    , harg
+    , higgledy
+    , optparse-applicative
+    , validation
+  default-language: Haskell2010

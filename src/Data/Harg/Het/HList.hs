@@ -2,15 +2,15 @@
 {-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Data.Origin.Het.HList where
+module Data.Harg.Het.HList where
 
 import           Data.Kind                   (Type)
 import           Data.Functor.Identity       (Identity)
 
 import qualified Data.Barbie                 as B
 
-import           Data.Origin.Het.All
-import           Data.Origin.Options.Types
+import           Data.Harg.Het.All
+import           Data.Harg.Options.Types
 
 
 data HListF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where

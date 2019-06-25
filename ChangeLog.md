@@ -1,3 +1,3 @@
-# Changelog for origin
+# Changelog for harg
 
 ## Unreleased changes

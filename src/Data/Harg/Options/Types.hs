@@ -6,7 +6,7 @@
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE TypeFamilyDependencies     #-}
 {-# LANGUAGE UndecidableInstances       #-}
-module Data.Origin.Options.Types where
+module Data.Harg.Options.Types where
 
 import           Data.Coerce          (Coercible, coerce)
 import           Data.Kind            (Type)

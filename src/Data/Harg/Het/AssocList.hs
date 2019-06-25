@@ -1,7 +1,7 @@
 {-# LANGUAGE PatternSynonyms      #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Data.Origin.Het.AssocList where
+module Data.Harg.Het.AssocList where
 
 import           Data.Kind                   (Type)
 import           GHC.TypeLits                (ErrorMessage(..), TypeError, Symbol)
