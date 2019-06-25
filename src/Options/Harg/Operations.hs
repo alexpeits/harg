@@ -66,8 +66,7 @@ fromDefault opt
       (_optDefault opt)
 
 getOpt
-  :: ( B.FunctorB a
-     , B.TraversableB a
+  :: ( B.TraversableB a
      , Semigroup (a OptValue)
      )
   => a Opt
@@ -88,7 +87,6 @@ getOpt opts = do
 getOptSubcommand
   :: forall xs ts.
      ( B.TraversableB (VariantF xs)
-     , AllF Semigroup xs OptValue
      , Semigroup (VariantF xs OptValue)
      , MapVariantF xs
      , Subcommands Z ts xs '[]
@@ -172,8 +170,7 @@ instance {-# OVERLAPPING #-}
   type OptOutput (AssocListF ts xs Opt) = OptOutput' (AssocListF ts xs)
   getOptions = getOptSubcommand
 
-instance ( B.FunctorB a
-         , B.TraversableB a
+instance ( B.TraversableB a
          , Semigroup (a OptValue)
          , OptOutput' a ~ a OptValue
          ) => GetOpt (a Opt) where

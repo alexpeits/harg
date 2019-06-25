@@ -12,11 +12,8 @@ extra-source-files:
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
-# category:            Web
+# category:            System, CLI, Options, Parsing
 
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
 description:         Please see the README on GitHub at <https://github.com/alexpeits/harg#readme>
 
 ghc-options:
@@ -47,8 +44,8 @@ library:
 
 tests:
   harg-test:
-    main:                Spec.hs
-    source-dirs:         test
+    main: Spec.hs
+    source-dirs: test
     ghc-options:
     - -threaded
     - -rtsopts
@@ -57,7 +54,7 @@ tests:
     - harg
 
   readme-test:
-    main:                README.lhs
+    main: README.lhs
     ghc-options:
     - -threaded
     - -Wall
@@ -75,7 +72,7 @@ tests:
 
 executables:
   example:
-    main:                Example.hs
+    main: Example.hs
     ghc-options:
     - -threaded
     - -rtsopts

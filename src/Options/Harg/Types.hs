@@ -162,10 +162,7 @@ nested = coerce @k @(Nest k f) hkd
   where hkd = HKD.build @b @f @k
 
 getNested
-  :: ( Applicative f
-     , Generic b
-     , HKD.Construct f b
-     )
+  :: HKD.Construct f b
   => Nested b f
   -> f b
 getNested (Nested hkd) = HKD.construct hkd
