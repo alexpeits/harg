@@ -1,6 +1,6 @@
-name:                origin
+name:                harg
 version:             0.1.0.0
-github:              "alexpeits/origin"
+github:              "alexpeits/harg"
 license:             BSD3
 author:              "Alex Peitsinis"
 maintainer:          "alexpeitsinis@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/alexpeits/origin#readme>
+description:         Please see the README on GitHub at <https://github.com/alexpeits/harg#readme>
 
 ghc-options:
 - -Wall
@@ -46,7 +46,7 @@ library:
   - TypeOperators
 
 tests:
-  origin-test:
+  harg-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -54,7 +54,7 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - origin
+    - harg
 
   readme-test:
     main:                README.lhs
@@ -67,7 +67,7 @@ tests:
     - -fno-warn-type-defaults
     - -pgmL markdown-unlit
     dependencies:
-    - origin
+    - harg
     - barbies
     - higgledy
     build-tools:
@@ -83,4 +83,4 @@ executables:
     - -main-is
     - Example
     dependencies:
-    - origin
+    - harg

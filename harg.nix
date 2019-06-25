@@ -2,7 +2,7 @@
   optparse-applicative, stdenv, validation
 }:
 mkDerivation {
-  pname = "origin";
+  pname = "harg";
   version = "0.1.0.0";
   src = lib.sourceByRegex ./. [
     "app(.*)?"
@@ -11,7 +11,7 @@ mkDerivation {
     "Example.hs"
     "README.lhs"
     "README.md"
-    "origin.cabal"
+    "harg.cabal"
     "package.yaml"
   ];
   isLibrary = true;
@@ -28,6 +28,6 @@ mkDerivation {
   ];
   testToolDepends = [ markdown-unlit ];
   preConfigure = "hpack";
-  homepage = "https://github.com/alexpeits/origin#readme";
+  homepage = "https://github.com/alexpeits/harg#readme";
   license = stdenv.lib.licenses.bsd3;
 }

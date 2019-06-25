@@ -3,14 +3,14 @@
 {-# LANGUAGE RankNTypes           #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Data.Origin.Het where
+module Data.Harg.Het where
 
 import           Data.Kind                   (Type)
 import           Data.Type.Equality
 
-import           Data.Origin.Het.AssocList
-import           Data.Origin.Het.HList
-import           Data.Origin.Het.Variant
+import           Data.Harg.Het.AssocList
+import           Data.Harg.Het.HList
+import           Data.Harg.Het.Variant
 
 class MapVariantF (xs :: [(Type -> Type) -> Type]) where
   mapVariantF :: VariantF xs g -> HListF xs f -> VariantF xs f

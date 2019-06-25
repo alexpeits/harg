@@ -1,5 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
-module Data.Origin
+module Data.Harg
   ( Opt
   , OptValue
   , Barbie (..)
@@ -53,11 +53,11 @@ module Data.Origin
   , (:->)
   ) where
 
-import           Data.Origin.Het.AssocList
-import           Data.Origin.Het.HList
-import           Data.Origin.Het.Variant
-import           Data.Origin.Options.Construct
-import           Data.Origin.Options.Helpers
-import           Data.Origin.Options.Operations
-import           Data.Origin.Options.Pretty
-import           Data.Origin.Options.Types
+import           Data.Harg.Het.AssocList
+import           Data.Harg.Het.HList
+import           Data.Harg.Het.Variant
+import           Data.Harg.Options.Construct
+import           Data.Harg.Options.Helpers
+import           Data.Harg.Options.Operations
+import           Data.Harg.Options.Pretty
+import           Data.Harg.Options.Types

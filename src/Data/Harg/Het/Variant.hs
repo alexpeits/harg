@@ -3,15 +3,15 @@
 {-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Data.Origin.Het.Variant where
+module Data.Harg.Het.Variant where
 
 import           Data.Kind                   (Type)
 
 import qualified Data.Barbie                 as B
 
-import           Data.Origin.Het.All
-import           Data.Origin.Het.Nat
-import           Data.Origin.Options.Types
+import           Data.Harg.Het.All
+import           Data.Harg.Het.Nat
+import           Data.Harg.Options.Types
 
 data VariantF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where
   HereF  :: x f           -> VariantF (x ': xs) f
