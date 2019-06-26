@@ -68,22 +68,18 @@ instance Applicative Parser where
 
   Parser f e <*> Parser x e' = Parser (f <*> x) (e <> e')
 
+data ParserInfo a
+  = ParserInfo (Optparse.ParserInfo a) [OptError]
+  deriving Functor
+
 data OptError
   = OptError
       { _oeOpt  :: SomeOpt
       , _oeDesc :: String
       }
-  deriving Show
 
 data SomeOpt where
   SomeOpt :: Opt a -> SomeOpt
-
-instance Show SomeOpt where
-  show (SomeOpt (Opt l _ h _ _ _ _ _)) = "SomeOpt: " <> l <> ", " <> h
-
-newtype Barbie (barbie :: (Type -> Type) -> Type) (f :: Type -> Type)
-  = Barbie (barbie f)
-  deriving newtype (Generic, B.ProductB, B.FunctorB)
 
 -- Single
 newtype Single (b :: Type) (f :: Type -> Type)

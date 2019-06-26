@@ -27,11 +27,12 @@ imports:
 {-# LANGUAGE TypeApplications   #-}
 {-# LANGUAGE TypeOperators      #-}
 
-import           Data.Function    ((&))
-import           GHC.Generics     (Generic)
+import           Data.Function         ((&))
+import           GHC.Generics          (Generic)
+import           Data.Functor.Identity (Identity(..))
 
-import qualified Data.Barbie      as B
-import qualified Data.Generic.HKD as HKD
+import qualified Data.Barbie           as B
+import qualified Data.Generic.HKD      as HKD
 
 import           Options.Harg
 
@@ -105,13 +106,12 @@ data FlatConfigB f
       , _fcPortB :: f Int
       , _fcLogB  :: f Bool
       }
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB)
 ```
 
 I also derived some required instances that come from the `barbies` package. These instances allow
-us to change the `f` (`bmap` from `FunctorB`), traverse all types in the record producing side
-effects (`btraverse` from `TraversableB`) and to treat two HKDs with different `f`s as a product of
-these type constructors.
+us to change the `f` (`bmap` from `FunctorB`) and traverse all types in the record producing side
+effects (`btraverse` from `TraversableB`).
 
 Now let's define the value of this datatype, which holds our option configuration. The type
 constructor needed for the options is `Opt`:
@@ -125,33 +125,32 @@ flatConfigOpt1
 Because `hostOpt`, `portOpt` and `logOpt` all have type `Opt <actual type>`, `flatConfigOpt1` has
 the correct type according to `FlatConfigB Opt`.
 
-Now let's actually run things:
+Now to actually run things:
 
 ``` haskell
 getFlatConfig1 :: IO ()
 getFlatConfig1 = do
-  FlatConfigB host port log <- getOptions flatConfigOpt1
-  print $ extractOpt (FlatConfig <$> host <*> port <*> log)
+  FlatConfigB host port log <- execOpt flatConfigOpt1
+  print $ runIdentity (FlatConfig <$> host <*> port <*> log)
 ```
 
-`getOptions` returns an `Identity x` where `x` is the type of the options we are configuring, in
-this case `FlatConfigB`. Here, we pattern matched on the barbie-type, and then used the
-`Applicative` instance of `Identity` to get back an `Identity FlatConfig`. `extractOpt` is a synonym
-for `runIdentity`.
+`execOpt` returns an `Identity x` where `x` is the type of the options we are configuring, in this
+case `FlatConfigB`. Here, we pattern match on the barbie-type, and then use the `Applicative`
+instance of `Identity` to get back an `Identity FlatConfig`.
 
 This is still a bit boilerplate-y. Let's look at another way.
 
 ### 2. Using an `HList`
 
-Looking at `FlatConfigB`, it's only used because of it's `barbie`-like capabilities. Other than that,
+Looking at `FlatConfigB`, it's only used because of it's `barbie`-like capabilities. Other than that
 it's just a simple product type with the additional `f` before all its sub-types.
 
-An `HList` (heterogeneous list) is like an arbitrary length tuple. For example,
-`HList '[Int, Bool, String]` is exactly the same as `(Int, Bool, String)`. `harg` defines an
-enhanced version of `HList` called `HListF`, which stores barbie-like types and also keeps the `f`
-handy: `data HListF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where ...`. `HListF` is
-also easily made an instance of `Generic`, `FunctorB`, `TraversableB` and `ProductB`. With all that,
-let's rewrite the options value and the function to get the configuration:
+An `HList` (heterogeneous list) is like an arbitrary length tuple. For example, `HList '[Int, Bool,
+String]` is exactly the same as `(Int, Bool, String)`. `harg` defines an enhanced version of `HList`
+called `HListF`, which stores barbie-like types and also keeps the `f` handy: `data HListF (xs ::
+[(Type -> Type) -> Type]) (f :: Type -> Type) where ...`. `HListF` is also easily made an instance
+of `Generic`, `FunctorB` and `TraversableB`. With all that, let's rewrite the options value and the
+function to get the configuration:
 
 ``` haskell
 flatConfigOpt2 :: (Single String :* Single Int :* Single Bool) Opt
@@ -160,8 +159,8 @@ flatConfigOpt2
 
 getFlatConfig2 :: IO ()
 getFlatConfig2 = do
-  host :* port :* log :* _ <- getOptions flatConfigOpt2
-  print $ extractOpt (FlatConfig <$> getSingle host <*> getSingle port <*> getSingle log)
+  host :* port :* log :* _ <- execOpt flatConfigOpt2
+  print $ runIdentity (FlatConfig <$> getSingle host <*> getSingle port <*> getSingle log)
 ```
 
 This looks aufully similar to the previous version, but without having to write another datatype
@@ -171,9 +170,9 @@ it using a `nil` when writing the type signature (although a `HNilF` is required
 or when pattern matching).
 
 The `Single` type constructor is used when talking about a single value, rather than a nested
-datatype. `Single a f` is a simple newtype over `f a`. The reason for using that is simply to
-switch the order of application, so that we can later apply the `f` (here `Opt`) to the compound
-type (which is the `HList`). In addition, `single` is used to wrap an `f a` into a `Single a f`, and
+datatype. `Single a f` is a simple newtype over `f a`. The reason for using that is simply to switch
+the order of application, so that we can later apply the `f` (here `Opt`) to the compound type
+(which is the `HList`). In addition, `single` is used to wrap an `f a` into a `Single a f`, and
 `getSingle` is used to unwrap it. Later on we'll see how to construct nested configurations using
 `Nested`.
 
@@ -188,8 +187,8 @@ flatConfigOpt3
 
 getFlatConfig3 :: IO ()
 getFlatConfig3 = do
-  result <- getOptions flatConfigOpt3
-  print $ extractOpt (HKD.construct result)
+  result <- execOpt flatConfigOpt3
+  print $ runIdentity (HKD.construct result)
 ```
 
 This is the most straightforward way to work with flat configuration types. The `build` function

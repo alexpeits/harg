@@ -1,29 +1,33 @@
-{-# LANGUAGE BlockArguments     #-}
-{-# LANGUAGE DataKinds          #-}
-{-# LANGUAGE DeriveGeneric      #-}
-{-# LANGUAGE TypeApplications   #-}
-{-# LANGUAGE TypeOperators      #-}
+{-# LANGUAGE BlockArguments   #-}
+{-# LANGUAGE DataKinds        #-}
+{-# LANGUAGE DeriveGeneric    #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeOperators    #-}
+
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Example where
 
-import           Data.Function                  ((&))
-import           GHC.Generics                   (Generic)
+import           Data.Function         ((&))
+import           Data.Functor.Identity (Identity (..))
+import           GHC.Generics          (Generic)
+import           System.Environment    (setEnv)
 
 import           Options.Harg
 
 mainSubparser :: IO ()
 mainSubparser = do
-  conf <- getOptions configOpt
+  conf <- execOpt configOpt
   foldF conf
     (
       \(db :* srv :* hh :* _)
         -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
-           & extractOpt
+           & runIdentity
            & print
     )
     (
       \(db :* tst :* _)
          -> TestAppC <$> getNested db <*> getNested tst
-            & extractOpt
+            & runIdentity
             & print
     )
 
@@ -51,14 +55,14 @@ mainSubparser = do
 
 mainParser :: IO ()
 mainParser = do
-  db :* srv :* hh :* _ <- getOptions appOpt
+  db :* srv :* hh :* _ <- execOpt appOpt
   let ov
         = AppC
         <$> getNested db
         <*> getNested srv
         <*> getSingle hh
 
-  extractOpt ov & print
+  print $ runIdentity ov
 
 main :: IO ()
 main

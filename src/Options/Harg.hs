@@ -1,8 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Options.Harg
   ( Opt
-  , Barbie (..)
-  , getOptions
+  , getParser
   , Single (..)
   , single
   , Nested (..)
@@ -24,10 +23,12 @@ module Options.Harg
   , optEnvVar
   , optDefault
 
-  , extractOpt
   , parseWith
   , readParser
   , strParser
+
+  , execParserDef
+  , execOpt
 
   , VariantF (..)
   , pattern In1

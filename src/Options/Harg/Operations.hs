@@ -30,35 +30,64 @@ mkHelp opt
        (\v -> " (env var: " <> v <> ")")
        (_optEnvVar opt)
 
-getParser :: Opt a -> IO (Parser a)
-getParser opt@Opt{..} = do
-  envVar <- case _optEnvVar of
-    Nothing -> pure Nothing
-    Just s  -> Env.lookupEnv s
+data EnvVarParseResult a
+  = EnvVarNotAvailable
+  | EnvVarNotFound
+  | EnvVarFoundNoParse String
+  | EnvVarParsed a
+
+getEnvVar :: EnvVarParseResult a -> Maybe a
+getEnvVar
+  = \case
+      EnvVarParsed a -> Just a
+      _              -> Nothing
+
+tryParseEnvVar
+  :: Opt a
+  -> IO (EnvVarParseResult a)
+tryParseEnvVar Opt{..}
+  = case _optEnvVar of
+      Nothing
+        -> pure EnvVarNotAvailable
+      Just envVar
+        -> Env.lookupEnv envVar >>= pure . maybe EnvVarNotFound tryParse
+  where
+    tryParse
+      = either EnvVarFoundNoParse EnvVarParsed . _optParser
+
+toParser :: Opt a -> IO (Parser a)
+toParser opt@Opt{..} = do
+  envVarRes <- tryParseEnvVar opt
+
   case _optType of
+
     ArgOptType -> do
       let
-        parseResult = case envVar of
-          Nothing -> Nothing
-          Just ev -> Just $ _optParser ev
-        parsedEnvVar = parseResult >>= either (pure Nothing) Just
-        err = case parseResult of
-          Just (Left e) -> [OptError (SomeOpt opt) e]
-          _             -> []
-        op = Optparse.option (Optparse.eitherReader _optParser)
-            ( foldMap (fromMaybe mempty)
-                [ Just (Optparse.long _optLong)
-                , Optparse.short <$> _optShort
-                , Just (Optparse.help help)
-                , Optparse.metavar <$> _optMetavar
-                , Optparse.value <$> (parsedEnvVar Optparse.<|> _optDefault)
-                ]
-            )
-      pure $ Parser op err
+        parsedEnvVar
+          = getEnvVar envVarRes
+        err
+          = case envVarRes of
+              EnvVarFoundNoParse detail
+                -> [OptError (SomeOpt opt) detail]
+              _
+                -> []
+        option
+          = Optparse.option (Optparse.eitherReader _optParser)
+              ( foldMap (fromMaybe mempty)
+                  [ Just (Optparse.long _optLong)
+                  , Optparse.short <$> _optShort
+                  , Just (Optparse.help help)
+                  , Optparse.metavar <$> _optMetavar
+                  , Optparse.value <$> (parsedEnvVar Optparse.<|> _optDefault)
+                  ]
+              )
+
+      pure $ Parser option err
+
     FlagOptType active -> do
       let
-        def
-          = case envVar of
+        mDef
+          = case getEnvVar envVarRes of
               Nothing -> _optDefault
               Just _  -> Just active
         modifiers
@@ -67,64 +96,41 @@ getParser opt@Opt{..} = do
               , Optparse.short <$> _optShort
               , Just (Optparse.help help)
               ]
-        op = case def of
-               Nothing ->
-                 Optparse.flag' active modifiers
-               Just v ->
-                 Optparse.flag v active modifiers
-      pure $ Parser op []
+        option
+          = case mDef of
+              Nothing ->
+                Optparse.flag' active modifiers
+              Just def ->
+                Optparse.flag def active modifiers
+
+      pure $ Parser option []
+
   where
     help = mkHelp opt
 
-getOpt
+getOptParser
   :: B.TraversableB a
   => a Opt
-  -> IO (a Identity)
-getOpt opts = do
-  -- get options from command line arguments
-  (Parser parser err) <-
-    getCompose
-    $ B.btraverse
-        (Compose <$> (fmap . fmap . fmap) Identity getParser)
-        opts
-  args <- Env.getArgs
-  let res
-        = Optparse.execParserPure
-            Optparse.defaultPrefs
-            (Optparse.info (Optparse.helper <*> parser) mempty)
-            args
-  -- TODO
-  print err  -- as warning
-  case res of
-    Optparse.Success a -> pure a
-    _ -> do
-      print err  -- as error
-      Optparse.handleParseResult res
+  -> IO (Parser (a Identity))
+getOptParser opts =
+  getCompose
+    $ B.btraverse (Compose <$> (fmap . fmap . fmap) Identity toParser) opts
 
-getOptSubcommand
+getOptParserSubcommand
   :: forall xs ts.
      ( B.TraversableB (VariantF xs)
      , Subcommands Z ts xs '[]
      )
   => AssocListF ts xs Opt
-  -> IO (VariantF xs Identity)
-getOptSubcommand alist = do
+  -> IO (Parser (VariantF xs Identity))
+getOptParserSubcommand alist = do
   (commands, err) <- mapSubcommand @Z @ts @xs @'[] SZ alist
-  args <- Env.getArgs
 
-  -- get options from command line arguments using a subparser
-  let res
-        = Optparse.execParserPure
-            Optparse.defaultPrefs
-            (Optparse.info (Optparse.helper <*> Optparse.subparser (mconcat commands)) mempty)
-            args
-  -- TODO
-  print err  -- as warning
-  case res of
-    Optparse.Success a -> pure a
-    _ -> do
-      print err  -- as error
-      Optparse.handleParseResult res
+  let
+    parser
+      = Optparse.subparser (mconcat commands)
+
+  pure $ Parser parser err
 
 -- subcommands
 class Subcommands
@@ -165,7 +171,7 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
             (Parser parser err) <-
               getCompose
               $ B.btraverse
-                  (Compose <$> (fmap . fmap . fmap) Identity getParser)
+                  (Compose <$> (fmap . fmap . fmap) Identity toParser)
                   opt
             let cmd
                   = Optparse.command tag
@@ -176,24 +182,24 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
         = symbolVal (Proxy :: Proxy t)
 
 -- The following allows to use one function for commands + subcommands
-type family OptOutput' a where
-  OptOutput' (AssocListF ts xs) = VariantF xs Identity
-  OptOutput' a = a Identity
+type family OptResult' a where
+  OptResult' (AssocListF ts xs) = VariantF xs Identity
+  OptResult' a = a Identity
 
-class GetOpt a where
-  type OptOutput a :: Type
-  getOptions :: a -> IO (OptOutput a)
+class GetParser a where
+  type OptResult a :: Type
+  getParser :: a -> IO (Parser (OptResult a))
 
 instance {-# OVERLAPPING #-}
          ( B.TraversableB (VariantF xs)
          , MapVariantF xs
          , Subcommands Z ts xs '[]
-         ) => GetOpt (AssocListF ts xs Opt) where
-  type OptOutput (AssocListF ts xs Opt) = OptOutput' (AssocListF ts xs)
-  getOptions = getOptSubcommand
+         ) => GetParser (AssocListF ts xs Opt) where
+  type OptResult (AssocListF ts xs Opt) = OptResult' (AssocListF ts xs)
+  getParser = getOptParserSubcommand
 
 instance ( B.TraversableB a
-         , OptOutput' a ~ a Identity
-         ) => GetOpt (a Opt) where
-  type OptOutput (a Opt) = OptOutput' a
-  getOptions = getOpt
+         , OptResult' a ~ a Identity
+         ) => GetParser (a Opt) where
+  type OptResult (a Opt) = OptResult' a
+  getParser = getOptParser
