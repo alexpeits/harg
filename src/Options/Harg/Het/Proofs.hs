@@ -3,28 +3,10 @@
 {-# LANGUAGE RankNTypes           #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Options.Harg.Het where
+module Options.Harg.Het.Proofs where
 
 import           Data.Kind                   (Type)
 import           Data.Type.Equality
-
-import           Options.Harg.Het.AssocList
-import           Options.Harg.Het.HList
-import           Options.Harg.Het.Variant
-
-class MapVariantF (xs :: [(Type -> Type) -> Type]) where
-  mapVariantF :: VariantF xs g -> HListF xs f -> VariantF xs f
-
-instance MapVariantF xs => MapVariantF (x ': xs) where
-  mapVariantF (HereF _) (HConsF x _) = HereF x
-  mapVariantF (ThereF v) (HConsF _ l) = ThereF $ mapVariantF v l
-
-instance MapVariantF '[] where
-  mapVariantF _ _ = error "Impossible: empty variant"
-
-assocToHListF :: AssocListF ts xs f -> HListF xs f
-assocToHListF ANil = HNilF
-assocToHListF (ACons x xs) = HConsF x $ assocToHListF xs
 
 -- proofs
 type family (xs :: [k]) ++ (ts :: [k]) = (res :: [k]) where

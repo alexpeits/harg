@@ -14,9 +14,9 @@ import qualified System.Environment         as Env
 import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
 
-import           Options.Harg.Het
 import           Options.Harg.Het.AssocList
 import           Options.Harg.Het.Nat
+import           Options.Harg.Het.Proofs
 import           Options.Harg.Het.Variant
 import           Options.Harg.Types
 
@@ -192,7 +192,6 @@ class GetParser a where
 
 instance {-# OVERLAPPING #-}
          ( B.TraversableB (VariantF xs)
-         , MapVariantF xs
          , Subcommands Z ts xs '[]
          ) => GetParser (AssocListF ts xs Opt) where
   type OptResult (AssocListF ts xs Opt) = OptResult' (AssocListF ts xs)
