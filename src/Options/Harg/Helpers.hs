@@ -47,6 +47,15 @@ execParserDef (Parser parser err)
         _
           -> ppError err >> Optparse.handleParseResult res
 
+getOptparseParser
+  :: GetParser a
+  => a
+  -> IO (Optparse.Parser (OptResult a))
+getOptparseParser a
+  = do
+      Parser p _ <- getParser a
+      pure p
+
 execOpt
   :: GetParser a
   => a
