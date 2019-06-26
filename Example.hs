@@ -56,8 +56,8 @@ mainParser = do
 
 main :: IO ()
 main
-  -- = mainParser
-  = mainSubparser
+  = mainParser
+  -- = mainSubparser
 
 data AppC
   = AppC
@@ -81,10 +81,12 @@ appOpt
           ( mkOpt
             $ arg "port" readParser
             & optHelp "Web service port"
+            & optDefault 5432
           )
           ( mkOpt
             $ switch "log"
             & optHelp "Whether to log"
+            & optEnvVar "LOG"
           )
     something
       = mkOpt
