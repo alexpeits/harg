@@ -29,7 +29,9 @@ module Options.Harg
   , strParser
 
   , execParserDef
+  , execParserPureDef
   , execOpt
+  , execOptPure
 
   , VariantF (..)
   , pattern In1

@@ -1,6 +1,5 @@
 module Options.Harg.Helpers where
 
-import           Control.Monad           ((<=<))
 import qualified System.Environment      as Env
 import           Text.Read               (readMaybe)
 
@@ -31,10 +30,15 @@ strParser
 execParserDef
   :: Parser a
   -> IO a
-execParserDef (Parser parser err)
-  = do
-      args <- Env.getArgs
+execParserDef p
+  = Env.getArgs >>= execParserPureDef p
 
+execParserPureDef
+  :: Parser a
+  -> [String]
+  -> IO a
+execParserPureDef (Parser parser err) args
+  = do
       let
         parserInfo
           = Optparse.info (Optparse.helper <*> parser) mempty
@@ -67,5 +71,13 @@ execOpt
   :: GetParser a
   => a
   -> IO (OptResult a)
-execOpt
-  = execParserDef <=< getParser
+execOpt a
+  = Env.getArgs >>= execOptPure a
+
+execOptPure
+  :: GetParser a
+  => a
+  -> [String]
+  -> IO (OptResult a)
+execOptPure a args
+  = getParser a >>= flip execParserPureDef args
