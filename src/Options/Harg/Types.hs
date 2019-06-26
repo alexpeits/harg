@@ -1,6 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes        #-}
 {-# LANGUAGE DeriveFunctor              #-}
-{-# LANGUAGE DeriveTraversable          #-}
 {-# LANGUAGE DerivingVia                #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving         #-}
@@ -15,7 +14,6 @@ import           GHC.Generics         (Generic)
 import qualified Data.Barbie          as B
 import qualified Data.Functor.Product as P
 import qualified Data.Generic.HKD     as HKD
-import qualified Data.Validation      as V
 
 
 type OptParser a = String -> Either String a
@@ -60,62 +58,9 @@ data FlagOpt a
       , _sParser  :: OptParser a
       }
 
--- | Existentially quantified 'Opt', in order to be able to extract information
--- not related to the wrapped type
-data SomeOpt where
-  SomeOpt :: Opt a -> SomeOpt
-
-newtype OptValue a
-  = OptValue
-      { _getOptValueValidation :: V.Validation OptError a
-      }
-  deriving (Functor, Foldable, Traversable)
-  deriving newtype Applicative
-
-instance Semigroup (OptValue a) where
-  l@(OptValue vl) <> r
-    = case vl of
-        V.Failure (OptNotPresent _) -> r
-        _                           -> l
-
-data OptError
-  = OptNotPresent [SomeOpt]
-  | OptInvalid [OptInvalidDetail]
-
-instance Semigroup OptError where
-  OptNotPresent l  <> OptNotPresent r  = OptNotPresent (l <> r)
-  OptInvalid l     <> OptInvalid r     = OptInvalid (l <> r)
-  l@(OptInvalid _) <> _                = l
-  _                <> r@(OptInvalid _) = r
-
-data OptInvalidDetail
-  = OptInvalidDetail
-      { _oidOpt     :: SomeOpt
-      , _oidDetail  :: String
-      }
-
-toOptNotPresent :: Opt a -> OptValue a
-toOptNotPresent
-  = OptValue
-  . V.Failure
-  . OptNotPresent
-  . pure
-  . SomeOpt
-
-toOptInvalid :: Opt a -> String -> OptValue a
-toOptInvalid opt
-  = OptValue
-  . V.Failure
-  . OptInvalid
-  . pure
-  . OptInvalidDetail (SomeOpt opt)
-
 newtype Barbie (barbie :: (Type -> Type) -> Type) (f :: Type -> Type)
   = Barbie (barbie f)
   deriving newtype (Generic, B.ProductB, B.FunctorB)
-
-instance (B.FunctorB b, B.ProductB b) => Semigroup (Barbie b OptValue) where
-  l <> r = B.bmap (\(P.Pair x y) -> x <> y) (l `B.bprod` r)
 
 -- Single
 newtype Single (b :: Type) (f :: Type -> Type)
@@ -128,10 +73,6 @@ single = Single
 
 deriving instance (Show b, Show (f b)) => Show (Single b f)
 deriving newtype instance Generic (f b) => Generic (Single b f)
-deriving via (Barbie (Single b) OptValue)
-  instance ( B.FunctorB (Single b)
-           , B.ProductB (Single b)
-           ) => Semigroup (Single b OptValue)
 
 instance B.FunctorB (Single b) where
   bmap nat (Single p) = Single (nat p)
@@ -170,10 +111,6 @@ getNested (Nested hkd) = HKD.construct hkd
 deriving newtype instance Generic (HKD.HKD b f) => Generic (Nested b f)
 deriving newtype instance B.FunctorB (HKD.HKD b) => B.FunctorB (Nested b)
 deriving newtype instance B.ProductB (HKD.HKD b) => B.ProductB (Nested b)
-deriving via (Barbie (Nested b) OptValue)
-  instance ( B.FunctorB (Nested b)
-           , B.ProductB (Nested b)
-           ) => Semigroup (Nested b OptValue)
 
 instance (B.TraversableB (HKD.HKD b)) => B.TraversableB (Nested b) where
   btraverse nat (Nested hkd) = Nested <$> B.btraverse nat hkd

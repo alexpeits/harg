@@ -10,7 +10,6 @@ import           Data.Functor.Identity       (Identity)
 import qualified Data.Barbie                 as B
 
 import           Options.Harg.Het.All
-import           Options.Harg.Types
 
 
 data HListF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where
@@ -28,7 +27,6 @@ pattern x :* xs = HConsF x xs
 
 infixr 4 :*
 
-deriving instance AllF Show xs OptValue => Show (HListF xs OptValue)
 deriving instance AllF Show xs Identity => Show (HListF xs Identity)
 
 instance ( B.FunctorB x
@@ -60,7 +58,3 @@ instance ( B.TraversableB x
 
 instance B.TraversableB (HListF '[]) where
   btraverse _ HNilF = pure HNilF
-
-instance AllF Semigroup xs OptValue => Semigroup (HListF xs OptValue) where
-  HConsF x xs <> HConsF y ys = HConsF (x <> y) (xs <> ys)
-  x           <> HNilF       = x

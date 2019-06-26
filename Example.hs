@@ -17,31 +17,37 @@ mainSubparser = do
     (
       \(db :* srv :* hh :* _)
         -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
-           & execOpt >>= print
+           & extractOpt
+           & print
     )
     (
       \(db :* tst :* _)
          -> TestAppC <$> getNested db <*> getNested tst
-            & execOpt >>= print
+            & extractOpt
+            & print
     )
 
   -- or:
 
   -- case conf of
-  --   HereF (db :* srv :* hh :* _)
-  --     -> let ov
-  --              = AppC
-  --              <$> getNested db
-  --              <*> getNested srv
-  --              <*> getArg hh
-  --        in ov & execOpt >>= print
+    -- HereF (db :* srv :* hh :* _)
+      -- -> let ov
+               -- = AppC
+               -- <$> getNested db
+               -- <*> getNested srv
+               -- <*> getArg hh
+         -- in ov
+            -- & extractOpt
+            -- & print
 
-  --   ThereF (HereF (db :* tst :* _))
-  --     -> let ov
-  --              = TestAppC
-  --              <$> getNested db
-  --              <*> getNested tst
-  --        in execOpt ov >>= print
+    -- ThereF (HereF (db :* tst :* _))
+      -- -> let ov
+               -- = TestAppC
+               -- <$> getNested db
+               -- <*> getNested tst
+         -- in ov
+            -- & extractOpt
+            -- & print
 
 mainParser :: IO ()
 mainParser = do
@@ -52,7 +58,7 @@ mainParser = do
         <*> getNested srv
         <*> getSingle hh
 
-  execOpt ov >>= print
+  extractOpt ov & print
 
 main :: IO ()
 main

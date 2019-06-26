@@ -1,28 +1,13 @@
 module Options.Harg.Helpers where
 
-import           System.Exit                  (exitFailure)
-import           Text.Read                    (readMaybe)
+import           Data.Functor.Identity (Identity(..))
+import           Text.Read             (readMaybe)
 
-import qualified Data.Validation              as V
-
-import           Options.Harg.Pretty
 import           Options.Harg.Types
 
-optValue
-  :: (OptError -> r)
-  -> (a -> r)
-  -> OptValue a
-  -> r
-optValue e f (OptValue a)
-  = V.validation e f a
-
-execOpt
-  :: OptValue a
-  -> IO a
-execOpt
-  = optValue
-      ((>> exitFailure) . putStrLn . ppError)
-      pure
+extractOpt :: Identity a -> a
+extractOpt
+  = runIdentity
 
 parseWith
   :: (String -> Maybe a)

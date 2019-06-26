@@ -4,50 +4,51 @@
 module Options.Harg.Operations where
 
 import           Data.Functor.Compose       (Compose (..))
+import           Data.Functor.Identity      (Identity (..))
 import           Data.Kind                  (Type)
-import           Data.Maybe                 (catMaybes)
+import           Data.Maybe                 (fromMaybe)
 import           Data.Proxy                 (Proxy (..))
 import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
 import qualified System.Environment         as Env
 
 import qualified Data.Barbie                as B
-import qualified Options.Applicative        as Args
+import qualified Options.Applicative        as Optparse
 
 import           Options.Harg.Het
-import           Options.Harg.Het.All
 import           Options.Harg.Het.AssocList
 import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Variant
-import           Options.Harg.Pretty
 import           Options.Harg.Types
 
+mkHelp
+  :: Opt a
+  -> String
+mkHelp opt
+  =  _optHelp opt
+  <> maybe
+       ""
+       (\v -> " (env var: " <> v <> ")")
+       (_optEnvVar opt)
 
-parseOpt :: Opt a -> String -> OptValue a
-parseOpt opt@Opt{..}
-  = either (toOptInvalid opt) pure
-  . _optParser
-
-fromCmdLine :: Opt a -> IO (Args.Parser (OptValue a))
-fromCmdLine opt@Opt{..} = do
+getParser :: Opt a -> IO (Optparse.Parser a)
+getParser opt@Opt{..} = do
   envVar <- case _optEnvVar of
     Nothing -> pure Nothing
     Just s  -> Env.lookupEnv s
   case _optType of
     ArgOptType -> do
       let
-        mParser = either (const Nothing) Just . _optParser
-        parsedEnvVar = envVar >>= mParser
+        parsedEnvVar = envVar >>= either (const Nothing) Just . _optParser
       pure
-        $ pure
-        <$> Args.option (Args.maybeReader mParser)
-              ( mconcat . catMaybes
-              $ [ Just (Args.long _optLong)
-                , Args.short <$> _optShort
-                , Just (Args.help help)
-                , Args.metavar <$> _optMetavar
-                , Args.value <$> (parsedEnvVar Args.<|> _optDefault)
+        $ Optparse.option (Optparse.eitherReader _optParser)
+            ( foldMap (fromMaybe mempty)
+                [ Just (Optparse.long _optLong)
+                , Optparse.short <$> _optShort
+                , Just (Optparse.help help)
+                , Optparse.metavar <$> _optMetavar
+                , Optparse.value <$> (parsedEnvVar Optparse.<|> _optDefault)
                 ]
-              )
+            )
     FlagOptType active -> do
       let
         def
@@ -55,60 +56,47 @@ fromCmdLine opt@Opt{..} = do
               Nothing -> _optDefault
               Just _  -> Just active
         modifiers
-          = mconcat . catMaybes
-          $ [ Just (Args.long _optLong)
-            , Args.short <$> _optShort
-            , Just (Args.help help)
-            ]
+          = foldMap (fromMaybe mempty)
+              [ Just (Optparse.long _optLong)
+              , Optparse.short <$> _optShort
+              , Just (Optparse.help help)
+              ]
       pure
-        $ pure
-        <$> case def of
-              Nothing ->
-                 Args.flag' active modifiers
-              Just v ->
-                 Args.flag v active modifiers
+        $ case def of
+            Nothing ->
+              Optparse.flag' active modifiers
+            Just v ->
+              Optparse.flag v active modifiers
   where
     help = mkHelp opt
 
-fromEnvVar :: Opt a -> IO (OptValue a)
-fromEnvVar opt
-  = maybe (toOptNotPresent opt) (parseOpt opt)
-  <$> maybe (pure Nothing) Env.lookupEnv (_optEnvVar opt)
-
-fromDefault :: Opt a -> OptValue a
-fromDefault opt
-  = maybe
-      (toOptNotPresent opt)
-      pure
-      (_optDefault opt)
-
 getOpt
-  :: ( B.TraversableB a
-     , Semigroup (a OptValue)
-     )
+  :: B.TraversableB a
   => a Opt
-  -> IO (a OptValue)
+  -> IO (a Identity)
 getOpt opts = do
   -- get options from command line arguments
-  parser <- getCompose $ B.btraverse (Compose <$> fromCmdLine) opts
-  Args.execParser $
-    Args.info (Args.helper <*> parser) mempty
+  parser <-
+    getCompose
+    $ B.btraverse
+        (Compose <$> (fmap . fmap . fmap) Identity getParser)
+        opts
+  Optparse.execParser $
+    Optparse.info (Optparse.helper <*> parser) mempty
 
 getOptSubcommand
   :: forall xs ts.
      ( B.TraversableB (VariantF xs)
-     , Semigroup (VariantF xs OptValue)
-     , MapVariantF xs
      , Subcommands Z ts xs '[]
      )
   => AssocListF ts xs Opt
-  -> IO (VariantF xs OptValue)
+  -> IO (VariantF xs Identity)
 getOptSubcommand alist = do
   commands <- mapSubcommand @Z @ts @xs @'[] SZ alist
 
   -- get options from command line arguments using a subparser
-  Args.execParser $
-    Args.info (Args.helper <*> Args.subparser (mconcat commands)) mempty
+  Optparse.execParser $
+    Optparse.info (Optparse.helper <*> Optparse.subparser (mconcat commands)) mempty
 
 -- subcommands
 class Subcommands
@@ -119,7 +107,7 @@ class Subcommands
   mapSubcommand
     :: SNat n
     -> AssocListF ts xs Opt
-    -> IO [Args.Mod Args.CommandFields (VariantF (acc ++ xs) OptValue)]
+    -> IO [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) Identity)]
 
 instance Subcommands n '[] '[] acc where
   mapSubcommand _ _ = pure []
@@ -134,29 +122,33 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
          -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
          , Proof as x xs
          ) => Subcommands n (t ': ts) (x ': xs) as where
-  mapSubcommand n (ACons x xs)
+  mapSubcommand n (ACons opt opts)
     = (:)
     <$> subcommand
     <*> hgcastWith  -- this applies the proof
         (proof @as @x @xs)  -- evidence
-        (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) xs)
+        (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) opts)
     where
       subcommand
-        :: IO (Args.Mod Args.CommandFields (VariantF (as ++ (x ': xs)) OptValue))
+        :: IO (Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity))
       subcommand
         = do
-            parser <- getCompose $ B.btraverse (Compose <$> fromCmdLine) x
+            parser <-
+              getCompose
+              $ B.btraverse
+                  (Compose <$> (fmap . fmap . fmap) Identity getParser)
+                  opt
             pure
-              $ Args.command tag
+              $ Optparse.command tag
               $ injectPosF n
-                <$> Args.info (Args.helper <*> parser) mempty
+                <$> Optparse.info (Optparse.helper <*> parser) mempty
       tag
         = symbolVal (Proxy :: Proxy t)
 
 -- The following allows to use one function for commands + subcommands
 type family OptOutput' a where
-  OptOutput' (AssocListF ts xs) = VariantF xs OptValue
-  OptOutput' a = a OptValue
+  OptOutput' (AssocListF ts xs) = VariantF xs Identity
+  OptOutput' a = a Identity
 
 class GetOpt a where
   type OptOutput a :: Type
@@ -164,8 +156,6 @@ class GetOpt a where
 
 instance {-# OVERLAPPING #-}
          ( B.TraversableB (VariantF xs)
-         , AllF Semigroup xs OptValue
-         , Semigroup (VariantF xs OptValue)
          , MapVariantF xs
          , Subcommands Z ts xs '[]
          ) => GetOpt (AssocListF ts xs Opt) where
@@ -173,8 +163,7 @@ instance {-# OVERLAPPING #-}
   getOptions = getOptSubcommand
 
 instance ( B.TraversableB a
-         , Semigroup (a OptValue)
-         , OptOutput' a ~ a OptValue
+         , OptOutput' a ~ a Identity
          ) => GetOpt (a Opt) where
   type OptOutput (a Opt) = OptOutput' a
   getOptions = getOpt

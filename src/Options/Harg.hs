@@ -1,7 +1,6 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Options.Harg
   ( Opt
-  , OptValue
   , Barbie (..)
   , getOptions
   , Single (..)
@@ -25,10 +24,7 @@ module Options.Harg
   , optEnvVar
   , optDefault
 
-  , ppError
-
-  , optValue
-  , execOpt
+  , extractOpt
   , parseWith
   , readParser
   , strParser
@@ -59,5 +55,4 @@ import           Options.Harg.Het.Variant
 import           Options.Harg.Construct
 import           Options.Harg.Helpers
 import           Options.Harg.Operations
-import           Options.Harg.Pretty
 import           Options.Harg.Types

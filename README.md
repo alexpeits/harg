@@ -111,16 +111,7 @@ data FlatConfigB f
 I also derived some required instances that come from the `barbies` package. These instances allow
 us to change the `f` (`bmap` from `FunctorB`), traverse all types in the record producing side
 effects (`btraverse` from `TraversableB`) and to treat two HKDs with different `f`s as a product of
-these type constructors. The last one is useful for defining the semigroup instance, which can be
-trivially derived via a helper `Barbie` newtype, exposed by this package:
-
-``` haskell
-deriving via (Barbie FlatConfigB OptValue) instance Semigroup (FlatConfigB OptValue)
-```
-
-Where `OptValue` is the specific type constructor we want the `Semigroup` instance for, and it is
-a sum type that keeps information on whether the option construction was successful, if something
-was not found or whether there was a parsing error.
+these type constructors.
 
 Now let's define the value of this datatype, which holds our option configuration. The type
 constructor needed for the options is `Opt`:
@@ -140,18 +131,13 @@ Now let's actually run things:
 getFlatConfig1 :: IO ()
 getFlatConfig1 = do
   FlatConfigB host port log <- getOptions flatConfigOpt1
-
-  config <- execOpt (FlatConfig <$> host <*> port <*> log)
-
-  print config
+  print $ extractOpt (FlatConfig <$> host <*> port <*> log)
 ```
 
-(`execOpt` is a helper function that either returns the value or fails and prints an error message)
-
-`getOptions` returns an `OptValue x` where `x` is the type of the options we are configuring, in
+`getOptions` returns an `Identity x` where `x` is the type of the options we are configuring, in
 this case `FlatConfigB`. Here, we pattern matched on the barbie-type, and then used the
-`Applicative` instance of `OptValue` to get back a `OptValue FlatConfig`. By using `execOpt`, if the
-parsing was successful, we get back the `FlatConfig` and print it.
+`Applicative` instance of `Identity` to get back an `Identity FlatConfig`. `extractOpt` is a synonym
+for `runIdentity`.
 
 This is still a bit boilerplate-y. Let's look at another way.
 
@@ -164,9 +150,8 @@ An `HList` (heterogeneous list) is like an arbitrary length tuple. For example,
 `HList '[Int, Bool, String]` is exactly the same as `(Int, Bool, String)`. `harg` defines an
 enhanced version of `HList` called `HListF`, which stores barbie-like types and also keeps the `f`
 handy: `data HListF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where ...`. `HListF` is
-also easily made an instance of `Generic`, `FunctorB`, `TraversableB`, `ProductB` and `Semigroup`
-(when `f ~ OptValue`). With all that, let's rewrite the options value and the function to get the
-configuration:
+also easily made an instance of `Generic`, `FunctorB`, `TraversableB` and `ProductB`. With all that,
+let's rewrite the options value and the function to get the configuration:
 
 ``` haskell
 flatConfigOpt2 :: (Single String :* Single Int :* Single Bool) Opt
@@ -176,10 +161,7 @@ flatConfigOpt2
 getFlatConfig2 :: IO ()
 getFlatConfig2 = do
   host :* port :* log :* _ <- getOptions flatConfigOpt2
-
-  config <- execOpt (FlatConfig <$> getSingle host <*> getSingle port <*> getSingle log)
-
-  print config
+  print $ extractOpt (FlatConfig <$> getSingle host <*> getSingle port <*> getSingle log)
 ```
 
 This looks aufully similar to the previous version, but without having to write another datatype
@@ -207,10 +189,7 @@ flatConfigOpt3
 getFlatConfig3 :: IO ()
 getFlatConfig3 = do
   result <- getOptions flatConfigOpt3
-
-  config <- execOpt (HKD.construct result)
-
-  print config
+  print $ extractOpt (HKD.construct result)
 ```
 
 This is the most straightforward way to work with flat configuration types. The `build` function
@@ -220,7 +199,7 @@ as `FlatConfigB`. This means that we get all the `barbie` instances for free.
 
 To go back from the `HKD` representation of a datatype to the base one, we use `construct`.
 `construct` uses the applicative instance of the `f` which wraps each type in `FlatConfig` to give
-back an `f FlatConfig` (in our case an `OptValue FlatConfig`).
+back an `f FlatConfig` (in our case an `Identity FlatConfig`).
 
 # Roadmap
 
