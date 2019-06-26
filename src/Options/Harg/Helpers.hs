@@ -52,9 +52,16 @@ getOptparseParser
   => a
   -> IO (Optparse.Parser (OptResult a))
 getOptparseParser a
+  = fst <$> getOptparseParserAndErrors a
+
+getOptparseParserAndErrors
+  :: GetParser a
+  => a
+  -> IO (Optparse.Parser (OptResult a), [OptError])
+getOptparseParserAndErrors a
   = do
-      Parser p _ <- getParser a
-      pure p
+      Parser p err <- getParser a
+      pure (p, err)
 
 execOpt
   :: GetParser a

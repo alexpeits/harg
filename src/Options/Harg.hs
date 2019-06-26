@@ -27,7 +27,6 @@ module Options.Harg
   , readParser
   , strParser
 
-  , getOptparseParser
   , execParserDef
   , execOpt
 
