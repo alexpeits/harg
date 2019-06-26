@@ -17,6 +17,7 @@ module Options.Harg
   , switchWith
   , switch'
   , switchWith'
+  , optLong
   , optShort
   , optHelp
   , optMetavar

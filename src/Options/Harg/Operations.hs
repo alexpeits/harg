@@ -24,7 +24,7 @@ mkHelp
   :: Opt a
   -> String
 mkHelp opt
-  =  _optHelp opt
+  =  fromMaybe "" (_optHelp opt)
   <> maybe
        ""
        (\v -> " (env var: " <> v <> ")")
@@ -74,7 +74,7 @@ toParser opt@Opt{..} = do
         option
           = Optparse.option (Optparse.eitherReader _optParser)
               ( foldMap (fromMaybe mempty)
-                  [ Just (Optparse.long _optLong)
+                  [ Optparse.long <$> _optLong
                   , Optparse.short <$> _optShort
                   , Just (Optparse.help help)
                   , Optparse.metavar <$> _optMetavar
@@ -92,7 +92,7 @@ toParser opt@Opt{..} = do
               Just _  -> Just active
         modifiers
           = foldMap (fromMaybe mempty)
-              [ Just (Optparse.long _optLong)
+              [ Optparse.long <$> _optLong
               , Optparse.short <$> _optShort
               , Just (Optparse.help help)
               ]

@@ -5,6 +5,16 @@ import           Data.Kind                 (Type)
 import           Options.Harg.Types
 
 -- short
+class HasLong (o :: Type -> Type) where
+  optLong :: String -> o a -> o a
+
+instance HasLong ArgOpt where
+  optLong s o = o { _aLong = Just s }
+
+instance HasLong FlagOpt where
+  optLong s o = o { _sLong = Just s }
+
+-- short
 class HasShort (o :: Type -> Type) where
   optShort :: Char -> o a -> o a
 
@@ -19,10 +29,10 @@ class HasHelp (o :: Type -> Type) where
   optHelp :: String -> o a -> o a
 
 instance HasHelp ArgOpt where
-  optHelp s o = o { _aHelp = s }
+  optHelp s o = o { _aHelp = Just s }
 
 instance HasHelp FlagOpt where
-  optHelp s o = o { _sHelp = s }
+  optHelp s o = o { _sHelp = Just s }
 
 -- metavar
 class HasMetavar (o :: Type -> Type) where
@@ -80,14 +90,13 @@ instance IsOpt FlagOpt where
 
 -- option constructors
 arg
-  :: String
-  -> OptParser a
+  :: OptParser a
   -> ArgOpt a
-arg long p
+arg p
   = ArgOpt
-      { _aLong    = long
+      { _aLong    = Nothing
       , _aShort   = Nothing
-      , _aHelp    = ""
+      , _aHelp    = Nothing
       , _aMetavar = Nothing
       , _aEnvVar  = Nothing
       , _aDefault = Nothing
@@ -95,23 +104,21 @@ arg long p
       }
 
 argWith
-  :: String
-  -> OptParser a
+  :: OptParser a
   -> (ArgOpt a -> ArgOpt a)
   -> Opt a
-argWith long p f
-  = mkOpt $ f (arg long p)
+argWith p f
+  = mkOpt $ f (arg p)
 
 flag
-  :: String
-  -> a
+  :: a
   -> a
   -> FlagOpt a
-flag long d active
+flag d active
   = FlagOpt
-      { _sLong    = long
+      { _sLong    = Nothing
       , _sShort   = Nothing
-      , _sHelp    = ""
+      , _sHelp    = Nothing
       , _sEnvVar  = Nothing
       , _sDefault = d
       , _sActive  = active
@@ -119,32 +126,29 @@ flag long d active
       }
 
 flagWith
-  :: String
-  -> a
+  :: a
   -> a
   -> (FlagOpt a -> FlagOpt a)
   -> Opt a
-flagWith long d active f
-  = mkOpt $ f (flag long d active)
+flagWith d active f
+  = mkOpt $ f (flag d active)
 
-switch :: String -> FlagOpt Bool
-switch long
-  = flag long False True
+switch :: FlagOpt Bool
+switch
+  = flag False True
 
 switchWith
-  :: String
-  -> (FlagOpt Bool -> FlagOpt Bool)
+  :: (FlagOpt Bool -> FlagOpt Bool)
   -> Opt Bool
-switchWith long f
-  = mkOpt $ f (switch long)
+switchWith f
+  = mkOpt $ f switch
 
-switch' :: String -> FlagOpt Bool
-switch' long
-  = flag long True False
+switch' :: FlagOpt Bool
+switch'
+  = flag True False
 
 switchWith'
-  :: String
-  -> (FlagOpt Bool -> FlagOpt Bool)
+  :: (FlagOpt Bool -> FlagOpt Bool)
   -> Opt Bool
-switchWith' long f
-  = mkOpt $ f (switch' long)
+switchWith' f
+  = mkOpt $ f switch'

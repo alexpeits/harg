@@ -21,9 +21,9 @@ type OptParser a = String -> Either String a
 
 data Opt a
   = Opt
-      { _optLong    :: String
+      { _optLong    :: Maybe String
       , _optShort   :: Maybe Char
-      , _optHelp    :: String
+      , _optHelp    :: Maybe String
       , _optMetavar :: Maybe String
       , _optEnvVar  :: Maybe String
       , _optDefault :: Maybe a
@@ -39,9 +39,9 @@ data OptType a
 
 data ArgOpt a
   = ArgOpt
-      { _aLong    :: String
+      { _aLong    :: Maybe String
       , _aShort   :: Maybe Char
-      , _aHelp    :: String
+      , _aHelp    :: Maybe String
       , _aMetavar :: Maybe String
       , _aEnvVar  :: Maybe String
       , _aDefault :: Maybe a
@@ -50,9 +50,9 @@ data ArgOpt a
 
 data FlagOpt a
   = FlagOpt
-      { _sLong    :: String
+      { _sLong    :: Maybe String
       , _sShort   :: Maybe Char
-      , _sHelp    :: String
+      , _sHelp    :: Maybe String
       , _sEnvVar  :: Maybe String
       , _sDefault :: a
       , _sActive  :: a

@@ -36,7 +36,7 @@ ppOptErrors
     ppOptError :: OptError -> String
     ppOptError (OptError (SomeOpt opt) desc)
       =  "\t"
-      <> _optLong opt
+      <> fromMaybe "<no opt name>" (_optLong opt)
       <> "\t\t"
       <> desc
       <> " (env var:"
