@@ -97,6 +97,7 @@ appOpt
     something
       = mkOpt
         $ arg "smth" readParser
+        & optEnvVar "SOMETHING"
         & optHelp "Something?"
 
 data TestAppC

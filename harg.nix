@@ -1,5 +1,5 @@
 { mkDerivation, barbies, base, higgledy, hpack, lib, markdown-unlit,
-  optparse-applicative, stdenv, validation
+  optparse-applicative, stdenv
 }:
 mkDerivation {
   pname = "harg";
@@ -16,14 +16,14 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    barbies base higgledy optparse-applicative validation
+    barbies base higgledy optparse-applicative
   ];
   libraryToolDepends = [ hpack ];
   executableHaskellDepends = [
-    barbies base higgledy optparse-applicative validation
+    barbies base higgledy optparse-applicative
   ];
   testHaskellDepends = [
-    barbies base higgledy optparse-applicative validation
+    barbies base higgledy optparse-applicative
   ];
   testToolDepends = [ markdown-unlit ];
   preConfigure = "hpack";

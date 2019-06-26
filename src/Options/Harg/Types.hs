@@ -10,6 +10,7 @@ module Options.Harg.Types where
 import           Data.Coerce          (Coercible, coerce)
 import           Data.Kind            (Type)
 import           GHC.Generics         (Generic)
+import qualified Options.Applicative  as Optparse
 
 import qualified Data.Barbie          as B
 import qualified Data.Functor.Product as P
@@ -57,6 +58,28 @@ data FlagOpt a
       , _sActive  :: a
       , _sParser  :: OptParser a
       }
+
+data Parser a
+  = Parser (Optparse.Parser a) [OptError]
+  deriving Functor
+
+instance Applicative Parser where
+  pure x = Parser (pure x) []
+
+  Parser f e <*> Parser x e' = Parser (f <*> x) (e <> e')
+
+data OptError
+  = OptError
+      { _oeOpt  :: SomeOpt
+      , _oeDesc :: String
+      }
+  deriving Show
+
+data SomeOpt where
+  SomeOpt :: Opt a -> SomeOpt
+
+instance Show SomeOpt where
+  show (SomeOpt (Opt l _ h _ _ _ _ _)) = "SomeOpt: " <> l <> ", " <> h
 
 newtype Barbie (barbie :: (Type -> Type) -> Type) (f :: Type -> Type)
   = Barbie (barbie f)

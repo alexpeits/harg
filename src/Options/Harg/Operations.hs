@@ -30,7 +30,7 @@ mkHelp opt
        (\v -> " (env var: " <> v <> ")")
        (_optEnvVar opt)
 
-getParser :: Opt a -> IO (Optparse.Parser a)
+getParser :: Opt a -> IO (Parser a)
 getParser opt@Opt{..} = do
   envVar <- case _optEnvVar of
     Nothing -> pure Nothing
@@ -38,9 +38,14 @@ getParser opt@Opt{..} = do
   case _optType of
     ArgOptType -> do
       let
-        parsedEnvVar = envVar >>= either (const Nothing) Just . _optParser
-      pure
-        $ Optparse.option (Optparse.eitherReader _optParser)
+        parseResult = case envVar of
+          Nothing -> Nothing
+          Just ev -> Just $ _optParser ev
+        parsedEnvVar = parseResult >>= either (pure Nothing) Just
+        err = case parseResult of
+          Just (Left e) -> [OptError (SomeOpt opt) e]
+          _             -> []
+        op = Optparse.option (Optparse.eitherReader _optParser)
             ( foldMap (fromMaybe mempty)
                 [ Just (Optparse.long _optLong)
                 , Optparse.short <$> _optShort
@@ -49,6 +54,7 @@ getParser opt@Opt{..} = do
                 , Optparse.value <$> (parsedEnvVar Optparse.<|> _optDefault)
                 ]
             )
+      pure $ Parser op err
     FlagOptType active -> do
       let
         def
@@ -61,12 +67,12 @@ getParser opt@Opt{..} = do
               , Optparse.short <$> _optShort
               , Just (Optparse.help help)
               ]
-      pure
-        $ case def of
-            Nothing ->
-              Optparse.flag' active modifiers
-            Just v ->
-              Optparse.flag v active modifiers
+        op = case def of
+               Nothing ->
+                 Optparse.flag' active modifiers
+               Just v ->
+                 Optparse.flag v active modifiers
+      pure $ Parser op []
   where
     help = mkHelp opt
 
@@ -76,13 +82,24 @@ getOpt
   -> IO (a Identity)
 getOpt opts = do
   -- get options from command line arguments
-  parser <-
+  (Parser parser err) <-
     getCompose
     $ B.btraverse
         (Compose <$> (fmap . fmap . fmap) Identity getParser)
         opts
-  Optparse.execParser $
-    Optparse.info (Optparse.helper <*> parser) mempty
+  args <- Env.getArgs
+  let res
+        = Optparse.execParserPure
+            Optparse.defaultPrefs
+            (Optparse.info (Optparse.helper <*> parser) mempty)
+            args
+  -- TODO
+  print err  -- as warning
+  case res of
+    Optparse.Success a -> pure a
+    _ -> do
+      print err  -- as error
+      Optparse.handleParseResult res
 
 getOptSubcommand
   :: forall xs ts.
@@ -92,11 +109,22 @@ getOptSubcommand
   => AssocListF ts xs Opt
   -> IO (VariantF xs Identity)
 getOptSubcommand alist = do
-  commands <- mapSubcommand @Z @ts @xs @'[] SZ alist
+  (commands, err) <- mapSubcommand @Z @ts @xs @'[] SZ alist
+  args <- Env.getArgs
 
   -- get options from command line arguments using a subparser
-  Optparse.execParser $
-    Optparse.info (Optparse.helper <*> Optparse.subparser (mconcat commands)) mempty
+  let res
+        = Optparse.execParserPure
+            Optparse.defaultPrefs
+            (Optparse.info (Optparse.helper <*> Optparse.subparser (mconcat commands)) mempty)
+            args
+  -- TODO
+  print err  -- as warning
+  case res of
+    Optparse.Success a -> pure a
+    _ -> do
+      print err  -- as error
+      Optparse.handleParseResult res
 
 -- subcommands
 class Subcommands
@@ -107,10 +135,10 @@ class Subcommands
   mapSubcommand
     :: SNat n
     -> AssocListF ts xs Opt
-    -> IO [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) Identity)]
+    -> IO ([Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) Identity)], [OptError])
 
 instance Subcommands n '[] '[] acc where
-  mapSubcommand _ _ = pure []
+  mapSubcommand _ _ = pure ([], [])
 
 -- ok wait
 -- hear me out:
@@ -123,25 +151,27 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
          , Proof as x xs
          ) => Subcommands n (t ': ts) (x ': xs) as where
   mapSubcommand n (ACons opt opts)
-    = (:)
-    <$> subcommand
-    <*> hgcastWith  -- this applies the proof
-        (proof @as @x @xs)  -- evidence
-        (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) opts)
+    = do
+        (sc, err) <- subcommand
+        (rest, errs) <- hgcastWith  -- this applies the proof
+                          (proof @as @x @xs)  -- evidence
+                          (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) opts)
+        pure (sc : rest, err <> errs)
     where
       subcommand
-        :: IO (Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity))
+        :: IO (Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity), [OptError])
       subcommand
         = do
-            parser <-
+            (Parser parser err) <-
               getCompose
               $ B.btraverse
                   (Compose <$> (fmap . fmap . fmap) Identity getParser)
                   opt
-            pure
-              $ Optparse.command tag
-              $ injectPosF n
-                <$> Optparse.info (Optparse.helper <*> parser) mempty
+            let cmd
+                  = Optparse.command tag
+                  $ injectPosF n
+                  <$> Optparse.info (Optparse.helper <*> parser) mempty
+            pure (cmd, err)
       tag
         = symbolVal (Proxy :: Proxy t)
 
