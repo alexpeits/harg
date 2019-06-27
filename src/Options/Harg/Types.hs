@@ -35,20 +35,21 @@ data Opt a
   deriving Functor
 
 data OptType a
-  = ArgOptType
+  = OptionOptType
   | FlagOptType a  -- active value
+  | ArgumentOptType
   deriving Functor
 
 -- Option for flags with arguments
-data ArgOpt a
-  = ArgOpt
-      { _aLong    :: Maybe String
-      , _aShort   :: Maybe Char
-      , _aHelp    :: Maybe String
-      , _aMetavar :: Maybe String
-      , _aEnvVar  :: Maybe String
-      , _aDefault :: Maybe a
-      , _aParser  :: OptParser a
+data OptionOpt a
+  = OptionOpt
+      { _oLong    :: Maybe String
+      , _oShort   :: Maybe Char
+      , _oHelp    :: Maybe String
+      , _oMetavar :: Maybe String
+      , _oEnvVar  :: Maybe String
+      , _oDefault :: Maybe a
+      , _oParser  :: OptParser a
       }
 
 -- Option for flags that act like switches between a default and an active
@@ -62,6 +63,17 @@ data FlagOpt a
       , _sDefault :: a
       , _sActive  :: a
       , _sParser  :: OptParser a
+      }
+
+data ArgumentOpt a
+  = ArgumentOpt
+      { _aLong    :: Maybe String
+      , _aShort   :: Maybe Char
+      , _aHelp    :: Maybe String
+      , _aMetavar :: Maybe String
+      , _aEnvVar  :: Maybe String
+      , _aDefault :: Maybe a
+      , _aParser  :: OptParser a
       }
 
 -- TODO: add `argument` and rethink names

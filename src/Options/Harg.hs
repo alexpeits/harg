@@ -8,14 +8,17 @@ module Options.Harg
   , getNested
 
   , toOpt
-  , arg
-  , argWith
+  , option
+  , optionWith
   , flag
   , flagWith
   , switch
   , switchWith
   , switch'
   , switchWith'
+  , argument
+  , argumentWith
+
   , optLong
   , optShort
   , optHelp

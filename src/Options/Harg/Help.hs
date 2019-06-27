@@ -1,12 +1,12 @@
 module Options.Harg.Help where
 
-import           Data.Maybe                 (fromMaybe)
-
 import           Options.Harg.Types
 
 mkHelp
   :: Opt a
-  -> String
+  -> Maybe String
 mkHelp Opt{..}
-  =  fromMaybe "" _optHelp
-  <> maybe "" (\v -> " (env var: " <> v <> ")") _optEnvVar
+  = (<> envVarHelp) <$> _optHelp
+  where
+    envVarHelp
+      = maybe "" (\v -> " (env var: " <> v <> ")") _optEnvVar

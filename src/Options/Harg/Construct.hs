@@ -9,8 +9,8 @@ import           Options.Harg.Types
 class HasLong (o :: Type -> Type) where
   optLong :: String -> o a -> o a
 
-instance HasLong ArgOpt where
-  optLong s o = o { _aLong = Just s }
+instance HasLong OptionOpt where
+  optLong s o = o { _oLong = Just s }
 
 instance HasLong FlagOpt where
   optLong s o = o { _sLong = Just s }
@@ -19,8 +19,8 @@ instance HasLong FlagOpt where
 class HasShort (o :: Type -> Type) where
   optShort :: Char -> o a -> o a
 
-instance HasShort ArgOpt where
-  optShort c o = o { _aShort = Just c }
+instance HasShort OptionOpt where
+  optShort c o = o { _oShort = Just c }
 
 instance HasShort FlagOpt where
   optShort c o = o { _sShort = Just c }
@@ -29,51 +29,63 @@ instance HasShort FlagOpt where
 class HasHelp (o :: Type -> Type) where
   optHelp :: String -> o a -> o a
 
-instance HasHelp ArgOpt where
-  optHelp s o = o { _aHelp = Just s }
+instance HasHelp OptionOpt where
+  optHelp s o = o { _oHelp = Just s }
 
 instance HasHelp FlagOpt where
   optHelp s o = o { _sHelp = Just s }
+
+instance HasHelp ArgumentOpt where
+  optHelp s o = o { _aHelp = Just s }
 
 -- metavar
 class HasMetavar (o :: Type -> Type) where
   optMetavar :: String -> o a -> o a
 
-instance HasMetavar ArgOpt where
+instance HasMetavar OptionOpt where
+  optMetavar s o = o { _oMetavar = Just s }
+
+instance HasMetavar ArgumentOpt where
   optMetavar s o = o { _aMetavar = Just s }
 
 -- env var
 class HasEnvVar (o :: Type -> Type) where
   optEnvVar :: String -> o a -> o a
 
-instance HasEnvVar ArgOpt where
-  optEnvVar s o = o { _aEnvVar = Just s }
+instance HasEnvVar OptionOpt where
+  optEnvVar s o = o { _oEnvVar = Just s }
 
 instance HasEnvVar FlagOpt where
   optEnvVar s o = o { _sEnvVar = Just s }
+
+instance HasEnvVar ArgumentOpt where
+  optEnvVar s o = o { _aEnvVar = Just s }
 
 -- default
 class HasDefault (o :: Type -> Type) where
   optDefault :: a -> o a -> o a
 
-instance HasDefault ArgOpt where
+instance HasDefault OptionOpt where
+  optDefault a o = o { _oDefault = Just a }
+
+instance HasDefault ArgumentOpt where
   optDefault a o = o { _aDefault = Just a }
 
 -- convert from intermediate type to Opt
 class IsOpt (o :: Type -> Type) where
   toOpt :: o a -> Opt a
 
-instance IsOpt ArgOpt where
-  toOpt ArgOpt{..}
+instance IsOpt OptionOpt where
+  toOpt OptionOpt{..}
     = Opt
-        { _optLong    = _aLong
-        , _optShort   = _aShort
-        , _optHelp    = _aHelp
-        , _optMetavar = _aMetavar
-        , _optEnvVar  = _aEnvVar
-        , _optDefault = _aDefault
-        , _optParser  = _aParser
-        , _optType    = ArgOptType
+        { _optLong    = _oLong
+        , _optShort   = _oShort
+        , _optHelp    = _oHelp
+        , _optMetavar = _oMetavar
+        , _optEnvVar  = _oEnvVar
+        , _optDefault = _oDefault
+        , _optParser  = _oParser
+        , _optType    = OptionOptType
         }
 
 instance IsOpt FlagOpt where
@@ -89,27 +101,40 @@ instance IsOpt FlagOpt where
         , _optType    = FlagOptType _sActive
         }
 
+instance IsOpt ArgumentOpt where
+  toOpt ArgumentOpt{..}
+    = Opt
+        { _optLong    = _aLong
+        , _optShort   = _aShort
+        , _optHelp    = _aHelp
+        , _optMetavar = _aMetavar
+        , _optEnvVar  = _aEnvVar
+        , _optDefault = _aDefault
+        , _optParser  = _aParser
+        , _optType    = ArgumentOptType
+        }
+
 -- option constructors
-arg
+option
   :: OptParser a
-  -> ArgOpt a
-arg p
-  = ArgOpt
-      { _aLong    = Nothing
-      , _aShort   = Nothing
-      , _aHelp    = Nothing
-      , _aMetavar = Nothing
-      , _aEnvVar  = Nothing
-      , _aDefault = Nothing
-      , _aParser  = p
+  -> OptionOpt a
+option p
+  = OptionOpt
+      { _oLong    = Nothing
+      , _oShort   = Nothing
+      , _oHelp    = Nothing
+      , _oMetavar = Nothing
+      , _oEnvVar  = Nothing
+      , _oDefault = Nothing
+      , _oParser  = p
       }
 
-argWith
+optionWith
   :: OptParser a
-  -> (ArgOpt a -> ArgOpt a)
+  -> (OptionOpt a -> OptionOpt a)
   -> Opt a
-argWith p f
-  = toOpt $ f (arg p)
+optionWith p f
+  = toOpt $ f (option p)
 
 flag
   :: a
@@ -153,6 +178,27 @@ switchWith'
   -> Opt Bool
 switchWith' f
   = toOpt $ f switch'
+
+argument
+  :: OptParser a
+  -> ArgumentOpt a
+argument p
+  = ArgumentOpt
+      { _aLong    = Nothing
+      , _aShort   = Nothing
+      , _aHelp    = Nothing
+      , _aMetavar = Nothing
+      , _aEnvVar  = Nothing
+      , _aDefault = Nothing
+      , _aParser  = p
+      }
+
+argumentWith
+  :: OptParser a
+  -> (ArgumentOpt a -> ArgumentOpt a)
+  -> Opt a
+argumentWith p f
+  = toOpt $ f (argument p)
 
 -- option parsers
 parseWith

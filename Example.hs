@@ -66,8 +66,8 @@ mainParser = do
 
 main :: IO ()
 main
-  = mainParser
-  -- = mainSubparser
+  -- = mainParser
+  = mainSubparser
 
 data AppC
   = AppC
@@ -89,7 +89,7 @@ appOpt
     srvConf
       = nested @ServiceConfig
           ( toOpt
-            $ arg readParser
+            $ option readParser
             & optLong "port"
             & optHelp "Web service port"
             & optDefault 5432
@@ -102,7 +102,7 @@ appOpt
           )
     something
       = toOpt
-        $ arg readParser
+        $ option readParser
         & optLong "smth"
         & optEnvVar "SOMETHING"
         & optHelp "Something?"
@@ -124,14 +124,16 @@ testAppOpt
   where
     testConf
       = nested @TestConfig
-          ( toOpt $ arg strParser
-            & optLong "dir"
-            & optShort 'd'
+          ( toOpt $ argument strParser
+            -- & optLong "dir"
+            -- & optShort 'd'
+            & optMetavar "TEST_DIR"
             & optHelp "Some directory"
             & optEnvVar "TEST_DIR"
           )
           ( toOpt $ switch
             & optLong "mock"
+            & optShort 'm'
             & optHelp "Whether to mock"
             & optEnvVar "MOCK"
           )
@@ -170,14 +172,14 @@ dbConf :: Nested DBConfig Opt
 dbConf
   = nested @DBConfig
       ( toOpt
-        $ arg strParser
+        $ option strParser
         & optLong "db-user"
         & optShort 'u'
         & optHelp "Database user"
         & optEnvVar "DB_USER"
       )
       ( toOpt
-        $ arg readParser
+        $ option readParser
         & optLong "db-port"
         & optShort 'p'
         & optHelp "Database port"
