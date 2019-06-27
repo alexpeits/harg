@@ -7,7 +7,7 @@ module Options.Harg
   , nested
   , getNested
 
-  , mkOpt
+  , toOpt
   , arg
   , argWith
   , flag
