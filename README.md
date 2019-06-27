@@ -63,7 +63,7 @@ component of the configuration.
 ``` haskell
 hostOpt :: Opt String
 hostOpt
-  = mkOpt ( arg strParser
+  = toOpt ( arg strParser
           & optLong "host"
           & optShort 'h'
           & optMetavar "HOST"
@@ -72,7 +72,7 @@ hostOpt
 
 portOpt :: Opt Int
 portOpt
-  = mkOpt ( arg readParser
+  = toOpt ( arg readParser
           & optLong "port"
           & optHelp "The database port"
           & optEnvVar "DB_PORT"
@@ -81,7 +81,7 @@ portOpt
 
 logOpt :: Opt Bool
 logOpt
-  = mkOpt ( switch
+  = toOpt ( switch
           & optLong "log"
           & optHelp "Whether to log or not"
           )

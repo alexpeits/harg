@@ -5,7 +5,7 @@ import           Text.Read          (readMaybe)
 
 import           Options.Harg.Types
 
--- short
+-- long
 class HasLong (o :: Type -> Type) where
   optLong :: String -> o a -> o a
 
@@ -61,10 +61,10 @@ instance HasDefault ArgOpt where
 
 -- convert from intermediate type to Opt
 class IsOpt (o :: Type -> Type) where
-  mkOpt :: o a -> Opt a
+  toOpt :: o a -> Opt a
 
 instance IsOpt ArgOpt where
-  mkOpt ArgOpt{..}
+  toOpt ArgOpt{..}
     = Opt
         { _optLong    = _aLong
         , _optShort   = _aShort
@@ -77,7 +77,7 @@ instance IsOpt ArgOpt where
         }
 
 instance IsOpt FlagOpt where
-  mkOpt FlagOpt{..}
+  toOpt FlagOpt{..}
     = Opt
         { _optLong    = _sLong
         , _optShort   = _sShort
@@ -109,7 +109,7 @@ argWith
   -> (ArgOpt a -> ArgOpt a)
   -> Opt a
 argWith p f
-  = mkOpt $ f (arg p)
+  = toOpt $ f (arg p)
 
 flag
   :: a
@@ -132,7 +132,7 @@ flagWith
   -> (FlagOpt a -> FlagOpt a)
   -> Opt a
 flagWith d active f
-  = mkOpt $ f (flag d active)
+  = toOpt $ f (flag d active)
 
 switch :: FlagOpt Bool
 switch
@@ -142,7 +142,7 @@ switchWith
   :: (FlagOpt Bool -> FlagOpt Bool)
   -> Opt Bool
 switchWith f
-  = mkOpt $ f switch
+  = toOpt $ f switch
 
 switch' :: FlagOpt Bool
 switch'
@@ -152,7 +152,7 @@ switchWith'
   :: (FlagOpt Bool -> FlagOpt Bool)
   -> Opt Bool
 switchWith' f
-  = mkOpt $ f switch'
+  = toOpt $ f switch'
 
 -- option parsers
 parseWith

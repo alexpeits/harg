@@ -123,16 +123,21 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
          -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
          , Proof as x xs
          ) => Subcommands n (t ': ts) (x ': xs) as where
+
   mapSubcommand n (ACons opt opts)
     = do
         (sc, err) <- subcommand
-        (rest, errs) <- hgcastWith  -- this applies the proof
-                          (proof @as @x @xs)  -- evidence
+        (rest, errs) <- hgcastWith
+                          (proof @as @x @xs)
                           (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) opts)
         pure (sc : rest, err <> errs)
+
     where
+
       subcommand
-        :: IO (Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity), [OptError])
+        :: IO ( Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity)
+              , [OptError]
+              )
       subcommand
         = do
             (Parser parser err) <-
@@ -145,6 +150,7 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
                   $ injectPosF n
                   <$> Optparse.info (Optparse.helper <*> parser) mempty
             pure (cmd, err)
+
       tag
         = symbolVal (Proxy :: Proxy t)
 

@@ -17,8 +17,10 @@ import qualified Data.Functor.Product as P
 import qualified Data.Generic.HKD     as HKD
 
 
+-- TODO: having OptParser and Parser is confusing, rethink
 type OptParser a = String -> Either String a
 
+-- Option
 data Opt a
   = Opt
       { _optLong    :: Maybe String
@@ -37,6 +39,7 @@ data OptType a
   | FlagOptType a  -- active value
   deriving Functor
 
+-- Option for flags with arguments
 data ArgOpt a
   = ArgOpt
       { _aLong    :: Maybe String
@@ -48,6 +51,8 @@ data ArgOpt a
       , _aParser  :: OptParser a
       }
 
+-- Option for flags that act like switches between a default and an active
+-- value
 data FlagOpt a
   = FlagOpt
       { _sLong    :: Maybe String
@@ -59,6 +64,9 @@ data FlagOpt a
       , _sParser  :: OptParser a
       }
 
+-- TODO: add `argument` and rethink names
+
+-- Parser
 data Parser a
   = Parser (Optparse.Parser a) [OptError]
   deriving Functor

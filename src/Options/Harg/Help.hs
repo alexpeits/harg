@@ -7,9 +7,6 @@ import           Options.Harg.Types
 mkHelp
   :: Opt a
   -> String
-mkHelp opt
-  =  fromMaybe "" (_optHelp opt)
-  <> maybe
-       ""
-       (\v -> " (env var: " <> v <> ")")
-       (_optEnvVar opt)
+mkHelp Opt{..}
+  =  fromMaybe "" _optHelp
+  <> maybe "" (\v -> " (env var: " <> v <> ")") _optEnvVar

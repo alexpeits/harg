@@ -88,20 +88,20 @@ appOpt
   where
     srvConf
       = nested @ServiceConfig
-          ( mkOpt
+          ( toOpt
             $ arg readParser
             & optLong "port"
             & optHelp "Web service port"
             & optDefault 5432
           )
-          ( mkOpt
+          ( toOpt
             $ switch
             & optLong "log"
             & optHelp "Whether to log"
             & optEnvVar "LOG"
           )
     something
-      = mkOpt
+      = toOpt
         $ arg readParser
         & optLong "smth"
         & optEnvVar "SOMETHING"
@@ -124,13 +124,13 @@ testAppOpt
   where
     testConf
       = nested @TestConfig
-          ( mkOpt $ arg strParser
+          ( toOpt $ arg strParser
             & optLong "dir"
             & optShort 'd'
             & optHelp "Some directory"
             & optEnvVar "TEST_DIR"
           )
-          ( mkOpt $ switch
+          ( toOpt $ switch
             & optLong "mock"
             & optHelp "Whether to mock"
             & optEnvVar "MOCK"
@@ -169,14 +169,14 @@ data TestConfig
 dbConf :: Nested DBConfig Opt
 dbConf
   = nested @DBConfig
-      ( mkOpt
+      ( toOpt
         $ arg strParser
         & optLong "db-user"
         & optShort 'u'
         & optHelp "Database user"
         & optEnvVar "DB_USER"
       )
-      ( mkOpt
+      ( toOpt
         $ arg readParser
         & optLong "db-port"
         & optShort 'p'
