@@ -1,7 +1,6 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Options.Harg
   ( Opt
-  , getParser
   , Single (..)
   , single
   , Nested (..)
@@ -57,6 +56,5 @@ import           Options.Harg.Het.AssocList
 import           Options.Harg.Het.HList
 import           Options.Harg.Het.Variant
 import           Options.Harg.Construct
-import           Options.Harg.Helpers
 import           Options.Harg.Operations
 import           Options.Harg.Types

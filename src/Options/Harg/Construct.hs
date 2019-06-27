@@ -1,6 +1,7 @@
 module Options.Harg.Construct where
 
-import           Data.Kind                 (Type)
+import           Data.Kind          (Type)
+import           Text.Read          (readMaybe)
 
 import           Options.Harg.Types
 
@@ -152,3 +153,22 @@ switchWith'
   -> Opt Bool
 switchWith' f
   = mkOpt $ f switch'
+
+-- option parsers
+parseWith
+  :: (String -> Maybe a)
+  -> String
+  -> Either String a
+parseWith parser s
+  = maybe (Left err) Right (parser s)
+  where
+    err
+      = "Unable to parse: " <> s
+
+readParser :: Read a => OptParser a
+readParser
+  = parseWith readMaybe
+
+strParser :: String -> Either String String
+strParser
+  = pure
