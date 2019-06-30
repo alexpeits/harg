@@ -36,7 +36,6 @@ library
                       Options.Harg.Parser
                       Options.Harg.Pretty
                       Options.Harg.Types
-                      Paths_harg
   hs-source-dirs:     src
   default-extensions: DataKinds
                       FlexibleContexts
@@ -52,15 +51,14 @@ library
   ghc-options:        -Wall
                       -Wno-unticked-promoted-constructors
   build-depends:      base >=4.7 && <5
-                    , barbies >= 1.1.2 && < 1.2
-                    , higgledy >= 0.2.1 && < 0.3
+                    , barbies >= 1.0.0 && < 1.2
+                    , higgledy >= 0.2.0 && < 0.3
                     , optparse-applicative >= 0.14.3 && < 0.15
   default-language:   Haskell2010
 
 test-suite harg-test
   type:             exitcode-stdio-1.0
   main-is:          Spec.hs
-  other-modules:    Paths_harg
   hs-source-dirs:   test
   ghc-options:      -Wall
                     -Wno-unticked-promoted-constructors
