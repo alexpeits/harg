@@ -25,7 +25,6 @@ dependencies:
 - barbies
 - higgledy
 - optparse-applicative
-- validation
 
 library:
   source-dirs: src

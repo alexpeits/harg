@@ -1,6 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes  #-}
 {-# LANGUAGE PatternSynonyms      #-}
-{-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Het.Variant where
@@ -9,9 +8,7 @@ import           Data.Kind                   (Type)
 
 import qualified Data.Barbie                 as B
 
-import           Options.Harg.Het.All
 import           Options.Harg.Het.Nat
-import           Options.Harg.Types
 
 data VariantF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where
   HereF  :: x f           -> VariantF (x ': xs) f
@@ -35,8 +32,6 @@ instance ( B.TraversableB x
 instance B.TraversableB (VariantF '[]) where
   btraverse _ _ = error "Impossible: empty variant"
 
-deriving instance AllF Show xs OptValue => Show (VariantF xs OptValue)
-
 pattern In1 :: x1 f -> VariantF (x1 ': xs) f
 pattern In1 x = HereF x
 
@@ -51,13 +46,6 @@ pattern In4 x = ThereF (In3 x)
 
 pattern In5 :: x5 f -> VariantF (x1 ': x2 ': x3 ': x4 ': x5 ': xs) f
 pattern In5 x = ThereF (In4 x)
-
--- TODO: does this instance make sense?
-instance AllF Semigroup xs OptValue => Semigroup (VariantF xs OptValue) where
-  HereF  x <> HereF  y = HereF  (x <> y)
-  ThereF x <> ThereF y = ThereF (x <> y)
-  HereF  x <> ThereF _ = HereF x
-  ThereF _ <> HereF y  = HereF y
 
 type family FoldSignatureF (xs :: [(Type -> Type) -> Type]) r f where
   FoldSignatureF (x ': xs) r f = (x f -> r) -> FoldSignatureF xs r f

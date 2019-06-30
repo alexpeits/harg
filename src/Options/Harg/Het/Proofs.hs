@@ -1,30 +1,13 @@
 {-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE InstanceSigs         #-}
 {-# LANGUAGE PolyKinds            #-}
 {-# LANGUAGE RankNTypes           #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Options.Harg.Het where
+module Options.Harg.Het.Proofs where
 
-import           Data.Kind                   (Type)
-import           Data.Type.Equality
-
-import           Options.Harg.Het.AssocList
-import           Options.Harg.Het.HList
-import           Options.Harg.Het.Variant
-
-class MapVariantF (xs :: [(Type -> Type) -> Type]) where
-  mapVariantF :: VariantF xs g -> HListF xs f -> VariantF xs f
-
-instance MapVariantF xs => MapVariantF (x ': xs) where
-  mapVariantF (HereF _) (HConsF x _) = HereF x
-  mapVariantF (ThereF v) (HConsF _ l) = ThereF $ mapVariantF v l
-
-instance MapVariantF '[] where
-  mapVariantF _ _ = error "Impossible: empty variant"
-
-assocToHListF :: AssocListF ts xs f -> HListF xs f
-assocToHListF ANil = HNilF
-assocToHListF (ACons x xs) = HConsF x $ assocToHListF xs
+import Data.Kind          (Type)
+import Data.Type.Equality
 
 -- proofs
 type family (xs :: [k]) ++ (ts :: [k]) = (res :: [k]) where
@@ -49,11 +32,18 @@ instance ProofNil xs => ProofNil (x ': xs) where
 class Proof
     (xs :: [(Type -> Type) -> Type])
     (y :: (Type -> Type) -> Type)
-    (ys :: [(Type -> Type) -> Type]) where
-  proof :: xs ++ (y ': ys) :~~: (xs ++ '[y]) ++ ys
+    (zs :: [(Type -> Type) -> Type]) where
+  proof :: xs ++ (y ': zs) :~~: (xs ++ '[y]) ++ zs
 
 instance ProofNil (xs ++ '[y]) => Proof (x ': xs) y '[] where
   proof = hgcastWith (proofNil @(xs ++ '[y])) HRefl
 
-instance Proof '[] y ys where
+instance Proof '[] y zs where
   proof = HRefl
+
+instance Proof xs y (z ': zs) => Proof (x ': xs) y (z ': zs) where
+  -- Induction on the cdr of the list (everything after the `x`)
+  proof
+    ::   x ': (xs ++ (y ': z ': zs))
+    :~~: x ': ((xs ++ '[y]) ++ (z ': zs))
+  proof = hgcastWith (proof @xs @y @(z ': zs)) HRefl

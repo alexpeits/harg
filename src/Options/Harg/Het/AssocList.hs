@@ -3,8 +3,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Het.AssocList where
 
-import           Data.Kind                   (Type)
-import           GHC.TypeLits                (ErrorMessage(..), TypeError, Symbol)
+import Data.Kind    (Type)
+import GHC.TypeLits (ErrorMessage(..), TypeError, Symbol)
 
 data AssocListF
     (ts :: [Symbol])

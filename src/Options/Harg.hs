@@ -1,37 +1,39 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Options.Harg
   ( Opt
-  , OptValue
-  , Barbie (..)
-  , getOptions
   , Single (..)
   , single
   , Nested (..)
   , nested
   , getNested
 
-  , mkOpt
-  , arg
-  , argWith
+  , toOpt
+  , option
+  , optionWith
   , flag
   , flagWith
   , switch
   , switchWith
   , switch'
   , switchWith'
+  , argument
+  , argumentWith
+
+  , optLong
   , optShort
   , optHelp
   , optMetavar
   , optEnvVar
   , optDefault
 
-  , ppError
-
-  , optValue
-  , execOpt
   , parseWith
   , readParser
   , strParser
+
+  , execParserDef
+  , execParserPureDef
+  , execOpt
+  , execOptPure
 
   , VariantF (..)
   , pattern In1
@@ -53,11 +55,9 @@ module Options.Harg
   , (:->)
   ) where
 
-import           Options.Harg.Het.AssocList
-import           Options.Harg.Het.HList
-import           Options.Harg.Het.Variant
-import           Options.Harg.Construct
-import           Options.Harg.Helpers
-import           Options.Harg.Operations
-import           Options.Harg.Pretty
-import           Options.Harg.Types
+import Options.Harg.Construct
+import Options.Harg.Het.AssocList
+import Options.Harg.Het.HList
+import Options.Harg.Het.Variant
+import Options.Harg.Operations
+import Options.Harg.Types

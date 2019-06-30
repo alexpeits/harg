@@ -1,58 +1,68 @@
-{-# LANGUAGE BlockArguments     #-}
-{-# LANGUAGE DataKinds          #-}
-{-# LANGUAGE DeriveGeneric      #-}
-{-# LANGUAGE TypeApplications   #-}
-{-# LANGUAGE TypeOperators      #-}
+{-# LANGUAGE BlockArguments   #-}
+{-# LANGUAGE DataKinds        #-}
+{-# LANGUAGE DeriveGeneric    #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeOperators    #-}
+
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Example where
 
-import           Data.Function                  ((&))
-import           GHC.Generics                   (Generic)
+import Data.Function         ((&))
+import Data.Functor.Identity (Identity (..))
+import GHC.Generics          (Generic)
+import System.Environment    (setEnv)
 
-import           Options.Harg
+import Options.Harg
 
 mainSubparser :: IO ()
 mainSubparser = do
-  conf <- getOptions configOpt
+  conf <- execOpt configOpt
   foldF conf
     (
       \(db :* srv :* hh :* _)
         -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
-           & execOpt >>= print
+           & runIdentity
+           & print
     )
     (
       \(db :* tst :* _)
          -> TestAppC <$> getNested db <*> getNested tst
-            & execOpt >>= print
+            & runIdentity
+            & print
     )
 
   -- or:
 
   -- case conf of
-  --   HereF (db :* srv :* hh :* _)
-  --     -> let ov
-  --              = AppC
-  --              <$> getNested db
-  --              <*> getNested srv
-  --              <*> getArg hh
-  --        in ov & execOpt >>= print
+    -- HereF (db :* srv :* hh :* _)
+      -- -> let ov
+               -- = AppC
+               -- <$> getNested db
+               -- <*> getNested srv
+               -- <*> getArg hh
+         -- in ov
+            -- & runIdentity
+            -- & print
 
-  --   ThereF (HereF (db :* tst :* _))
-  --     -> let ov
-  --              = TestAppC
-  --              <$> getNested db
-  --              <*> getNested tst
-  --        in execOpt ov >>= print
+    -- ThereF (HereF (db :* tst :* _))
+      -- -> let ov
+               -- = TestAppC
+               -- <$> getNested db
+               -- <*> getNested tst
+         -- in ov
+            -- & runIdentity
+            -- & print
 
 mainParser :: IO ()
 mainParser = do
-  db :* srv :* hh :* _ <- getOptions appOpt
+  db :* srv :* hh :* _ <- execOpt appOpt
   let ov
         = AppC
         <$> getNested db
         <*> getNested srv
         <*> getSingle hh
 
-  execOpt ov >>= print
+  print $ runIdentity ov
 
 main :: IO ()
 main
@@ -78,17 +88,23 @@ appOpt
   where
     srvConf
       = nested @ServiceConfig
-          ( mkOpt
-            $ arg "port" readParser
+          ( toOpt
+            $ option readParser
+            & optLong "port"
             & optHelp "Web service port"
+            & optDefault 5432
           )
-          ( mkOpt
-            $ switch "log"
+          ( toOpt
+            $ switch
+            & optLong "log"
             & optHelp "Whether to log"
+            & optEnvVar "LOG"
           )
     something
-      = mkOpt
-        $ arg "smth" readParser
+      = toOpt
+        $ option readParser
+        & optLong "smth"
+        & optEnvVar "SOMETHING"
         & optHelp "Something?"
 
 data TestAppC
@@ -108,12 +124,16 @@ testAppOpt
   where
     testConf
       = nested @TestConfig
-          ( mkOpt $ arg "dir" strParser
-            & optShort 'd'
+          ( toOpt $ argument strParser
+            -- & optLong "dir"
+            -- & optShort 'd'
+            & optMetavar "TEST_DIR"
             & optHelp "Some directory"
             & optEnvVar "TEST_DIR"
           )
-          ( mkOpt $ switch "mock"
+          ( toOpt $ switch
+            & optLong "mock"
+            & optShort 'm'
             & optHelp "Whether to mock"
             & optEnvVar "MOCK"
           )
@@ -151,14 +171,16 @@ data TestConfig
 dbConf :: Nested DBConfig Opt
 dbConf
   = nested @DBConfig
-      ( mkOpt
-        $ arg "db-user" strParser
+      ( toOpt
+        $ option strParser
+        & optLong "db-user"
         & optShort 'u'
         & optHelp "Database user"
         & optEnvVar "DB_USER"
       )
-      ( mkOpt
-        $ arg "db-port" readParser
+      ( toOpt
+        $ option readParser
+        & optLong "db-port"
         & optShort 'p'
         & optHelp "Database port"
         & optEnvVar "DB_PORT"
