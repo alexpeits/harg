@@ -1,4 +1,5 @@
 .stack-work/
+package.yaml
 cabal.project.local
 *~
 
