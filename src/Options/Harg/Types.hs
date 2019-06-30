@@ -17,8 +17,7 @@ import qualified Data.Functor.Product as P
 import qualified Data.Generic.HKD     as HKD
 
 
--- TODO: having OptParser and Parser is confusing, rethink
-type OptParser a = String -> Either String a
+type OptReader a = String -> Either String a
 
 -- Option
 data Opt a
@@ -29,7 +28,7 @@ data Opt a
       , _optMetavar :: Maybe String
       , _optEnvVar  :: Maybe String
       , _optDefault :: Maybe a
-      , _optParser  :: OptParser a
+      , _optReader  :: OptReader a
       , _optType    :: OptType a
       }
   deriving Functor
@@ -49,7 +48,7 @@ data OptionOpt a
       , _oMetavar :: Maybe String
       , _oEnvVar  :: Maybe String
       , _oDefault :: Maybe a
-      , _oParser  :: OptParser a
+      , _oReader  :: OptReader a
       }
 
 -- Option for flags that act like switches between a default and an active
@@ -62,7 +61,7 @@ data FlagOpt a
       , _sEnvVar  :: Maybe String
       , _sDefault :: a
       , _sActive  :: a
-      , _sParser  :: OptParser a
+      , _sReader  :: OptReader a
       }
 
 data ArgumentOpt a
@@ -73,10 +72,8 @@ data ArgumentOpt a
       , _aMetavar :: Maybe String
       , _aEnvVar  :: Maybe String
       , _aDefault :: Maybe a
-      , _aParser  :: OptParser a
+      , _aReader  :: OptReader a
       }
-
--- TODO: add `argument` and rethink names
 
 -- Parser
 data Parser a

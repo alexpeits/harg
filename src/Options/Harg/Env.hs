@@ -27,4 +27,4 @@ tryParseEnvVar Opt{..}
         -> maybe EnvVarNotFound tryParse <$> lookupEnv envVar
   where
     tryParse
-      = either EnvVarFoundNoParse EnvVarParsed . _optParser
+      = either EnvVarFoundNoParse EnvVarParsed . _optReader
