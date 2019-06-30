@@ -13,6 +13,8 @@ The main goal while developing `harg` was to not have to go through the usual pa
 
 # Usage
 
+tl;dr: Take a look at the [example](Example.hs).
+
 (WIP)
 
 Here are some different usage scenarios. Let's first enable some language extensions and add some
