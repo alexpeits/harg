@@ -6,8 +6,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Het.Proofs where
 
-import           Data.Kind                   (Type)
-import           Data.Type.Equality
+import Data.Kind          (Type)
+import Data.Type.Equality
 
 -- proofs
 type family (xs :: [k]) ++ (ts :: [k]) = (res :: [k]) where
@@ -44,6 +44,6 @@ instance Proof '[] y zs where
 instance Proof xs y (z ': zs) => Proof (x ': xs) y (z ': zs) where
   -- Induction on the cdr of the list (everything after the `x`)
   proof
-    ::   (x ': (xs ++ (y ': z ': zs)))
-    :~~: (x ': ((xs ++ '[y]) ++ (z ': zs)))
+    ::   x ': (xs ++ (y ': z ': zs))
+    :~~: x ': ((xs ++ '[y]) ++ (z ': zs))
   proof = hgcastWith (proof @xs @y @(z ': zs)) HRefl

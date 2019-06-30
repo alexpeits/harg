@@ -1,9 +1,9 @@
 module Options.Harg.Construct where
 
-import           Data.Kind          (Type)
-import           Text.Read          (readMaybe)
+import Data.Kind          (Type)
+import Text.Read          (readMaybe)
 
-import           Options.Harg.Types
+import Options.Harg.Types
 
 -- long
 class HasLong (o :: Type -> Type) where

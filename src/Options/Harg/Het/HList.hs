@@ -4,10 +4,10 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Het.HList where
 
-import           Data.Kind                   (Type)
-import           Data.Functor.Identity       (Identity)
+import           Data.Kind             (Type)
+import           Data.Functor.Identity (Identity)
 
-import qualified Data.Barbie                 as B
+import qualified Data.Barbie           as B
 
 import           Options.Harg.Het.All
 

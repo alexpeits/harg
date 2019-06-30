@@ -1,8 +1,8 @@
 module Options.Harg.Env where
 
-import           System.Environment         (lookupEnv)
+import System.Environment (lookupEnv)
 
-import           Options.Harg.Types
+import Options.Harg.Types
 
 data EnvVarParseResult a
   = EnvVarNotAvailable

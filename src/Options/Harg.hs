@@ -55,9 +55,9 @@ module Options.Harg
   , (:->)
   ) where
 
-import           Options.Harg.Het.AssocList
-import           Options.Harg.Het.HList
-import           Options.Harg.Het.Variant
-import           Options.Harg.Construct
-import           Options.Harg.Operations
-import           Options.Harg.Types
+import Options.Harg.Construct
+import Options.Harg.Het.AssocList
+import Options.Harg.Het.HList
+import Options.Harg.Het.Variant
+import Options.Harg.Operations
+import Options.Harg.Types

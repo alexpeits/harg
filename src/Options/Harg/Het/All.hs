@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeFamilies #-}
 module Options.Harg.Het.All where
 
-import           Data.Kind                   (Type, Constraint)
+import Data.Kind (Type, Constraint)
 
 type family
   All

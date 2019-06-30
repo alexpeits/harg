@@ -7,12 +7,12 @@
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Example where
 
-import           Data.Function         ((&))
-import           Data.Functor.Identity (Identity (..))
-import           GHC.Generics          (Generic)
-import           System.Environment    (setEnv)
+import Data.Function         ((&))
+import Data.Functor.Identity (Identity (..))
+import GHC.Generics          (Generic)
+import System.Environment    (setEnv)
 
-import           Options.Harg
+import Options.Harg
 
 mainSubparser :: IO ()
 mainSubparser = do

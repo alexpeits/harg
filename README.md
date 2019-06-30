@@ -28,8 +28,8 @@ imports:
 {-# LANGUAGE TypeOperators      #-}
 
 import           Data.Function         ((&))
+import           Data.Functor.Identity (Identity (..))
 import           GHC.Generics          (Generic)
-import           Data.Functor.Identity (Identity(..))
 
 import qualified Data.Barbie           as B
 import qualified Data.Generic.HKD      as HKD

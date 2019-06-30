@@ -1,9 +1,9 @@
 module Options.Harg.Pretty where
 
-import           Data.List          (intercalate)
-import           Data.Maybe         (fromMaybe)
+import Data.List          (intercalate)
+import Data.Maybe         (fromMaybe)
 
-import           Options.Harg.Types
+import Options.Harg.Types
 
 ppWarning
   :: [OptError]

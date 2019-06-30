@@ -1,6 +1,6 @@
 module Options.Harg.Help where
 
-import           Options.Harg.Types
+import Options.Harg.Types
 
 mkHelp
   :: Opt a
