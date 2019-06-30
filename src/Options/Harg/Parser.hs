@@ -143,8 +143,7 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
   mapSubcommand n (ACons opt opts)
     = do
         (sc, err) <- subcommand
-        (rest, errs) <- hgcastWith
-                          (proof @as @x @xs)
+        (rest, errs) <- hgcastWith (proof @as @x @xs)
                           (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) opts)
         pure (sc : rest, err <> errs)
 

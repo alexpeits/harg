@@ -256,7 +256,7 @@ back an `f FlatConfig` (in our case an `Identity FlatConfig`).
 # Roadmap
 
 - Better errors using `optparse-applicative`'s internals
-- Be able to provide and get back the same type for multiple subcommands (useful for testing)
+- ~~Be able to provide and get back the same type for multiple subcommands~~
 - Integrate config files (e.g. JSON using `aeson`)
 
 # Credits

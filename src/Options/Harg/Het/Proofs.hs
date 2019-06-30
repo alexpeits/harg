@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE InstanceSigs         #-}
 {-# LANGUAGE PolyKinds            #-}
 {-# LANGUAGE RankNTypes           #-}
 {-# LANGUAGE TypeFamilies         #-}
@@ -31,11 +32,18 @@ instance ProofNil xs => ProofNil (x ': xs) where
 class Proof
     (xs :: [(Type -> Type) -> Type])
     (y :: (Type -> Type) -> Type)
-    (ys :: [(Type -> Type) -> Type]) where
-  proof :: xs ++ (y ': ys) :~~: (xs ++ '[y]) ++ ys
+    (zs :: [(Type -> Type) -> Type]) where
+  proof :: xs ++ (y ': zs) :~~: (xs ++ '[y]) ++ zs
 
 instance ProofNil (xs ++ '[y]) => Proof (x ': xs) y '[] where
   proof = hgcastWith (proofNil @(xs ++ '[y])) HRefl
 
-instance Proof '[] y ys where
+instance Proof '[] y zs where
   proof = HRefl
+
+instance Proof xs y (z ': zs) => Proof (x ': xs) y (z ': zs) where
+  -- Induction on the cdr of the list (everything after the `x`)
+  proof
+    ::   (x ': (xs ++ (y ': z ': zs)))
+    :~~: (x ': ((xs ++ '[y]) ++ (z ': zs)))
+  proof = hgcastWith (proof @xs @y @(z ': zs)) HRefl
