@@ -1,5 +1,7 @@
 # `harg` :nut_and_bolt:
 
+[![Build Status](https://travis-ci.org/alexpeits/harg.svg?branch=master)](https://travis-ci.org/alexpeits/harg)
+
 `harg` is a library for configuring programs by scanning command line arguments, environment
 variables and default values. Under the hood, it uses a subset of
 [`optparse-applicative`](https://hackage.haskell.org/package/optparse-applicative) to expose regular
