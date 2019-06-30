@@ -41,7 +41,7 @@ mainSubparser = do
                -- <*> getNested srv
                -- <*> getArg hh
          -- in ov
-            -- & extractOpt
+            -- & runIdentity
             -- & print
 
     -- ThereF (HereF (db :* tst :* _))
@@ -50,7 +50,7 @@ mainSubparser = do
                -- <$> getNested db
                -- <*> getNested tst
          -- in ov
-            -- & extractOpt
+            -- & runIdentity
             -- & print
 
 mainParser :: IO ()
