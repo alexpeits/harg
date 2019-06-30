@@ -9,6 +9,7 @@ module Options.Harg.Het.Proofs where
 import Data.Kind          (Type)
 import Data.Type.Equality
 
+
 -- proofs
 type family (xs :: [k]) ++ (ts :: [k]) = (res :: [k]) where
   '[]       ++ ys = ys

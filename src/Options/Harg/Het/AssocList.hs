@@ -6,6 +6,7 @@ module Options.Harg.Het.AssocList where
 import Data.Kind    (Type)
 import GHC.TypeLits (ErrorMessage(..), TypeError, Symbol)
 
+
 data AssocListF
     (ts :: [Symbol])
     (xs :: [(Type -> Type) -> Type])

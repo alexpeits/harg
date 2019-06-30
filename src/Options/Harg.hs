@@ -35,6 +35,8 @@ module Options.Harg
   , execOpt
   , execOptPure
 
+  , (:*) (..)
+
   , VariantF (..)
   , pattern In1
   , pattern In2
@@ -42,11 +44,9 @@ module Options.Harg
   , pattern In4
   , pattern In5
 
-  , AssocListF (..)
-
   , foldF
 
-  , (:*) (..)
+  , AssocListF (..)
   , (:+)
   , pattern (:+)
   , (:->)

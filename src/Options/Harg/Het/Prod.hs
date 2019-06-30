@@ -9,6 +9,7 @@ import           GHC.Generics          (Generic)
 
 import qualified Data.Barbie           as B
 
+
 data
     ((a :: (Type -> Type) -> Type) :* (b :: (Type -> Type) -> Type))
     (f :: Type -> Type)

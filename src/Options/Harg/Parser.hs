@@ -3,93 +3,22 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Parser where
 
-import           Control.Applicative        ((<|>))
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Functor.Identity      (Identity (..))
 import           Data.Kind                  (Type)
-import           Data.Maybe                 (fromMaybe)
 import           Data.Proxy                 (Proxy (..))
 import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
 
 import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
 
-import           Options.Harg.Env
-import           Options.Harg.Help
+import           Options.Harg.Cmdline
 import           Options.Harg.Het.AssocList
 import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Proofs
 import           Options.Harg.Het.Variant
 import           Options.Harg.Types
 
-
-toParser :: Opt a -> IO (Parser a)
-toParser opt@Opt{..} = do
-  envVarRes <- tryParseEnvVar opt
-
-  let
-    parsedEnvVar
-      = getEnvVar envVarRes
-    err
-      = case envVarRes of
-          EnvVarFoundNoParse detail
-            -> [OptError (SomeOpt opt) detail]
-          _
-            -> []
-
-  case _optType of
-
-    OptionOptType -> do
-      let
-        optionOpt
-          = Optparse.option (Optparse.eitherReader _optReader)
-              ( foldMap (fromMaybe mempty)
-                  [ Optparse.long <$> _optLong
-                  , Optparse.short <$> _optShort
-                  , Optparse.help <$> help
-                  , Optparse.metavar <$> _optMetavar
-                  , Optparse.value <$> (parsedEnvVar <|> _optDefault)
-                  ]
-              )
-
-      pure $ Parser optionOpt err
-
-    FlagOptType active -> do
-      let
-        mDef
-          = case parsedEnvVar of
-              Nothing -> _optDefault
-              Just _  -> Just active
-        modifiers
-          = foldMap (fromMaybe mempty)
-              [ Optparse.long <$> _optLong
-              , Optparse.short <$> _optShort
-              , Optparse.help <$> help
-              ]
-        flagOpt
-          = case mDef of
-              Nothing ->
-                Optparse.flag' active modifiers
-              Just def ->
-                Optparse.flag def active modifiers
-
-      pure $ Parser flagOpt []
-
-    ArgumentOptType -> do
-      let
-        argOpt
-          = Optparse.argument (Optparse.eitherReader _optReader)
-              ( foldMap (fromMaybe mempty)
-                  [ Optparse.help <$> help
-                  , Optparse.metavar <$> _optMetavar
-                  , Optparse.value <$> (parsedEnvVar <|> _optDefault)
-                  ]
-              )
-
-      pure $ Parser argOpt err
-
-  where
-    help = mkHelp opt
 
 getOptParser
   :: B.TraversableB a

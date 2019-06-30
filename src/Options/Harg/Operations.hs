@@ -8,6 +8,7 @@ import           Options.Harg.Parser
 import           Options.Harg.Pretty
 import           Options.Harg.Types
 
+
 execParserDef
   :: Parser a
   -> IO a

@@ -4,6 +4,7 @@ import System.Environment (lookupEnv)
 
 import Options.Harg.Types
 
+
 data EnvVarParseResult a
   = EnvVarNotAvailable
   | EnvVarNotFound

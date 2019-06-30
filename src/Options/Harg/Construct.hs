@@ -5,6 +5,7 @@ import Text.Read          (readMaybe)
 
 import Options.Harg.Types
 
+
 -- long
 class HasLong (o :: Type -> Type) where
   optLong :: String -> o a -> o a

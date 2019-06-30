@@ -5,6 +5,7 @@ import Data.Maybe         (fromMaybe)
 
 import Options.Harg.Types
 
+
 ppWarning
   :: [OptError]
   -> IO ()

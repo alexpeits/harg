@@ -10,6 +10,7 @@ import qualified Data.Barbie                 as B
 
 import           Options.Harg.Het.Nat
 
+
 data VariantF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where
   HereF  :: x f           -> VariantF (x ': xs) f
   ThereF :: VariantF xs f -> VariantF (y ': xs) f
