@@ -194,42 +194,41 @@ instance of `Identity` to get back an `Identity FlatConfig`.
 
 This is still a bit boilerplate-y. Let's look at another way.
 
-### 2. Using an `HList`
+### 2. Using an open product
 
 Looking at `FlatConfigB`, it's only used because of it's `barbie`-like capabilities. Other than that
 it's just a simple product type with the additional `f` before all its sub-types.
 
-An `HList` (heterogeneous list) is like an arbitrary length tuple. For example, `HList '[Int, Bool,
-String]` is exactly the same as `(Int, Bool, String)`. `harg` defines an enhanced version of `HList`
-called `HListF`, which stores barbie-like types and also keeps the `f` handy: `data HListF (xs ::
-[(Type -> Type) -> Type]) (f :: Type -> Type) where ...`. `HListF` is also easily made an instance
-of `Generic`, `FunctorB` and `TraversableB`. With all that, let's rewrite the options value and the
-function to get the configuration:
+The most common form of an open product is an `HList` (heterogeneous list). An `HList` is like an
+arbitrary length tuple. For example, `HList '[Int, Bool, String]` is exactly the same as `(Int,
+Bool, String)`. `harg` defines a slightly different version of `HList`, reminiscent of servant's
+`:<|>` type, in `Options.Harg.Het.Prod`, called `:*` (the `*` stands for product). This type stores
+barbie-like types and also keeps the `f` handy: `data (a :* b) f = a f :* b f`. This is also easily
+made an instance of `Generic`, `FunctorB` and `TraversableB`. With all that, let's rewrite the
+options value and the function to get the configuration:
 
 ``` haskell
 flatConfigOpt2 :: (Single String :* Single Int :* Single String :* Single Bool) Opt
 flatConfigOpt2
-  = single hostOpt :* single portOpt :* single dirOpt :* single logOpt :* HNilF
+  = single hostOpt :* single portOpt :* single dirOpt :* single logOpt
 
 getFlatConfig2 :: IO ()
 getFlatConfig2 = do
-  host :* port :* dir :* log :* _ <- execOpt flatConfigOpt2
+  host :* port :* dir :* log <- execOpt flatConfigOpt2
   print $ runIdentity
     (FlatConfig <$> getSingle host <*> getSingle port <*> getSingle dir <*> getSingle log)
 ```
 
-This looks aufully similar to the previous version, but without having to write another datatype
-and derive all the instances. `:*` is both a type-level constructor and a value-level function
-(actually pattern) that acts like list's `:`. Thanks to type families, there's no need to terminate
-it using a `nil` when writing the type signature (although a `HNilF` is required when writing values
-or when pattern matching).
+This looks aufully similar to the previous version, but without having to write another datatype and
+derive all the instances. `:*` is both a type-level constructor and a value-level function that acts
+like list's `:`. It is also right-associative, so for example `a :* b :* c` is the same as
+`a :* (b :* c)`.
 
 The `Single` type constructor is used when talking about a single value, rather than a nested
 datatype. `Single a f` is a simple newtype over `f a`. The reason for using that is simply to switch
 the order of application, so that we can later apply the `f` (here `Opt`) to the compound type
-(which is the `HList`). In addition, `single` is used to wrap an `f a` into a `Single a f`, and
-`getSingle` is used to unwrap it. Later on we'll see how to construct nested configurations using
-`Nested`.
+(`:*`). In addition, `single` is used to wrap an `f a` into a `Single a f`, and `getSingle` is used
+to unwrap it. Later on we'll see how to construct nested configurations using `Nested`.
 
 However, the real value when having flat datatypes comes from the ability to use `higgledy`.
 

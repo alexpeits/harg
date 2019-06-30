@@ -19,13 +19,13 @@ mainSubparser = do
   conf <- execOpt configOpt
   foldF conf
     (
-      \(db :* srv :* hh :* _)
+      \(db :* srv :* hh)
         -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
            & runIdentity
            & print
     )
     (
-      \(db :* tst :* _)
+      \(db :* tst)
          -> TestAppC <$> getNested db <*> getNested tst
             & runIdentity
             & print
@@ -34,7 +34,7 @@ mainSubparser = do
   -- or:
 
   -- case conf of
-    -- HereF (db :* srv :* hh :* _)
+    -- HereF (db :* srv :* hh)
       -- -> let ov
                -- = AppC
                -- <$> getNested db
@@ -44,7 +44,7 @@ mainSubparser = do
             -- & runIdentity
             -- & print
 
-    -- ThereF (HereF (db :* tst :* _))
+    -- ThereF (HereF (db :* tst))
       -- -> let ov
                -- = TestAppC
                -- <$> getNested db
@@ -55,7 +55,7 @@ mainSubparser = do
 
 mainParser :: IO ()
 mainParser = do
-  db :* srv :* hh :* _ <- execOpt appOpt
+  db :* srv :* hh <- execOpt appOpt
   let ov
         = AppC
         <$> getNested db
@@ -84,7 +84,7 @@ type AppConfig
 
 appOpt :: AppConfig Opt
 appOpt
-  = dbConf :* srvConf :* single something :* HNilF
+  = dbConf :* srvConf :* single something
   where
     srvConf
       = nested @ServiceConfig
@@ -120,7 +120,7 @@ type TestAppConfig
 
 testAppOpt :: TestAppConfig Opt
 testAppOpt
-  = dbConf :* testConf :* HNilF
+  = dbConf :* testConf
   where
     testConf
       = nested @TestConfig

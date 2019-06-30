@@ -42,14 +42,11 @@ module Options.Harg
   , pattern In4
   , pattern In5
 
-  , HListF (..)
-
   , AssocListF (..)
 
   , foldF
 
-  , (:*)
-  , pattern (:*)
+  , (:*) (..)
   , (:+)
   , pattern (:+)
   , (:->)
@@ -57,7 +54,7 @@ module Options.Harg
 
 import Options.Harg.Construct
 import Options.Harg.Het.AssocList
-import Options.Harg.Het.HList
+import Options.Harg.Het.Prod
 import Options.Harg.Het.Variant
 import Options.Harg.Operations
 import Options.Harg.Types
