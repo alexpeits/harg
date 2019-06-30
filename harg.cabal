@@ -2,8 +2,9 @@ cabal-version: 2.2
 
 name:           harg
 version:        0.1.0.0
+synopsis:       Haskell configuration library (command line/environment variables/defaults)
 description:    Please see the README on GitHub at <https://github.com/alexpeits/harg#readme>
-homepage:       https://github.com/alexpeits/harg#readme
+homepage:       https://github.com/alexpeits/harg
 bug-reports:    https://github.com/alexpeits/harg/issues
 author:         Alex Peitsinis
 maintainer:     alexpeitsinis@gmail.com
@@ -11,6 +12,7 @@ copyright:      Copyright (c) 2019 Alex Peitsinis
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
+category:       System, CLI, Options, Parsing
 extra-source-files:
     README.md
     CHANGELOG.md
