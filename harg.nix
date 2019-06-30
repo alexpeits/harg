@@ -1,4 +1,4 @@
-{ mkDerivation, barbies, base, higgledy, hpack, lib, markdown-unlit,
+{ mkDerivation, barbies, base, higgledy, lib, markdown-unlit,
   optparse-applicative, stdenv
 }:
 mkDerivation {
@@ -11,14 +11,13 @@ mkDerivation {
     "README.lhs"
     "README.md"
     "harg.cabal"
-    "package.yaml"
+    "LICENSE"
   ];
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
     barbies base higgledy optparse-applicative
   ];
-  libraryToolDepends = [ hpack ];
   executableHaskellDepends = [
     barbies base higgledy optparse-applicative
   ];
@@ -26,7 +25,6 @@ mkDerivation {
     barbies base higgledy optparse-applicative
   ];
   testToolDepends = [ markdown-unlit ];
-  preConfigure = "hpack";
   homepage = "https://github.com/alexpeits/harg#readme";
   license = stdenv.lib.licenses.bsd3;
 }

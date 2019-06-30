@@ -1,5 +1,4 @@
 .stack-work/
-harg.cabal
 cabal.project.local
 *~
 
