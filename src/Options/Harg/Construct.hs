@@ -7,69 +7,69 @@ import           Options.Harg.Types
 
 -- long
 class HasLong (o :: Type -> Type) where
-  long :: String -> o a -> o a
+  optLong :: String -> o a -> o a
 
 instance HasLong OptionOpt where
-  long s o = o { _oLong = Just s }
+  optLong s o = o { _oLong = Just s }
 
 instance HasLong FlagOpt where
-  long s o = o { _sLong = Just s }
+  optLong s o = o { _sLong = Just s }
 
 -- short
 class HasShort (o :: Type -> Type) where
-  short :: Char -> o a -> o a
+  optShort :: Char -> o a -> o a
 
 instance HasShort OptionOpt where
-  short c o = o { _oShort = Just c }
+  optShort c o = o { _oShort = Just c }
 
 instance HasShort FlagOpt where
-  short c o = o { _sShort = Just c }
+  optShort c o = o { _sShort = Just c }
 
 -- help
 class HasHelp (o :: Type -> Type) where
-  help :: String -> o a -> o a
+  optHelp :: String -> o a -> o a
 
 instance HasHelp OptionOpt where
-  help s o = o { _oHelp = Just s }
+  optHelp s o = o { _oHelp = Just s }
 
 instance HasHelp FlagOpt where
-  help s o = o { _sHelp = Just s }
+  optHelp s o = o { _sHelp = Just s }
 
 instance HasHelp ArgumentOpt where
-  help s o = o { _aHelp = Just s }
+  optHelp s o = o { _aHelp = Just s }
 
 -- metavar
 class HasMetavar (o :: Type -> Type) where
-  metavar :: String -> o a -> o a
+  optMetavar :: String -> o a -> o a
 
 instance HasMetavar OptionOpt where
-  metavar s o = o { _oMetavar = Just s }
+  optMetavar s o = o { _oMetavar = Just s }
 
 instance HasMetavar ArgumentOpt where
-  metavar s o = o { _aMetavar = Just s }
+  optMetavar s o = o { _aMetavar = Just s }
 
 -- env var
 class HasEnvVar (o :: Type -> Type) where
-  envVar :: String -> o a -> o a
+  optEnvVar :: String -> o a -> o a
 
 instance HasEnvVar OptionOpt where
-  envVar s o = o { _oEnvVar = Just s }
+  optEnvVar s o = o { _oEnvVar = Just s }
 
 instance HasEnvVar FlagOpt where
-  envVar s o = o { _sEnvVar = Just s }
+  optEnvVar s o = o { _sEnvVar = Just s }
 
 instance HasEnvVar ArgumentOpt where
-  envVar s o = o { _aEnvVar = Just s }
+  optEnvVar s o = o { _aEnvVar = Just s }
 
 -- default
 class HasDefault (o :: Type -> Type) where
-  def :: a -> o a -> o a
+  optDefault :: a -> o a -> o a
 
 instance HasDefault OptionOpt where
-  def a o = o { _oDefault = Just a }
+  optDefault a o = o { _oDefault = Just a }
 
 instance HasDefault ArgumentOpt where
-  def a o = o { _aDefault = Just a }
+  optDefault a o = o { _aDefault = Just a }
 
 -- convert from intermediate type to Opt
 class IsOpt (o :: Type -> Type) where

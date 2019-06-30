@@ -90,22 +90,22 @@ appOpt
       = nested @ServiceConfig
           ( toOpt
             $ option readParser
-            & long "port"
-            & help "Web service port"
-            & def 5432
+            & optLong "port"
+            & optHelp "Web service port"
+            & optDefault 5432
           )
           ( toOpt
             $ switch
-            & long "log"
-            & help "Whether to log"
-            & envVar "LOG"
+            & optLong "log"
+            & optHelp "Whether to log"
+            & optEnvVar "LOG"
           )
     something
       = toOpt
         $ option readParser
-        & long "smth"
-        & envVar "SOMETHING"
-        & help "Something?"
+        & optLong "smth"
+        & optEnvVar "SOMETHING"
+        & optHelp "Something?"
 
 data TestAppC
   = TestAppC
@@ -125,17 +125,17 @@ testAppOpt
     testConf
       = nested @TestConfig
           ( toOpt $ argument strParser
-            -- & long "dir"
-            -- & short 'd'
-            & metavar "TEST_DIR"
-            & help "Some directory"
-            & envVar "TEST_DIR"
+            -- & optLong "dir"
+            -- & optShort 'd'
+            & optMetavar "TEST_DIR"
+            & optHelp "Some directory"
+            & optEnvVar "TEST_DIR"
           )
           ( toOpt $ switch
-            & long "mock"
-            & short 'm'
-            & help "Whether to mock"
-            & envVar "MOCK"
+            & optLong "mock"
+            & optShort 'm'
+            & optHelp "Whether to mock"
+            & optEnvVar "MOCK"
           )
 
 type Config
@@ -173,16 +173,16 @@ dbConf
   = nested @DBConfig
       ( toOpt
         $ option strParser
-        & long "db-user"
-        & short 'u'
-        & help "Database user"
-        & envVar "DB_USER"
+        & optLong "db-user"
+        & optShort 'u'
+        & optHelp "Database user"
+        & optEnvVar "DB_USER"
       )
       ( toOpt
         $ option readParser
-        & long "db-port"
-        & short 'p'
-        & help "Database port"
-        & envVar "DB_PORT"
-        & def 5432
+        & optLong "db-port"
+        & optShort 'p'
+        & optHelp "Database port"
+        & optEnvVar "DB_PORT"
+        & optDefault 5432
       )

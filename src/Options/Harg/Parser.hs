@@ -91,22 +91,22 @@ toParser opt@Opt{..} = do
   where
     help = mkHelp opt
 
-getOptReader
+getOptParser
   :: B.TraversableB a
   => a Opt
   -> IO (Parser (a Identity))
-getOptReader opts =
+getOptParser opts =
   getCompose
     $ B.btraverse (Compose <$> (fmap . fmap . fmap) Identity toParser) opts
 
-getOptReaderSubcommand
+getOptParserSubcommand
   :: forall xs ts.
      ( B.TraversableB (VariantF xs)
      , Subcommands Z ts xs '[]
      )
   => AssocListF ts xs Opt
   -> IO (Parser (VariantF xs Identity))
-getOptReaderSubcommand alist = do
+getOptParserSubcommand alist = do
   (commands, err) <- mapSubcommand @Z @ts @xs @'[] SZ alist
 
   let
@@ -184,10 +184,10 @@ instance {-# OVERLAPPING #-}
          , Subcommands Z ts xs '[]
          ) => GetParser (AssocListF ts xs Opt) where
   type OptResult (AssocListF ts xs Opt) = OptResult' (AssocListF ts xs)
-  getParser = getOptReaderSubcommand
+  getParser = getOptParserSubcommand
 
 instance ( B.TraversableB a
          , OptResult' a ~ a Identity
          ) => GetParser (a Opt) where
   type OptResult (a Opt) = OptResult' a
-  getParser = getOptReader
+  getParser = getOptParser

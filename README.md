@@ -65,33 +65,33 @@ component of the configuration.
 hostOpt :: Opt String
 hostOpt
   = toOpt ( option strParser
-          & long "host"
-          & short 'h'
-          & metavar "HOST"
-          & help "The database host"
+          & optLong "host"
+          & optShort 'h'
+          & optMetavar "HOST"
+          & optHelp "The database host"
           )
 
 portOpt :: Opt Int
 portOpt
   = toOpt ( option readParser
-          & long "port"
-          & help "The database port"
-          & envVar "DB_PORT"
-          & def 5432
+          & optLong "port"
+          & optHelp "The database port"
+          & optEnvVar "DB_PORT"
+          & optDefault 5432
           )
 
 dirOpt :: Opt String
 dirOpt
   = toOpt ( argument strParser
-          & help "Some directory"
-          & def "/home/user/something"
+          & optHelp "Some directory"
+          & optDefault "/home/user/something"
           )
 
 logOpt :: Opt Bool
 logOpt
   = toOpt ( switch
-          & long "log"
-          & help "Whether to log or not"
+          & optLong "log"
+          & optHelp "Whether to log or not"
           )
 ```
 

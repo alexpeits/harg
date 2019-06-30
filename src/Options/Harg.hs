@@ -19,12 +19,12 @@ module Options.Harg
   , argument
   , argumentWith
 
-  , long
-  , short
-  , help
-  , metavar
-  , envVar
-  , def
+  , optLong
+  , optShort
+  , optHelp
+  , optMetavar
+  , optEnvVar
+  , optDefault
 
   , parseWith
   , readParser
