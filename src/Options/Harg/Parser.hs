@@ -12,7 +12,6 @@ import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
 
 import           Options.Harg.Cmdline
-import           Options.Harg.Env
 import           Options.Harg.Het.AssocList
 import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Proofs
@@ -22,24 +21,24 @@ import           Options.Harg.Types
 
 getOptParser
   :: B.TraversableB a
-  => Environment
+  => [ParserSource]
   -> a Opt
   -> (Parser (a Identity))
-getOptParser env opts
-  = B.btraverse (fmap Identity <$> toParser env) opts
+getOptParser sources opts
+  = B.btraverse (fmap Identity <$> toParser sources) opts
 
 getOptParserSubcommand
   :: forall xs ts.
      ( B.TraversableB (VariantF xs)
      , Subcommands Z ts xs '[]
      )
-  => Environment
+  => [ParserSource]
   -> AssocListF ts xs Opt
   -> Parser (VariantF xs Identity)
-getOptParserSubcommand env alist
+getOptParserSubcommand sources alist
   = let
       (commands, err)
-        = mapSubcommand @Z @ts @xs @'[] SZ env alist
+        = mapSubcommand @Z @ts @xs @'[] SZ sources alist
       parser
         = Optparse.subparser (mconcat commands)
     in Parser parser err
@@ -52,7 +51,7 @@ class Subcommands
     (acc :: [(Type -> Type) -> Type]) where
   mapSubcommand
     :: SNat n
-    -> Environment
+    -> [ParserSource]
     -> AssocListF ts xs Opt
     -> ([Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) Identity)], [OptError])
 
@@ -70,11 +69,11 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
          , Proof as x xs
          ) => Subcommands n (t ': ts) (x ': xs) as where
 
-  mapSubcommand n env (ACons opt opts)
+  mapSubcommand n sources (ACons opt opts)
     = let
         (sc, err) = subcommand
         (rest, errs) = hgcastWith (proof @as @x @xs)
-                         (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) env opts)
+                         (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) sources opts)
       in (sc : rest, err <> errs)
 
     where
@@ -86,7 +85,7 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
       subcommand
         = let
             (Parser parser err)
-              = B.btraverse (fmap Identity <$> toParser env) opt
+              = B.btraverse (fmap Identity <$> toParser sources) opt
             cmd
               = Optparse.command tag
               $ injectPosF n
@@ -103,7 +102,7 @@ type family OptResult' a where
 
 class GetParser a where
   type OptResult a :: Type
-  getParser :: Environment -> a -> Parser (OptResult a)
+  getParser :: [ParserSource] -> a -> Parser (OptResult a)
 
 instance {-# OVERLAPPING #-}
          ( B.TraversableB (VariantF xs)

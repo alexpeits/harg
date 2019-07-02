@@ -11,9 +11,6 @@ data EnvVarParseResult a
   | EnvVarFoundNoParse String
   | EnvVarParsed a
 
-type Environment
-  = [(String, String)]
-
 lookupEnv
   :: Environment
   -> String
@@ -40,3 +37,20 @@ tryParseEnvVar env Opt{..}
   where
     tryParse
       = either EnvVarFoundNoParse EnvVarParsed . _optReader
+
+runEnvVarSource
+  :: Environment
+  -> Opt a
+  -> SourceParseResult a
+runEnvVarSource env opt@Opt{..}
+  = case _optEnvVar of
+      Nothing
+        -> SourceNotAvailable
+      Just envVar
+        -> maybe OptNotFound tryParse $ lookupEnv env envVar
+  where
+    tryParse
+      = either
+          (OptFoundNoParse . toOptError opt)
+          OptParsed
+      . _optReader

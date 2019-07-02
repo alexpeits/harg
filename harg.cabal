@@ -35,6 +35,7 @@ library
                       Options.Harg.Operations
                       Options.Harg.Parser
                       Options.Harg.Pretty
+                      Options.Harg.Sources
                       Options.Harg.Types
   hs-source-dirs:     src
   default-extensions: DataKinds

@@ -98,6 +98,25 @@ data OptError
 data SomeOpt where
   SomeOpt :: Opt a -> SomeOpt
 
+toOptError
+  :: Opt a
+  -> String
+  -> OptError
+toOptError opt s
+  = OptError (SomeOpt opt) s
+
+type Environment
+  = [(String, String)]
+
+data ParserSource
+  = EnvSource Environment
+
+data SourceParseResult a
+  = SourceNotAvailable
+  | OptNotFound
+  | OptFoundNoParse OptError
+  | OptParsed a
+
 -- Single
 newtype Single (b :: Type) (f :: Type -> Type)
   = Single

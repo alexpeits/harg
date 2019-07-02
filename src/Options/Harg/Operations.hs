@@ -1,12 +1,12 @@
 module Options.Harg.Operations where
 
-import           System.Environment  (getArgs, getEnvironment)
+import           System.Environment   (getArgs)
 
-import qualified Options.Applicative as Optparse
+import qualified Options.Applicative  as Optparse
 
-import           Options.Harg.Env
 import           Options.Harg.Parser
 import           Options.Harg.Pretty
+import           Options.Harg.Sources
 import           Options.Harg.Types
 
 
@@ -42,16 +42,16 @@ getOptparseParser
   -> IO (Optparse.Parser (OptResult a))
 getOptparseParser a
   = do
-      env <- getEnvironment
-      pure $ getOptparseParserPure env a
+      sources <- getSources
+      pure $ getOptparseParserPure sources a
 
 getOptparseParserPure
   :: GetParser a
-  => Environment
+  => [ParserSource]
   -> a
   -> Optparse.Parser (OptResult a)
-getOptparseParserPure env a
-  = fst $ getOptparseParserAndErrorsPure env a
+getOptparseParserPure sources a
+  = fst $ getOptparseParserAndErrorsPure sources a
 
 getOptparseParserAndErrors
   :: GetParser a
@@ -59,16 +59,16 @@ getOptparseParserAndErrors
   -> IO (Optparse.Parser (OptResult a), [OptError])
 getOptparseParserAndErrors a
   = do
-      env <- getEnvironment
-      pure $ getOptparseParserAndErrorsPure env a
+      sources <- getSources
+      pure $ getOptparseParserAndErrorsPure sources a
 
 getOptparseParserAndErrorsPure
   :: GetParser a
-  => Environment
+  => [ParserSource]
   -> a
   -> (Optparse.Parser (OptResult a), [OptError])
-getOptparseParserAndErrorsPure env a
-  = let Parser p err = getParser env a
+getOptparseParserAndErrorsPure sources a
+  = let Parser p err = getParser sources a
     in (p, err)
 
 execOpt
@@ -77,15 +77,15 @@ execOpt
   -> IO (OptResult a)
 execOpt a
   = do
-      env <- getEnvironment
-      execParserDef (getParser env a)
+      sources <- getSources
+      execParserDef (getParser sources a)
 
 execOptPure
   :: GetParser a
   => a
   -> [String]
-  -> Environment
+  -> [ParserSource]
   -> (Optparse.ParserResult (OptResult a), [OptError])
-execOptPure a args env
-  = execParserDefPure (getParser env a) args
+execOptPure a args sources
+  = execParserDefPure (getParser sources a) args
 
