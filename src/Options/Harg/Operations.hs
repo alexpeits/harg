@@ -82,10 +82,10 @@ execOpt a
 
 execOptPure
   :: GetParser a
-  => a
-  -> [String]
+  => [String]
   -> [ParserSource]
+  -> a
   -> (Optparse.ParserResult (OptResult a), [OptError])
-execOptPure a args sources
+execOptPure args sources a
   = execParserDefPure (getParser sources a) args
 
