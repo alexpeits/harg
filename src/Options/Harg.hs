@@ -31,7 +31,7 @@ module Options.Harg
   , strParser
 
   , execParserDef
-  , execParserPureDef
+  , execParserDefPure
   , execOpt
   , execOptPure
 

@@ -3,7 +3,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Parser where
 
-import           Data.Functor.Compose       (Compose (..))
 import           Data.Functor.Identity      (Identity (..))
 import           Data.Kind                  (Type)
 import           Data.Proxy                 (Proxy (..))
@@ -13,6 +12,7 @@ import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
 
 import           Options.Harg.Cmdline
+import           Options.Harg.Env
 import           Options.Harg.Het.AssocList
 import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Proofs
@@ -22,27 +22,27 @@ import           Options.Harg.Types
 
 getOptParser
   :: B.TraversableB a
-  => a Opt
-  -> IO (Parser (a Identity))
-getOptParser opts =
-  getCompose
-    $ B.btraverse (Compose <$> (fmap . fmap . fmap) Identity toParser) opts
+  => Environment
+  -> a Opt
+  -> (Parser (a Identity))
+getOptParser env opts
+  = B.btraverse (fmap Identity <$> toParser env) opts
 
 getOptParserSubcommand
   :: forall xs ts.
      ( B.TraversableB (VariantF xs)
      , Subcommands Z ts xs '[]
      )
-  => AssocListF ts xs Opt
-  -> IO (Parser (VariantF xs Identity))
-getOptParserSubcommand alist = do
-  (commands, err) <- mapSubcommand @Z @ts @xs @'[] SZ alist
-
-  let
-    parser
-      = Optparse.subparser (mconcat commands)
-
-  pure $ Parser parser err
+  => Environment
+  -> AssocListF ts xs Opt
+  -> Parser (VariantF xs Identity)
+getOptParserSubcommand env alist
+  = let
+      (commands, err)
+        = mapSubcommand @Z @ts @xs @'[] SZ env alist
+      parser
+        = Optparse.subparser (mconcat commands)
+    in Parser parser err
 
 -- subcommands
 class Subcommands
@@ -52,11 +52,12 @@ class Subcommands
     (acc :: [(Type -> Type) -> Type]) where
   mapSubcommand
     :: SNat n
+    -> Environment
     -> AssocListF ts xs Opt
-    -> IO ([Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) Identity)], [OptError])
+    -> ([Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) Identity)], [OptError])
 
 instance Subcommands n '[] '[] acc where
-  mapSubcommand _ _ = pure ([], [])
+  mapSubcommand _ _ _ = ([], [])
 
 -- ok wait
 -- hear me out:
@@ -69,31 +70,28 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
          , Proof as x xs
          ) => Subcommands n (t ': ts) (x ': xs) as where
 
-  mapSubcommand n (ACons opt opts)
-    = do
-        (sc, err) <- subcommand
-        (rest, errs) <- hgcastWith (proof @as @x @xs)
-                          (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) opts)
-        pure (sc : rest, err <> errs)
+  mapSubcommand n env (ACons opt opts)
+    = let
+        (sc, err) = subcommand
+        (rest, errs) = hgcastWith (proof @as @x @xs)
+                         (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) env opts)
+      in (sc : rest, err <> errs)
 
     where
 
       subcommand
-        :: IO ( Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity)
-              , [OptError]
-              )
+        :: ( Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity)
+           , [OptError]
+           )
       subcommand
-        = do
-            (Parser parser err) <-
-              getCompose
-              $ B.btraverse
-                  (Compose <$> (fmap . fmap . fmap) Identity toParser)
-                  opt
-            let cmd
-                  = Optparse.command tag
-                  $ injectPosF n
-                  <$> Optparse.info (Optparse.helper <*> parser) mempty
-            pure (cmd, err)
+        = let
+            (Parser parser err)
+              = B.btraverse (fmap Identity <$> toParser env) opt
+            cmd
+              = Optparse.command tag
+              $ injectPosF n
+              <$> Optparse.info (Optparse.helper <*> parser) mempty
+          in (cmd, err)
 
       tag
         = symbolVal (Proxy :: Proxy t)
@@ -105,7 +103,7 @@ type family OptResult' a where
 
 class GetParser a where
   type OptResult a :: Type
-  getParser :: a -> IO (Parser (OptResult a))
+  getParser :: Environment -> a -> Parser (OptResult a)
 
 instance {-# OVERLAPPING #-}
          ( B.TraversableB (VariantF xs)

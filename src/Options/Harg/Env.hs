@@ -1,6 +1,6 @@
 module Options.Harg.Env where
 
-import System.Environment (lookupEnv)
+import Data.List          (find)
 
 import Options.Harg.Types
 
@@ -11,6 +11,16 @@ data EnvVarParseResult a
   | EnvVarFoundNoParse String
   | EnvVarParsed a
 
+type Environment
+  = [(String, String)]
+
+lookupEnv
+  :: Environment
+  -> String
+  -> Maybe String
+lookupEnv env x
+  = snd <$> find ((== x) . fst) env
+
 getEnvVar :: EnvVarParseResult a -> Maybe a
 getEnvVar
   = \case
@@ -18,14 +28,15 @@ getEnvVar
       _              -> Nothing
 
 tryParseEnvVar
-  :: Opt a
-  -> IO (EnvVarParseResult a)
-tryParseEnvVar Opt{..}
+  :: Environment
+  -> Opt a
+  -> EnvVarParseResult a
+tryParseEnvVar env Opt{..}
   = case _optEnvVar of
       Nothing
-        -> pure EnvVarNotAvailable
+        -> EnvVarNotAvailable
       Just envVar
-        -> maybe EnvVarNotFound tryParse <$> lookupEnv envVar
+        -> maybe EnvVarNotFound tryParse $ lookupEnv env envVar
   where
     tryParse
       = either EnvVarFoundNoParse EnvVarParsed . _optReader
