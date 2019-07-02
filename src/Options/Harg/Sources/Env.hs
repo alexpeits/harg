@@ -1,4 +1,4 @@
-module Options.Harg.Env where
+module Options.Harg.Sources.Env where
 
 import Data.List          (find)
 

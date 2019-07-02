@@ -3,8 +3,9 @@ module Options.Harg.Sources where
 import Data.Foldable      (foldr')
 import System.Environment (getEnvironment)
 
-import Options.Harg.Env
+import Options.Harg.Sources.Env
 import Options.Harg.Types
+
 
 runSources
   :: [ParserSource]
