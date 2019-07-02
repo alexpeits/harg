@@ -25,7 +25,6 @@ library
   exposed-modules:    Options.Harg
   other-modules:      Options.Harg.Cmdline
                       Options.Harg.Construct
-                      Options.Harg.Env
                       Options.Harg.Help
                       Options.Harg.Het.AssocList
                       Options.Harg.Het.Nat
@@ -36,6 +35,7 @@ library
                       Options.Harg.Parser
                       Options.Harg.Pretty
                       Options.Harg.Sources
+                      Options.Harg.Sources.Env
                       Options.Harg.Types
   hs-source-dirs:     src
   default-extensions: DataKinds
