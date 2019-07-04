@@ -2,6 +2,10 @@ sudo: false
 
 language: generic
 
+branches:
+  only:
+    - master
+
 # Caching so the next build will be fast too.
 cache:
   directories:
