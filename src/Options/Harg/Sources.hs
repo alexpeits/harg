@@ -1,39 +1,47 @@
 module Options.Harg.Sources where
 
-import Data.Foldable      (foldr')
-import System.Environment (getEnvironment)
+import           Data.Foldable            (foldr')
+import           System.Environment       (getEnvironment)
 
-import Options.Harg.Sources.Env
-import Options.Harg.Types
+import qualified Data.Barbie              as B
+
+import           Options.Harg.Sources.Env
+import           Options.Harg.Types
 
 
 runSources
-  :: [ParserSource]
-  -> Opt a
-  -> [SourceParseResult a]
+  :: B.FunctorB a
+  => [ParserSource]
+  -> a Opt
+  -> [a SourceParseResult]
 runSources sources opt
   = map (`runSource` opt) sources
 
 runSource
-  :: ParserSource
-  -> Opt a
-  -> SourceParseResult a
+  :: B.FunctorB a
+  => ParserSource
+  -> a Opt
+  -> a SourceParseResult
 runSource source opt
   = case source of
       EnvSource env
         -> runEnvVarSource env opt
 
 accumSourceResults
-  :: [SourceParseResult a]
-  -> ([Maybe a], [OptError])
+  :: forall a. B.TraversableB a
+  => [a SourceParseResult]
+  -> ([OptError], [a Maybe])
 accumSourceResults
-  = foldr' go ([], [])
+  = foldr' accumResult ([], [])
   where
-    go res (as, errs)
-      = case res of
-          OptFoundNoParse err -> (as, err:errs)
-          OptParsed a         -> (Just a : as, errs)
-          _                   -> (Nothing : as, errs)
+    accumResult res (e, a)
+      = case B.btraverse go res of
+          (e', a') -> (e' <> e, a' : a)
+    go
+      = \case
+          OptFoundNoParse e -> ([e], Nothing)
+          OptParsed a       -> ([], Just a)
+          _                 -> ([], Nothing)
 
 -- Currently only environment
 getSources

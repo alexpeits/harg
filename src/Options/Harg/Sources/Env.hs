@@ -2,6 +2,8 @@ module Options.Harg.Sources.Env where
 
 import Data.List          (find)
 
+import qualified Data.Barbie as B
+
 import Options.Harg.Types
 
 
@@ -39,18 +41,23 @@ tryParseEnvVar env Opt{..}
       = either EnvVarFoundNoParse EnvVarParsed . _optReader
 
 runEnvVarSource
-  :: Environment
-  -> Opt a
-  -> SourceParseResult a
-runEnvVarSource env opt@Opt{..}
-  = case _optEnvVar of
-      Nothing
-        -> SourceNotAvailable
-      Just envVar
-        -> maybe OptNotFound tryParse $ lookupEnv env envVar
+  :: B.FunctorB a
+  => Environment
+  -> a Opt
+  -> a SourceParseResult
+runEnvVarSource env
+  = B.bmap go
   where
-    tryParse
-      = either
-          (OptFoundNoParse . toOptError opt)
-          OptParsed
-      . _optReader
+    go :: Opt a -> SourceParseResult a
+    go opt@Opt{..}
+      = case _optEnvVar of
+          Nothing
+            -> SourceNotAvailable
+          Just envVar
+            -> maybe OptNotFound tryParse $ lookupEnv env envVar
+      where
+        tryParse
+          = either
+              (OptFoundNoParse . toOptError opt)
+              OptParsed
+          . _optReader

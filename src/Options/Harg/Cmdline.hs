@@ -1,75 +1,57 @@
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module Options.Harg.Cmdline where
 
 import           Data.Maybe           (fromMaybe)
 import           Data.Foldable        (asum)
 
 import qualified Options.Applicative  as Optparse
+import qualified Options.Applicative  as Optparse
 
 import           Options.Harg.Help
 import           Options.Harg.Sources
 import           Options.Harg.Types
 
-
-toParser :: [ParserSource] -> Opt a -> Parser a
+toParser :: [ParserSource] -> Opt a -> Opt a
 toParser sources opt@Opt{..}
   = let
-      (res, errs)
-        = accumSourceResults (runSources sources opt)
       parser
         = case _optType of
-            OptionOptType      -> toOptionParser opt res
-            FlagOptType active -> toFlagParser opt active res
-            ArgumentOptType    -> toArgumentParser opt res
+            OptionOptType _      -> opt { _optType = OptionOptType (toOptionParser opt) }
+            FlagOptType _ active -> opt { _optType = FlagOptType (toFlagParser opt) active }
+            ArgumentOptType _    -> opt { _optType = ArgumentOptType (toArgumentParser opt) }
 
-    in Parser parser errs
+    in parser
 
 toOptionParser
   :: Opt a
-  -> [Maybe a]
-  -> Optparse.Parser a
-toOptionParser opt@Opt{..} sources
-  = Optparse.option (Optparse.eitherReader _optReader)
-      ( foldMap (fromMaybe mempty)
-          [ Optparse.long <$> _optLong
-          , Optparse.short <$> _optShort
-          , Optparse.help <$> mkHelp opt
-          , Optparse.metavar <$> _optMetavar
-          , Optparse.value <$> asum (sources ++ [_optDefault])
-          ]
-      )
+  -> Optparse.Mod Optparse.OptionFields a
+toOptionParser opt@Opt{..}
+  = foldMap (fromMaybe mempty)
+      [ Optparse.long <$> _optLong
+      , Optparse.short <$> _optShort
+      , Optparse.help <$> mkHelp opt
+      , Optparse.metavar <$> _optMetavar
+      -- , Optparse.value <$> asum (sources ++ [_optDefault])
+      ]
 
 toFlagParser
   :: Opt a
-  -> a -- active value
-  -> [Maybe a]  -- env var
-  -> Optparse.Parser a
-toFlagParser opt@Opt{..} active sources
-  = let
-      mDef
-        = case asum sources of
-            Nothing -> _optDefault
-            Just _  -> Just active
-      modifiers
-        = foldMap (fromMaybe mempty)
-            [ Optparse.long <$> _optLong
-            , Optparse.short <$> _optShort
-            , Optparse.help <$> mkHelp opt
-            ]
-    in case mDef of
-         Nothing ->
-           Optparse.flag' active modifiers
-         Just def ->
-           Optparse.flag def active modifiers
+  -> Optparse.Mod Optparse.FlagFields a
+toFlagParser opt@Opt{..}
+  = foldMap (fromMaybe mempty)
+      [ Optparse.long <$> _optLong
+      , Optparse.short <$> _optShort
+      , Optparse.help <$> mkHelp opt
+      ]
 
 toArgumentParser
   :: Opt a
-  -> [Maybe a]  -- env var
-  -> Optparse.Parser a
-toArgumentParser opt@Opt{..} sources
-  = Optparse.argument (Optparse.eitherReader _optReader)
-      ( foldMap (fromMaybe mempty)
-          [ Optparse.help <$> mkHelp opt
-          , Optparse.metavar <$> _optMetavar
-          , Optparse.value <$> asum (sources ++ [_optDefault])
-          ]
-      )
+  -> Optparse.Mod Optparse.ArgumentFields a
+toArgumentParser opt@Opt{..}
+  = foldMap (fromMaybe mempty)
+      [ Optparse.help <$> mkHelp opt
+      , Optparse.metavar <$> _optMetavar
+      -- , Optparse.value <$> asum (sources ++ [_optDefault])
+      ]

@@ -86,7 +86,7 @@ instance IsOpt OptionOpt where
         , _optEnvVar  = _oEnvVar
         , _optDefault = _oDefault
         , _optReader  = _oReader
-        , _optType    = OptionOptType
+        , _optType    = OptionOptType mempty
         }
 
 instance IsOpt FlagOpt where
@@ -99,7 +99,7 @@ instance IsOpt FlagOpt where
         , _optEnvVar  = _sEnvVar
         , _optDefault = Just _sDefault
         , _optReader  = _sReader
-        , _optType    = FlagOptType _sActive
+        , _optType    = FlagOptType mempty _sActive
         }
 
 instance IsOpt ArgumentOpt where
@@ -112,7 +112,7 @@ instance IsOpt ArgumentOpt where
         , _optEnvVar  = _aEnvVar
         , _optDefault = _aDefault
         , _optReader  = _aReader
-        , _optType    = ArgumentOptType
+        , _optType    = ArgumentOptType mempty
         }
 
 -- option constructors

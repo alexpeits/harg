@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE AllowAmbiguousTypes        #-}
 {-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE DerivingVia                #-}
@@ -10,6 +11,7 @@ module Options.Harg.Types where
 import           Data.Coerce          (Coercible, coerce)
 import           Data.Kind            (Type)
 import           GHC.Generics         (Generic)
+
 import qualified Options.Applicative  as Optparse
 
 import qualified Data.Barbie          as B
@@ -31,13 +33,23 @@ data Opt a
       , _optReader  :: OptReader a
       , _optType    :: OptType a
       }
-  deriving Functor
+  -- deriving Functor
 
 data OptType a
-  = OptionOptType
-  | FlagOptType a  -- active value
-  | ArgumentOptType
-  deriving Functor
+  = OptionOptType (Optparse.Mod Optparse.OptionFields a)
+  | FlagOptType (Optparse.Mod Optparse.FlagFields a) a  -- active value
+  | ArgumentOptType (Optparse.Mod Optparse.ArgumentFields a)
+  -- deriving Functor  -- TODO: write
+
+updateMod
+  :: forall a. Opt a
+  -> (forall f. Optparse.Mod f a -> Optparse.Mod f a)
+  -> Opt a
+updateMod opt@Opt{..} f
+  = case _optType of
+      OptionOptType m   -> opt { _optType = OptionOptType (f m) }
+      FlagOptType m a   -> opt { _optType = FlagOptType (f m) a }
+      ArgumentOptType m -> opt { _optType = ArgumentOptType (f m) }
 
 -- Option for flags with arguments
 data OptionOpt a
@@ -110,6 +122,7 @@ type Environment
 
 data ParserSource
   = EnvSource Environment
+  deriving Eq
 
 data SourceParseResult a
   = SourceNotAvailable

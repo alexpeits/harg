@@ -3,13 +3,17 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Parser where
 
+import           Control.Applicative        ((<|>))
 import           Data.Functor.Identity      (Identity (..))
+import           Data.Functor.Product       (Product (..))
 import           Data.Kind                  (Type)
 import           Data.Proxy                 (Proxy (..))
 import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
+import Data.List          (find, foldl1')
 
 import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
+import qualified Options.Applicative.Builder.Internal as B
 
 import           Options.Harg.Cmdline
 import           Options.Harg.Het.AssocList
@@ -17,15 +21,78 @@ import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Proofs
 import           Options.Harg.Het.Variant
 import           Options.Harg.Types
+import Options.Harg.Sources
 
+
+updateDef
+  :: forall a.
+     ( B.FunctorB a
+     , B.ProductB a
+     )
+  => a Opt
+  -> a Maybe
+  -> a Opt
+updateDef opt ma
+  = B.bmap (\(Pair x y) -> updateMod x (go y)) (opt `B.bprod` ma)
+  where
+    go ma' (B.Mod f (B.DefaultProp d s) p)
+      = B.Mod f (B.DefaultProp (ma' <|> d) s) p
+
+addDef
+  :: Optparse.Mod f a
+  -> Maybe a
+  -> Optparse.Mod f a
+addDef (B.Mod f (B.DefaultProp d s) p) ma
+  = B.Mod f (B.DefaultProp (d <|> ma) s) p
+
+mkParser
+  :: forall a.
+     ( B.TraversableB a
+     , B.ProductB a
+     , B.FunctorB a
+     )
+  => [ParserSource]
+  -> a Opt
+  -> (Optparse.Parser (a Identity), [OptError])
+mkParser sources opts
+  = let
+      (errs, res)
+        = accumSourceResults (runSources sources opts)
+      go' xs ys
+        = B.bmap (\(Pair x y) -> x <|> y) (B.bprod xs ys)
+      srcOpts
+        = foldl1' go' res
+      mods
+        = B.bmap (toParser sources) opts
+      opts'
+        = updateDef mods srcOpts
+      parser
+        = B.btraverse go opts'
+      go Opt{..}
+        = case _optType of
+            OptionOptType m -> pure <$> Optparse.option (Optparse.eitherReader _optReader) (addDef m _optDefault)
+            FlagOptType m@(B.Mod _ (B.DefaultProp d _) _) a ->
+              let
+                mdef = case d of
+                         Nothing -> _optDefault
+                         Just _ -> Just a
+              in pure <$> case mdef of
+                   Nothing -> Optparse.flag' a m
+                   Just def -> Optparse.flag def a m
+            ArgumentOptType m -> pure <$> Optparse.argument (Optparse.eitherReader _optReader) (addDef m _optDefault)
+    in (parser, errs)
 
 getOptParser
-  :: B.TraversableB a
+  :: forall a.
+     ( B.TraversableB a
+     , B.ProductB a
+     , B.FunctorB a
+     )
   => [ParserSource]
   -> a Opt
   -> (Parser (a Identity))
 getOptParser sources opts
-  = B.btraverse (fmap Identity <$> toParser sources) opts
+  = uncurry Parser $ mkParser sources opts
 
 getOptParserSubcommand
   :: forall xs ts.
@@ -64,6 +131,7 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
          -- get the correct injection into the variant by position
          , InjectPosF n x (as ++ (x ': xs))
          , B.TraversableB x
+         , B.ProductB x
          , KnownSymbol t
          -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
          , Proof as x xs
@@ -85,7 +153,7 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
       subcommand
         = let
             (Parser parser err)
-              = B.btraverse (fmap Identity <$> toParser sources) opt
+              = getOptParser sources opt
             cmd
               = Optparse.command tag
               $ injectPosF n
@@ -111,7 +179,7 @@ instance {-# OVERLAPPING #-}
   type OptResult (AssocListF ts xs Opt) = OptResult' (AssocListF ts xs)
   getParser = getOptParserSubcommand
 
-instance ( B.TraversableB a
+instance ( B.TraversableB a, B.ProductB a
          , OptResult' a ~ a Identity
          ) => GetParser (a Opt) where
   type OptResult (a Opt) = OptResult' a
