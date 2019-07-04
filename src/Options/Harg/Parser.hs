@@ -3,16 +3,16 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Parser where
 
-import           Control.Applicative        ((<|>))
-import           Data.Functor.Identity      (Identity (..))
-import           Data.Functor.Product       (Product (..))
-import           Data.Kind                  (Type)
-import           Data.Proxy                 (Proxy (..))
-import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
-import Data.List          (find, foldl1')
+import           Control.Applicative                  ((<|>))
+import           Data.Functor.Identity                (Identity (..))
+import           Data.Functor.Product                 (Product (..))
+import           Data.Kind                            (Type)
+import           Data.Proxy                           (Proxy (..))
+import           GHC.TypeLits                         (KnownSymbol, Symbol, symbolVal)
+import           Data.List                            (foldl1')
 
-import qualified Data.Barbie                as B
-import qualified Options.Applicative        as Optparse
+import qualified Data.Barbie                          as B
+import qualified Options.Applicative                  as Optparse
 import qualified Options.Applicative.Builder.Internal as B
 
 import           Options.Harg.Cmdline
@@ -21,7 +21,7 @@ import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Proofs
 import           Options.Harg.Het.Variant
 import           Options.Harg.Types
-import Options.Harg.Sources
+import           Options.Harg.Sources
 
 
 updateDef
