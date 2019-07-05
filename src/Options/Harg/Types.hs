@@ -33,23 +33,13 @@ data Opt a
       , _optReader  :: OptReader a
       , _optType    :: OptType a
       }
-  -- deriving Functor
+  deriving Functor
 
 data OptType a
   = OptionOptType
   | FlagOptType a  -- active value
   | ArgumentOptType
-  -- deriving Functor  -- TODO: write
-
--- updateMod
---   :: forall a. Opt a
---   -> (forall f. Optparse.Mod f a -> Optparse.Mod f a)
---   -> Opt a
--- updateMod opt@Opt{..} f
---   = case _optType of
---       OptionOptType m   -> opt { _optType = OptionOptType (f m) }
---       FlagOptType m a   -> opt { _optType = FlagOptType (f m) a }
---       ArgumentOptType m -> opt { _optType = ArgumentOptType (f m) }
+  deriving Functor
 
 -- Option for flags with arguments
 data OptionOpt a
@@ -97,10 +87,6 @@ instance Applicative Parser where
 
   Parser f e <*> Parser x e' = Parser (f <*> x) (e <> e')
 
-data ParserInfo a
-  = ParserInfo (Optparse.ParserInfo a) [OptError]
-  deriving Functor
-
 data OptError
   = OptError
       { _oeOpt  :: SomeOpt
@@ -114,8 +100,8 @@ toOptError
   :: Opt a
   -> String
   -> OptError
-toOptError opt s
-  = OptError (SomeOpt opt) s
+toOptError
+  = OptError . SomeOpt
 
 type Environment
   = [(String, String)]

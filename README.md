@@ -162,7 +162,7 @@ data FlatConfigB f
       , _fcDirB  :: f String
       , _fcLogB  :: f Bool
       }
-  deriving (Generic, B.FunctorB, B.TraversableB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 ```
 
 I also derived some required instances that come from the `barbies` package. These instances allow
