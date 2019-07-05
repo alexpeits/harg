@@ -1,8 +1,11 @@
+{-# LANGUAGE TypeFamilies #-}
 module Options.Harg.Sources where
 
 import           Data.Foldable            (foldr')
+import           Data.Kind                (Constraint, Type)
 import           System.Environment       (getEnvironment)
 
+import qualified Data.Aeson               as JSON
 import qualified Data.Barbie              as B
 
 import           Options.Harg.Sources.Env
@@ -48,3 +51,18 @@ getSources
   :: IO [ParserSource]
 getSources
   = pure . EnvSource <$> getEnvironment
+
+data EnvS
+data JSONS
+
+type family ConstraintsFor (a :: Type) :: Type -> Constraint
+
+type instance ConstraintsFor EnvS = EmptyConstraint
+type instance ConstraintsFor JSONS = JSON.FromJSON
+
+type family GatherConstraints (srcs :: [Type]) (a :: Type) :: Constraint where
+  GatherConstraints '[] _ = ()
+  GatherConstraints (s ': ss) a = (ConstraintsFor s a, GatherConstraints ss a)
+
+class EmptyConstraint (a :: Type)
+instance EmptyConstraint (a :: Type)

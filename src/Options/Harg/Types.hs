@@ -1,17 +1,20 @@
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE AllowAmbiguousTypes        #-}
 {-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE DerivingVia                #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE TypeFamilyDependencies     #-}
 {-# LANGUAGE UndecidableInstances       #-}
+
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Options.Harg.Types where
 
 import           Data.Coerce          (Coercible, coerce)
 import           Data.Kind            (Type)
 import           GHC.Generics         (Generic)
 
+import qualified Data.Aeson           as JSON
 import qualified Options.Applicative  as Optparse
 
 import qualified Data.Barbie          as B
@@ -168,6 +171,13 @@ getNested (Nested hkd) = HKD.construct hkd
 deriving newtype instance Generic (HKD.HKD b f) => Generic (Nested b f)
 deriving newtype instance B.FunctorB (HKD.HKD b) => B.FunctorB (Nested b)
 deriving newtype instance B.ProductB (HKD.HKD b) => B.ProductB (Nested b)
+deriving newtype instance JSON.FromJSON (HKD.HKD b f) => JSON.FromJSON (Nested b f)
 
 instance (B.TraversableB (HKD.HKD b)) => B.TraversableB (Nested b) where
   btraverse nat (Nested hkd) = Nested <$> B.btraverse nat hkd
+
+instance JSON.GFromJSON JSON.Zero (HKD.HKD_ f structure)
+    => JSON.FromJSON (HKD.HKD structure f) where
+  parseJSON
+    = fmap HKD.HKD
+    . JSON.gParseJSON JSON.defaultOptions JSON.NoFromArgs
