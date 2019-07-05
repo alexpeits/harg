@@ -98,15 +98,15 @@ instance IsOpt FlagOpt where
         , _optMetavar = Nothing
         , _optEnvVar  = _sEnvVar
         , _optDefault = Just _sDefault
-        , _optReader  = _sReader
+        , _optReader  = const (pure _sDefault)
         , _optType    = FlagOptType _sActive
         }
 
 instance IsOpt ArgumentOpt where
   toOpt ArgumentOpt{..}
     = Opt
-        { _optLong    = _aLong
-        , _optShort   = _aShort
+        { _optLong    = Nothing
+        , _optShort   = Nothing
         , _optHelp    = _aHelp
         , _optMetavar = _aMetavar
         , _optEnvVar  = _aEnvVar
@@ -149,7 +149,6 @@ flag d active
       , _sEnvVar  = Nothing
       , _sDefault = d
       , _sActive  = active
-      , _sReader  = const (pure d)
       }
 
 flagWith
@@ -185,9 +184,7 @@ argument
   -> ArgumentOpt a
 argument p
   = ArgumentOpt
-      { _aLong    = Nothing
-      , _aShort   = Nothing
-      , _aHelp    = Nothing
+      { _aHelp    = Nothing
       , _aMetavar = Nothing
       , _aEnvVar  = Nothing
       , _aDefault = Nothing

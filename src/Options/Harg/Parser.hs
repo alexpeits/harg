@@ -3,10 +3,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Parser where
 
-import           Control.Applicative        ((<|>))
 import           Data.Functor.Identity      (Identity (..))
 import           Data.Kind                  (Type)
-import           Data.List                  (foldl1')
 import           Data.Proxy                 (Proxy (..))
 import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
 
@@ -18,28 +16,8 @@ import           Options.Harg.Het.AssocList
 import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Proofs
 import           Options.Harg.Het.Variant
-import           Options.Harg.Sources
 import           Options.Harg.Types
-import           Options.Harg.Util          (bpairwise)
 
-mkParser
-  :: forall a.
-     ( B.TraversableB a
-     , B.ProductB a
-     , B.FunctorB a
-     )
-  => [ParserSource]
-  -> a Opt
-  -> (Optparse.Parser (a Identity), [OptError])
-mkParser sources opts
-  = let
-      (errs, res)
-        = accumSourceResults (runSources sources opts)
-      srcOpts
-        = foldl1' (bpairwise (<|>)) res
-      parser
-        = B.bsequence' $ bpairwise toParser srcOpts opts
-    in (parser, errs)
 
 getOptParser
   :: forall a.
@@ -51,7 +29,7 @@ getOptParser
   -> a Opt
   -> Parser (a Identity)
 getOptParser sources opts
-  = uncurry Parser $ mkParser sources opts
+  = uncurry Parser $ mkOptparseParser sources opts
 
 getOptParserSubcommand
   :: forall xs ts.
@@ -112,7 +90,7 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
       subcommand
         = let
             (parser, err)
-              = mkParser sources opt
+              = mkOptparseParser sources opt
             cmd
               = Optparse.command tag
               $ injectPosF n

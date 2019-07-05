@@ -1,28 +1,43 @@
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
-{-# OPTIONS_GHC -fno-warn-unused-binds #-}
-{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module Options.Harg.Cmdline where
 
-import           Control.Applicative  ((<|>))
-import           Data.Foldable        (asum)
-import           Data.Maybe           (fromMaybe)
+import           Control.Applicative   ((<|>))
+import           Data.Functor.Identity (Identity (..))
+import           Data.List             (foldl1')
+import           Data.Maybe            (fromMaybe)
 
-import qualified Options.Applicative  as Optparse
+import qualified Data.Barbie           as B
+import qualified Options.Applicative   as Optparse
 
 import           Options.Harg.Help
 import           Options.Harg.Sources
 import           Options.Harg.Types
+import           Options.Harg.Util
 
-toParser :: Maybe a -> Opt a -> Optparse.Parser a
-toParser sources opt@Opt{..}
+
+mkOptparseParser
+  :: forall a.
+     ( B.TraversableB a
+     , B.ProductB a
+     )
+  => [ParserSource]
+  -> a Opt
+  -> (Optparse.Parser (a Identity), [OptError])
+mkOptparseParser sources opts
   = let
+      (errs, res)
+        = accumSourceResults (runSources sources opts)
+      srcOpts
+        = foldl1' (bpairwise (<|>)) res
       parser
-        = case _optType of
-            OptionOptType      -> toOptionParser sources opt
-            FlagOptType active -> toFlagParser sources opt active
-            ArgumentOptType    -> toArgumentParser sources opt
+        = B.bsequence' $ bpairwise mkParser srcOpts opts
+    in (parser, errs)
+  where
+    mkParser srcs opt@Opt{..}
+      = case _optType of
+          OptionOptType      -> toOptionParser srcs opt
+          FlagOptType active -> toFlagParser srcs opt active
+          ArgumentOptType    -> toArgumentParser srcs opt
 
-    in parser
 
 toOptionParser
   :: Maybe a

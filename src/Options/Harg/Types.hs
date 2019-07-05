@@ -63,14 +63,12 @@ data FlagOpt a
       , _sEnvVar  :: Maybe String
       , _sDefault :: a
       , _sActive  :: a
-      , _sReader  :: OptReader a
       }
 
+-- Option for arguments (no long/short specifiers)
 data ArgumentOpt a
   = ArgumentOpt
-      { _aLong    :: Maybe String
-      , _aShort   :: Maybe Char
-      , _aHelp    :: Maybe String
+      { _aHelp    :: Maybe String
       , _aMetavar :: Maybe String
       , _aEnvVar  :: Maybe String
       , _aDefault :: Maybe a
