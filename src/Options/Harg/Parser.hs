@@ -3,47 +3,24 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Parser where
 
-import           Control.Applicative                  ((<|>))
-import           Data.Functor.Identity                (Identity (..))
-import           Data.Functor.Product                 (Product (..))
-import           Data.Kind                            (Type)
-import           Data.Proxy                           (Proxy (..))
-import           GHC.TypeLits                         (KnownSymbol, Symbol, symbolVal)
-import           Data.List                            (foldl1')
+import           Control.Applicative        ((<|>))
+import           Data.Functor.Identity      (Identity (..))
+import           Data.Kind                  (Type)
+import           Data.List                  (foldl1')
+import           Data.Proxy                 (Proxy (..))
+import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
 
-import qualified Data.Barbie                          as B
-import qualified Options.Applicative                  as Optparse
-import qualified Options.Applicative.Builder.Internal as B
+import qualified Data.Barbie                as B
+import qualified Options.Applicative        as Optparse
 
 import           Options.Harg.Cmdline
 import           Options.Harg.Het.AssocList
 import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Proofs
 import           Options.Harg.Het.Variant
-import           Options.Harg.Types
 import           Options.Harg.Sources
-
-
-updateDef
-  :: forall a.
-     ( B.FunctorB a
-     , B.ProductB a
-     )
-  => a Opt
-  -> a Maybe
-  -> a Opt
-updateDef opt ma
-  = B.bmap (\(Pair x y) -> updateMod x (go y)) (opt `B.bprod` ma)
-  where
-    go ma' (B.Mod f (B.DefaultProp d s) p)
-      = B.Mod f (B.DefaultProp (ma' <|> d) s) p
-
-addDef
-  :: Optparse.Mod f a
-  -> Maybe a
-  -> Optparse.Mod f a
-addDef (B.Mod f (B.DefaultProp d s) p) ma
-  = B.Mod f (B.DefaultProp (d <|> ma) s) p
+import           Options.Harg.Types
+import           Options.Harg.Util          (bpairwise)
 
 mkParser
   :: forall a.
@@ -58,28 +35,10 @@ mkParser sources opts
   = let
       (errs, res)
         = accumSourceResults (runSources sources opts)
-      go' xs ys
-        = B.bmap (\(Pair x y) -> x <|> y) (B.bprod xs ys)
       srcOpts
-        = foldl1' go' res
-      mods
-        = B.bmap (toParser sources) opts
-      opts'
-        = updateDef mods srcOpts
+        = foldl1' (bpairwise (<|>)) res
       parser
-        = B.btraverse go opts'
-      go Opt{..}
-        = case _optType of
-            OptionOptType m -> pure <$> Optparse.option (Optparse.eitherReader _optReader) (addDef m _optDefault)
-            FlagOptType m@(B.Mod _ (B.DefaultProp d _) _) a ->
-              let
-                mdef = case d of
-                         Nothing -> _optDefault
-                         Just _ -> Just a
-              in pure <$> case mdef of
-                   Nothing -> Optparse.flag' a m
-                   Just def -> Optparse.flag def a m
-            ArgumentOptType m -> pure <$> Optparse.argument (Optparse.eitherReader _optReader) (addDef m _optDefault)
+        = B.bsequence' $ bpairwise toParser srcOpts opts
     in (parser, errs)
 
 getOptParser
@@ -90,7 +49,7 @@ getOptParser
      )
   => [ParserSource]
   -> a Opt
-  -> (Parser (a Identity))
+  -> Parser (a Identity)
 getOptParser sources opts
   = uncurry Parser $ mkParser sources opts
 
@@ -152,8 +111,8 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
            )
       subcommand
         = let
-            (Parser parser err)
-              = getOptParser sources opt
+            (parser, err)
+              = mkParser sources opt
             cmd
               = Optparse.command tag
               $ injectPosF n

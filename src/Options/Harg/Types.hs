@@ -36,20 +36,20 @@ data Opt a
   -- deriving Functor
 
 data OptType a
-  = OptionOptType (Optparse.Mod Optparse.OptionFields a)
-  | FlagOptType (Optparse.Mod Optparse.FlagFields a) a  -- active value
-  | ArgumentOptType (Optparse.Mod Optparse.ArgumentFields a)
+  = OptionOptType
+  | FlagOptType a  -- active value
+  | ArgumentOptType
   -- deriving Functor  -- TODO: write
 
-updateMod
-  :: forall a. Opt a
-  -> (forall f. Optparse.Mod f a -> Optparse.Mod f a)
-  -> Opt a
-updateMod opt@Opt{..} f
-  = case _optType of
-      OptionOptType m   -> opt { _optType = OptionOptType (f m) }
-      FlagOptType m a   -> opt { _optType = FlagOptType (f m) a }
-      ArgumentOptType m -> opt { _optType = ArgumentOptType (f m) }
+-- updateMod
+--   :: forall a. Opt a
+--   -> (forall f. Optparse.Mod f a -> Optparse.Mod f a)
+--   -> Opt a
+-- updateMod opt@Opt{..} f
+--   = case _optType of
+--       OptionOptType m   -> opt { _optType = OptionOptType (f m) }
+--       FlagOptType m a   -> opt { _optType = FlagOptType (f m) a }
+--       ArgumentOptType m -> opt { _optType = ArgumentOptType (f m) }
 
 -- Option for flags with arguments
 data OptionOpt a
