@@ -38,7 +38,6 @@ mkOptparseParser sources opts
           FlagOptType active -> toFlagParser srcs opt active
           ArgumentOptType    -> toArgumentParser srcs opt
 
-
 toOptionParser
   :: Maybe a
   -> Opt a
