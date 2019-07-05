@@ -2,7 +2,7 @@ module Options.Harg.Cmdline where
 
 import           Control.Applicative   ((<|>))
 import           Data.Functor.Identity (Identity (..))
-import           Data.List             (foldl1')
+import           Data.List             (foldl1', nub)
 import           Data.Maybe            (fromMaybe)
 
 import qualified Data.Barbie           as B
@@ -30,7 +30,7 @@ mkOptparseParser sources opts
         = foldl1' (bpairwise (<|>)) res
       parser
         = B.bsequence' $ bpairwise mkParser srcOpts opts
-    in (parser, errs)
+    in (parser, nub errs)
   where
     mkParser srcs opt@Opt{..}
       = case _optType of
