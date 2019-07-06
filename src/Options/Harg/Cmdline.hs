@@ -6,6 +6,7 @@ import           Data.List             (foldl1', nub)
 import           Data.Maybe            (fromMaybe)
 
 import qualified Data.Barbie           as B
+import qualified Data.Aeson            as JSON
 import qualified Options.Applicative   as Optparse
 
 import           Options.Harg.Help
@@ -18,6 +19,7 @@ mkOptparseParser
   :: forall a.
      ( B.TraversableB a
      , B.ProductB a
+     , JSON.FromJSON (a Maybe)
      )
   => [ParserSource]
   -> a Opt

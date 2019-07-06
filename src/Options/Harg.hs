@@ -36,6 +36,7 @@ module Options.Harg
   , execOptPure
 
   , (:*) (..)
+  , Tagged (..)
 
   , VariantF (..)
   , pattern In1

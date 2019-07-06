@@ -114,13 +114,20 @@ type Environment
 
 data ParserSource
   = EnvSource Environment
-  deriving Eq
+  | JSONSource JSON.Value
+  deriving (Eq, Show)
 
 data SourceParseResult a
   = SourceNotAvailable
   | OptNotFound
   | OptFoundNoParse OptError
   | OptParsed a
+
+data ParserConfig
+  = ParserConfig
+
+data ParserEnv
+  = ParserEnv
 
 -- Single
 newtype Single (b :: Type) (f :: Type -> Type)

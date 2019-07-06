@@ -1,0 +1,11 @@
+{
+  "db": {
+    "_dbUser": "DB USER",
+    "_dbPort": 6543
+  },
+  "srv": {
+    "_srvPort": 25000,
+    "_srvLog": true
+  },
+  "smth": 666
+}

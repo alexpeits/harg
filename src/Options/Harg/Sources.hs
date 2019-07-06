@@ -1,19 +1,25 @@
 {-# LANGUAGE TypeFamilies #-}
 module Options.Harg.Sources where
 
-import           Data.Foldable            (foldr')
-import           Data.Kind                (Constraint, Type)
-import           System.Environment       (getEnvironment)
+import           Data.Foldable             (foldr')
+import           Data.Kind                 (Constraint, Type)
+import           Data.Maybe                (fromJust)
+import           System.Environment        (getEnvironment)
 
-import qualified Data.Aeson               as JSON
-import qualified Data.Barbie              as B
+import           Control.Monad.Reader      (ReaderT, asks)
+import           Control.Monad.IO.Class    (MonadIO, liftIO)
+import qualified Data.Aeson                as JSON
+import qualified Data.Barbie               as B
 
 import           Options.Harg.Sources.Env
+import           Options.Harg.Sources.JSON
 import           Options.Harg.Types
 
 
 runSources
-  :: B.FunctorB a
+  :: ( B.FunctorB a
+     , JSON.FromJSON (a Maybe)
+     )
   => [ParserSource]
   -> a Opt
   -> [a SourceParseResult]
@@ -21,7 +27,9 @@ runSources sources opt
   = map (`runSource` opt) sources
 
 runSource
-  :: B.FunctorB a
+  :: ( B.FunctorB a
+     , JSON.FromJSON (a Maybe)
+     )
   => ParserSource
   -> a Opt
   -> a SourceParseResult
@@ -29,6 +37,8 @@ runSource source opt
   = case source of
       EnvSource env
         -> runEnvVarSource env opt
+      JSONSource json
+        -> runJSONSource json opt
 
 accumSourceResults
   :: forall a. B.TraversableB a
@@ -50,7 +60,13 @@ accumSourceResults
 getSources
   :: IO [ParserSource]
 getSources
-  = pure . EnvSource <$> getEnvironment
+  = do
+      env <- getEnvironment
+      json <- getJSON "/home/alex/projects/configuration/test.json"
+      pure
+        [ EnvSource env
+        , JSONSource (fromJust json)
+        ]
 
 data EnvS
 data JSONS

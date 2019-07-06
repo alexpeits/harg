@@ -19,22 +19,22 @@ import qualified Data.Aeson as JSON
 import qualified Data.ByteString.Lazy as BS
 import qualified Data.Generic.HKD     as HKD
 
-mainSubparser :: IO ()
-mainSubparser = do
-  conf <- execOpt configOpt
-  foldF conf
-    (
-      \(db :* srv :* hh)
-        -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
-           & runIdentity
-           & print
-    )
-    (
-      \(db :* tst)
-         -> TestAppC <$> getNested db <*> getNested tst
-            & runIdentity
-            & print
-    )
+-- mainSubparser :: IO ()
+-- mainSubparser = do
+  -- conf <- execOpt configOpt
+  -- foldF conf
+    -- (
+      -- \(db :* srv :* hh)
+        -- -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
+           -- & runIdentity
+           -- & print
+    -- )
+    -- (
+      -- \(db :* tst)
+         -- -> TestAppC <$> getNested db <*> getNested tst
+            -- & runIdentity
+            -- & print
+    -- )
 
   -- or:
 
@@ -63,9 +63,9 @@ mainParser = do
   db :* srv :* hh <- execOpt appOpt
   let ov
         = AppC
-        <$> getNested db
-        <*> getNested srv
-        <*> getSingle hh
+        <$> getNested (unTagged db)
+        <*> getNested (unTagged srv)
+        <*> getSingle (unTagged hh)
 
   print $ runIdentity ov
 
@@ -83,13 +83,15 @@ data AppC
   deriving Show
 
 type AppConfig
-  =  Nested DBConfig
-  :* Nested ServiceConfig
-  :* Single Int
+  =  Tagged "db" (Nested DBConfig)
+  :* Tagged "srv" (Nested ServiceConfig)
+  :* Tagged "smth" (Single Int)
 
 appOpt :: AppConfig Opt
 appOpt
-  = dbConf :* srvConf :* single something
+  =  Tagged dbConf
+  :* Tagged srvConf
+  :* Tagged (single something)
   where
     srvConf
       = nested @ServiceConfig

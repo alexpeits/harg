@@ -17,6 +17,7 @@ import           Data.Aeson            ((.:))
 import qualified Data.Aeson            as JSON
 import qualified Data.Barbie           as B
 
+import Debug.Trace (trace)
 
 newtype Tagged
     (t :: k)
@@ -25,8 +26,19 @@ newtype Tagged
   = Tagged
       { unTagged :: a f
       }
+  deriving (Generic)
 
 deriving newtype instance JSON.FromJSON (a f) => JSON.FromJSON (Tagged t a f)
+
+instance B.FunctorB a => B.FunctorB (Tagged t a) where
+  bmap nat (Tagged x) = Tagged (B.bmap nat x)
+
+instance B.TraversableB a => B.TraversableB (Tagged t a) where
+  btraverse nat (Tagged x) = Tagged <$> B.btraverse nat x
+
+instance B.ProductB a => B.ProductB (Tagged t a) where
+  bprod (Tagged l) (Tagged r) = Tagged (B.bprod l r)
+  buniq f = Tagged (B.buniq f)
 
 data
     ((a :: (Type -> Type) -> Type) :* (b :: (Type -> Type) -> Type))
@@ -48,6 +60,19 @@ instance ( JSON.FromJSON (a f)
   parseJSON
     = JSON.withObject ":*"
     $ \o ->
-        (:*)
-        <$> o .: Tx.pack (symbolVal (Proxy :: Proxy t))
-        <*> JSON.parseJSON (JSON.Object o)
+          (:*)
+          <$> o .: Tx.pack (symbolVal (Proxy :: Proxy t))
+          <*> JSON.parseJSON (JSON.Object o)
+
+instance {-# OVERLAPS #-}
+    ( JSON.FromJSON (a f)
+    , JSON.FromJSON (b f)
+    , KnownSymbol ta
+    , KnownSymbol tb
+    ) => JSON.FromJSON ((Tagged ta a :* Tagged tb b) f) where
+  parseJSON
+    = JSON.withObject ":*"
+    $ \o ->
+          (:*)
+          <$> o .: Tx.pack (symbolVal (Proxy :: Proxy ta))
+          <*> o .: Tx.pack (symbolVal (Proxy :: Proxy tb))

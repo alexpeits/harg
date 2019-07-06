@@ -8,6 +8,7 @@ import           Data.Kind                  (Type)
 import           Data.Proxy                 (Proxy (..))
 import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
 
+import qualified Data.Aeson                 as JSON
 import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
 
@@ -24,6 +25,7 @@ getOptParser
      ( B.TraversableB a
      , B.ProductB a
      , B.FunctorB a
+     , JSON.FromJSON (a Maybe)
      )
   => [ParserSource]
   -> a Opt
@@ -71,6 +73,7 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
          , B.TraversableB x
          , B.ProductB x
          , KnownSymbol t
+         , JSON.FromJSON (x Maybe)
          -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
          , Proof as x xs
          ) => Subcommands n (t ': ts) (x ': xs) as where
@@ -85,7 +88,8 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
     where
 
       subcommand
-        :: IO ( Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity)
+        :: JSON.FromJSON (x Maybe)
+        => IO ( Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity)
               , [OptError]
               )
       subcommand
@@ -120,6 +124,7 @@ instance {-# OVERLAPPING #-}
 
 instance ( B.TraversableB a, B.ProductB a
          , OptResult' a ~ a Identity
+         , JSON.FromJSON (a Maybe)
          ) => GetParser (a Opt) where
   type OptResult (a Opt) = OptResult' a
   getParser = getOptParser
