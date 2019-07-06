@@ -133,6 +133,7 @@ single = Single
 
 deriving instance (Show b, Show (f b)) => Show (Single b f)
 deriving newtype instance Generic (f b) => Generic (Single b f)
+deriving newtype instance JSON.FromJSON (f b) => JSON.FromJSON (Single b f)
 
 instance B.FunctorB (Single b) where
   bmap nat (Single p) = Single (nat p)

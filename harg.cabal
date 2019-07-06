@@ -55,6 +55,7 @@ library
   build-depends:      base >=4.7 && <5
                     , aeson
                     , bytestring
+                    , text
                     , barbies >= 1.0.0 && < 1.2
                     , higgledy >= 0.2.0 && < 0.3
                     , optparse-applicative >= 0.14.3 && < 0.15

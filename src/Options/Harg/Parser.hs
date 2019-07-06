@@ -27,9 +27,9 @@ getOptParser
      )
   => [ParserSource]
   -> a Opt
-  -> Parser (a Identity)
+  -> IO (Parser (a Identity))
 getOptParser sources opts
-  = uncurry Parser $ mkOptparseParser sources opts
+  = uncurry Parser <$> mkOptparseParser sources opts
 
 getOptParserSubcommand
   :: forall xs ts.
@@ -38,14 +38,15 @@ getOptParserSubcommand
      )
   => [ParserSource]
   -> AssocListF ts xs Opt
-  -> Parser (VariantF xs Identity)
+  -> IO (Parser (VariantF xs Identity))
 getOptParserSubcommand sources alist
-  = let
+  = do
       (commands, err)
-        = mapSubcommand @Z @ts @xs @'[] SZ sources alist
-      parser
-        = Optparse.subparser (mconcat commands)
-    in Parser parser err
+        <- mapSubcommand @Z @ts @xs @'[] SZ sources alist
+      let
+        parser
+          = Optparse.subparser (mconcat commands)
+      pure $ Parser parser err
 
 -- subcommands
 class Subcommands
@@ -57,10 +58,10 @@ class Subcommands
     :: SNat n
     -> [ParserSource]
     -> AssocListF ts xs Opt
-    -> ([Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) Identity)], [OptError])
+    -> IO ([Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) Identity)], [OptError])
 
 instance Subcommands n '[] '[] acc where
-  mapSubcommand _ _ _ = ([], [])
+  mapSubcommand _ _ _ = pure ([], [])
 
 -- ok wait
 -- hear me out:
@@ -75,27 +76,28 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
          ) => Subcommands n (t ': ts) (x ': xs) as where
 
   mapSubcommand n sources (ACons opt opts)
-    = let
-        (sc, err) = subcommand
-        (rest, errs) = hgcastWith (proof @as @x @xs)
-                         (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) sources opts)
-      in (sc : rest, err <> errs)
+    = do
+        (sc, err) <- subcommand
+        (rest, errs) <- hgcastWith (proof @as @x @xs)
+                          (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) sources opts)
+        pure (sc : rest, err <> errs)
 
     where
 
       subcommand
-        :: ( Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity)
-           , [OptError]
-           )
+        :: IO ( Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity)
+              , [OptError]
+              )
       subcommand
-        = let
+        = do
             (parser, err)
-              = mkOptparseParser sources opt
-            cmd
-              = Optparse.command tag
-              $ injectPosF n
-              <$> Optparse.info (Optparse.helper <*> parser) mempty
-          in (cmd, err)
+              <- mkOptparseParser sources opt
+            let
+              cmd
+                = Optparse.command tag
+                $ injectPosF n
+                <$> Optparse.info (Optparse.helper <*> parser) mempty
+            pure (cmd, err)
 
       tag
         = symbolVal (Proxy :: Proxy t)
@@ -107,7 +109,7 @@ type family OptResult' a where
 
 class GetParser a where
   type OptResult a :: Type
-  getParser :: [ParserSource] -> a -> Parser (OptResult a)
+  getParser :: [ParserSource] -> a -> IO (Parser (OptResult a))
 
 instance {-# OVERLAPPING #-}
          ( B.TraversableB (VariantF xs)

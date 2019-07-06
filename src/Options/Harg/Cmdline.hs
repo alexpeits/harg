@@ -21,7 +21,7 @@ mkOptparseParser
      )
   => [ParserSource]
   -> a Opt
-  -> (Optparse.Parser (a Identity), [OptError])
+  -> IO (Optparse.Parser (a Identity), [OptError])
 mkOptparseParser sources opts
   = let
       (errs, res)
@@ -30,7 +30,7 @@ mkOptparseParser sources opts
         = foldl1' (bpairwise (<|>)) res
       parser
         = B.bsequence' $ bpairwise mkParser srcOpts opts
-    in (parser, nub errs)
+    in pure (parser, nub errs)
   where
     mkParser srcs opt@Opt{..}
       = case _optType of

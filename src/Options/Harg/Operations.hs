@@ -30,7 +30,7 @@ execParserDefPure
 execParserDefPure (Parser parser err) args
   = let
       parserInfo
-        = Optparse.info (Optparse.helper <*> parser) mempty
+        = Optparse.info (Optparse.helper <*> parser) Optparse.forwardOptions
       res
         = Optparse.execParserPure Optparse.defaultPrefs parserInfo args
 
@@ -43,33 +43,33 @@ getOptparseParser
 getOptparseParser a
   = do
       sources <- getSources
-      pure $ getOptparseParserPure sources a
+      getOptparseParserPure sources a
 
 getOptparseParserPure
   :: GetParser a
   => [ParserSource]
   -> a
-  -> Optparse.Parser (OptResult a)
+  -> IO (Optparse.Parser (OptResult a))
 getOptparseParserPure sources a
-  = fst $ getOptparseParserAndErrorsPure sources a
+  = fst <$> getOptparseParserAndErrorsPure sources a
 
-getOptparseParserAndErrors
-  :: GetParser a
-  => a
-  -> IO (Optparse.Parser (OptResult a), [OptError])
-getOptparseParserAndErrors a
-  = do
-      sources <- getSources
-      pure $ getOptparseParserAndErrorsPure sources a
+-- getOptparseParserAndErrors
+  -- :: GetParser a
+  -- => a
+  -- -> IO (Optparse.Parser (OptResult a), [OptError])
+-- getOptparseParserAndErrors a
+  -- = do
+      -- sources <- getSources
+      -- pure $ getOptparseParserAndErrorsPure sources a
 
 getOptparseParserAndErrorsPure
   :: GetParser a
   => [ParserSource]
   -> a
-  -> (Optparse.Parser (OptResult a), [OptError])
+  -> IO (Optparse.Parser (OptResult a), [OptError])
 getOptparseParserAndErrorsPure sources a
-  = let Parser p err = getParser sources a
-    in (p, err)
+  = do Parser p err <- getParser sources a
+       pure (p, err)
 
 execOpt
   :: GetParser a
@@ -78,14 +78,16 @@ execOpt
 execOpt a
   = do
       sources <- getSources
-      execParserDef (getParser sources a)
+      execParserDef =<< getParser sources a
 
 execOptPure
   :: GetParser a
   => [String]
   -> [ParserSource]
   -> a
-  -> (Optparse.ParserResult (OptResult a), [OptError])
+  -> IO (Optparse.ParserResult (OptResult a), [OptError])
 execOptPure args sources a
-  = execParserDefPure (getParser sources a) args
+  = do
+      p <- getParser sources a
+      pure $ execParserDefPure p args
 
