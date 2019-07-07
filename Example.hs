@@ -58,9 +58,15 @@ import qualified Data.Generic.HKD     as HKD
             -- & runIdentity
             -- & print
 
+srcOpt :: (Env :* Jason :* Jason) Opt
+srcOpt = Env :* Jason (jsonOpt "j1") :* Jason (jsonOpt "j2")
+
+srcOpt' :: (Jason :* Env) Opt
+srcOpt' = Jason (jsonOpt "j1") :* Env
+
 mainParser :: IO ()
 mainParser = do
-  db :* srv :* hh <- execOpt appOpt
+  db :* srv :* hh <- execOpt' srcOpt appOpt
   let ov
         = AppC
         <$> getNested (unTagged db)

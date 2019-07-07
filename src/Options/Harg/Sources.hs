@@ -1,44 +1,26 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE TypeFamilies         #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Sources where
 
 import           Data.Foldable             (foldr')
-import           Data.Kind                 (Constraint, Type)
-import           Data.Maybe                (fromJust)
+import           Data.Kind                 (Type)
 import           System.Environment        (getEnvironment)
+import           GHC.Generics              (Generic)
+import           Data.Functor.Identity     (Identity(..))
 
-import           Control.Monad.Reader      (ReaderT, asks)
-import           Control.Monad.IO.Class    (MonadIO, liftIO)
 import qualified Data.Aeson                as JSON
 import qualified Data.Barbie               as B
+import qualified Options.Applicative       as Optparse
 
 import           Options.Harg.Sources.Env
 import           Options.Harg.Sources.JSON
 import           Options.Harg.Types
+import           Options.Harg.Het.Prod
+import           Options.Harg.Cmdline
 
-
-runSources
-  :: ( B.FunctorB a
-     , JSON.FromJSON (a Maybe)
-     )
-  => [ParserSource]
-  -> a Opt
-  -> [a SourceParseResult]
-runSources sources opt
-  = map (`runSource` opt) sources
-
-runSource
-  :: ( B.FunctorB a
-     , JSON.FromJSON (a Maybe)
-     )
-  => ParserSource
-  -> a Opt
-  -> a SourceParseResult
-runSource source opt
-  = case source of
-      EnvSource env
-        -> runEnvVarSource env opt
-      JSONSource json
-        -> runJSONSource json opt
 
 accumSourceResults
   :: forall a. B.TraversableB a
@@ -56,29 +38,105 @@ accumSourceResults
           OptParsed a       -> ([], Just a)
           _                 -> ([], Nothing)
 
--- Currently only environment
-getSources
-  :: IO [ParserSource]
-getSources
-  = do
-      env <- getEnvironment
-      json <- getJSON "/home/alex/projects/configuration/test.json"
-      pure
-        [ EnvSource env
-        , JSONSource (fromJust json)
-        ]
+data Env (f :: Type -> Type) = Env
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
-data EnvS
-data JSONS
+newtype Jason f = Jason (f String)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
-type family ConstraintsFor (a :: Type) :: Type -> Constraint
+type family SourceVal (s :: (Type -> Type) -> Type) :: Type where
+  SourceVal Env   = Environment
+  SourceVal Jason = JSON.Value
 
-type instance ConstraintsFor EnvS = EmptyConstraint
-type instance ConstraintsFor JSONS = JSON.FromJSON
+class RunSource (s :: (Type -> Type) -> Type) a where
+  runSource' :: SourceVal s -> a Opt -> a SourceParseResult
 
-type family GatherConstraints (srcs :: [Type]) (a :: Type) :: Constraint where
-  GatherConstraints '[] _ = ()
-  GatherConstraints (s ': ss) a = (ConstraintsFor s a, GatherConstraints ss a)
+instance B.FunctorB a => RunSource Env a where
+  runSource' = runEnvVarSource
 
-class EmptyConstraint (a :: Type)
-instance EmptyConstraint (a :: Type)
+instance ( B.FunctorB a
+         , JSON.FromJSON (a Maybe)
+         ) => RunSource Jason a where
+  runSource' = runJSONSource
+
+class ( B.TraversableB a
+      , B.ProductB a
+      , B.FunctorB a
+      ) => GetSources c a where
+  getSources' :: c -> a Opt -> IO ([OptError], [a Maybe])
+
+instance ( B.TraversableB a
+         , B.ProductB a
+         , B.FunctorB a
+         ) => GetSources (Env f) a where
+  getSources' _ opts
+    = do
+        env <- getEnvironment
+        let
+          (errs, res)
+            = accumSourceResults [runSource' @Env env opts]
+        pure (errs, res)
+
+dummyOpt :: Opt String
+dummyOpt
+  = Opt
+      { _optLong = Nothing
+      , _optShort = Nothing
+      , _optHelp = Nothing
+      , _optMetavar = Nothing
+      , _optEnvVar = Nothing
+      , _optDefault = Just ""
+      , _optReader = pure
+      , _optType = FlagOptType ""
+      }
+
+instance ( B.TraversableB a
+         , B.ProductB a
+         , B.FunctorB a
+         , JSON.FromJSON (a Maybe)
+         ) => GetSources (Jason Identity) a where
+  getSources' (Jason (Identity s)) opts
+    = do
+        Just json <- getJSON s
+        let
+          (errs, res)
+            = accumSourceResults [runSource' @Jason json opts]
+        pure (errs, res)
+
+jsonOpt :: String -> Opt String
+jsonOpt s
+  = Opt
+      { _optLong = Just s
+      , _optShort = Nothing
+      , _optHelp = Just "JSON config path"
+      , _optMetavar = Nothing
+      , _optEnvVar = Nothing
+      , _optDefault = Nothing
+      , _optReader = pure
+      , _optType = OptionOptType
+      }
+
+instance ( GetSources (l Identity) a
+         , GetSources (r Identity) a
+         , B.TraversableB a
+         , B.ProductB a
+         , B.FunctorB a
+         -- , JSON.FromJSON (a Maybe)
+         ) => GetSources ((l :* r) Identity) a where
+  getSources' (l :* r) f
+    = do
+        (le, lv) <- getSources' l f
+        (re, rv) <- getSources' r f
+        pure (le ++ re, lv ++ rv)
+
+-- type family ConstraintsFor (a :: Type) :: Type -> Constraint
+
+-- type instance ConstraintsFor EnvS = EmptyConstraint
+-- type instance ConstraintsFor JSONS = JSON.FromJSON
+
+-- type family GatherConstraints (srcs :: [Type]) (a :: Type) :: Constraint where
+--   GatherConstraints '[] _ = ()
+--   GatherConstraints (s ': ss) a = (ConstraintsFor s a, GatherConstraints ss a)
+
+-- class EmptyConstraint (a :: Type)
+-- instance EmptyConstraint (a :: Type)

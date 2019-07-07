@@ -1,70 +1,73 @@
 module Options.Harg.Cmdline where
 
 import           Control.Applicative   ((<|>))
-import           Data.Functor.Identity (Identity (..))
-import           Data.List             (foldl1', nub)
+import           Data.Functor.Compose  (Compose (..))
+import           Data.List             (foldl')
 import           Data.Maybe            (fromMaybe)
 
 import qualified Data.Barbie           as B
-import qualified Data.Aeson            as JSON
 import qualified Options.Applicative   as Optparse
 
 import           Options.Harg.Help
-import           Options.Harg.Sources
 import           Options.Harg.Types
 import           Options.Harg.Util
 
 
 mkOptparseParser
-  :: forall a.
+  :: forall a f.
      ( B.TraversableB a
      , B.ProductB a
-     , JSON.FromJSON (a Maybe)
+     , Applicative f
      )
-  => [ParserSource]
-  -> a Opt
-  -> IO (Optparse.Parser (a Identity), [OptError])
+  => [a (Compose Maybe f)]
+  -> a (Compose Opt f)
+  -> IO (Optparse.Parser (a f))
 mkOptparseParser sources opts
   = let
-      (errs, res)
-        = accumSourceResults (runSources sources opts)
       srcOpts
-        = foldl1' (bpairwise (<|>)) res
+        = foldl'
+            (bpairwise (<|>))
+            (B.bmap (const (Compose Nothing)) opts)
+            sources
       parser
-        = B.bsequence' $ bpairwise mkParser srcOpts opts
-    in pure (parser, nub errs)
-  where
-    mkParser srcs opt@Opt{..}
-      = case _optType of
-          OptionOptType      -> toOptionParser srcs opt
-          FlagOptType active -> toFlagParser srcs opt active
-          ArgumentOptType    -> toArgumentParser srcs opt
+        = B.bsequence $ bpairwise mkParser srcOpts opts
+    in pure parser
+
+mkParser
+  :: Compose Maybe f a
+  -> Compose Opt f a
+  -> Compose Optparse.Parser f a
+mkParser srcs opt@(Compose Opt{..})
+  = case _optType of
+      OptionOptType      -> toOptionParser srcs opt
+      FlagOptType active -> toFlagParser srcs opt active
+      ArgumentOptType    -> toArgumentParser srcs opt
 
 toOptionParser
-  :: Maybe a
-  -> Opt a
-  -> Optparse.Parser a
-toOptionParser sources opt@Opt{..}
-  = Optparse.option (Optparse.eitherReader _optReader)
+  :: Compose Maybe f a
+  -> Compose Opt f a
+  -> Compose Optparse.Parser f a
+toOptionParser sources (Compose opt@Opt{..})
+  = Compose $ Optparse.option (Optparse.eitherReader _optReader)
       ( foldMap (fromMaybe mempty)
           [ Optparse.long <$> _optLong
           , Optparse.short <$> _optShort
           , Optparse.help <$> mkHelp opt
           , Optparse.metavar <$> _optMetavar
-          , Optparse.value <$> (sources <|> _optDefault)
+          , Optparse.value <$> (getCompose sources <|> _optDefault)
           ]
       )
 
 toFlagParser
-  :: Maybe a
-  -> Opt a
-  -> a
-  -> Optparse.Parser a
-toFlagParser sources opt@Opt{..} active
+  :: Compose Maybe f a
+  -> Compose Opt f a
+  -> f a
+  -> Compose Optparse.Parser f a
+toFlagParser sources (Compose opt@Opt{..}) active
   =
     let
       mDef
-        = case sources of
+        = case getCompose sources of
             Nothing -> _optDefault
             Just _  -> Just active
       modifiers
@@ -73,21 +76,21 @@ toFlagParser sources opt@Opt{..} active
             , Optparse.short <$> _optShort
             , Optparse.help <$> mkHelp opt
             ]
-      in case mDef of
+      in Compose $ case mDef of
            Nothing ->
              Optparse.flag' active modifiers
            Just def ->
              Optparse.flag def active modifiers
 
 toArgumentParser
-  :: Maybe a
-  -> Opt a
-  -> Optparse.Parser a
-toArgumentParser sources opt@Opt{..}
-  = Optparse.argument (Optparse.eitherReader _optReader)
+  :: Compose Maybe f a
+  -> Compose Opt f a
+  -> Compose Optparse.Parser f a
+toArgumentParser sources (Compose opt@Opt{..})
+  = Compose $ Optparse.argument (Optparse.eitherReader _optReader)
       ( foldMap (fromMaybe mempty)
           [ Optparse.help <$> mkHelp opt
           , Optparse.metavar <$> _optMetavar
-          , Optparse.value <$> (sources <|> _optDefault)
+          , Optparse.value <$> (getCompose sources <|> _optDefault)
           ]
       )

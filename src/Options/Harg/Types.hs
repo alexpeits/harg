@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE AllowAmbiguousTypes        #-}
 {-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE DerivingVia                #-}
@@ -88,6 +89,29 @@ instance Applicative Parser where
 
   Parser f e <*> Parser x e' = Parser (f <*> x) (e <> e')
 
+data WithWarnings f w a
+  = WithWarnings (f a) w
+  deriving Functor
+
+instance ( Applicative f
+         , Monoid w
+         ) => Applicative (WithWarnings f w) where
+  pure x = WithWarnings (pure x) mempty
+
+  WithWarnings f w <*> WithWarnings x w'
+    = WithWarnings (f <*> x) (w <> w')
+
+-- newtype Parser a
+--   = Parser_ (WithWarnings Optparse.Parser [OptError] a)
+--   deriving Functor
+--   deriving newtype Applicative
+
+-- pattern Parser
+--   :: Optparse.Parser a
+--   -> [OptError]
+--   -> Parser a
+-- pattern Parser p e = Parser_ (WithWarnings p e)
+
 data OptError
   = OptError
       { _oeOpt  :: SomeOpt
@@ -123,11 +147,11 @@ data SourceParseResult a
   | OptFoundNoParse OptError
   | OptParsed a
 
-data ParserConfig
-  = ParserConfig
+data ParserState
+  = ParserState
 
-data ParserEnv
-  = ParserEnv
+emptyState :: ParserState
+emptyState = ParserState
 
 -- Single
 newtype Single (b :: Type) (f :: Type -> Type)

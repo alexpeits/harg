@@ -32,8 +32,11 @@ module Options.Harg
 
   , execParserDef
   , execParserDefPure
-  , execOpt
-  , execOptPure
+  -- , execOpt
+  , execOpt'
+  -- , execOptPure
+  , Env (..)
+  , Jason (..)
 
   , (:*) (..)
   , Tagged (..)
@@ -51,6 +54,9 @@ module Options.Harg
   , (:+)
   , pattern (:+)
   , (:->)
+
+  , dummyOpt
+  , jsonOpt
   ) where
 
 import Options.Harg.Construct
@@ -59,3 +65,4 @@ import Options.Harg.Het.Prod
 import Options.Harg.Het.Variant
 import Options.Harg.Operations
 import Options.Harg.Types
+import Options.Harg.Sources

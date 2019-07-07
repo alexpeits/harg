@@ -17,7 +17,6 @@ import           Data.Aeson            ((.:))
 import qualified Data.Aeson            as JSON
 import qualified Data.Barbie           as B
 
-import Debug.Trace (trace)
 
 newtype Tagged
     (t :: k)
