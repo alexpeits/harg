@@ -19,6 +19,7 @@ import           Options.Harg.Sources.Env
 import           Options.Harg.Sources.JSON
 import           Options.Harg.Types
 import           Options.Harg.Het.Prod
+import           Options.Harg.Het.Proofs
 import           Options.Harg.Cmdline
 
 
@@ -47,38 +48,58 @@ newtype Jason f = Jason (f String)
 data EnvSource = EnvSource Environment
 data JSONSource = JSONSource JSON.Value
 
-type family SourceVal (s :: (Type -> Type) -> Type) :: Type where
-  SourceVal Env   = EnvSource
-  SourceVal Jason = JSONSource
+data HList (as :: [Type]) where
+  HNil :: HList '[]
+  HCons :: a -> HList as -> HList (a ': as)
 
-class RunSource (s :: (Type -> Type) -> Type) a where
-  runSource' :: SourceVal s -> a Opt -> a SourceParseResult
+type family SourceVal (s :: (Type -> Type) -> Type) :: [Type] where
+  SourceVal Env   = '[EnvSource]
+  SourceVal Jason = '[JSONSource]
+  SourceVal (a :* b) = SourceVal a ++ SourceVal b
 
-instance B.FunctorB a => RunSource Env a where
-  runSource' (EnvSource e) = runEnvVarSource e
+class RunSource (s :: [Type]) a where
+  runSource' :: HList s -> a Opt -> [a SourceParseResult]
 
-instance ( B.FunctorB a
-         , JSON.FromJSON (a Maybe)
-         ) => RunSource Jason a where
-  runSource' (JSONSource j) = runJSONSource j
+-- class RunSource (s :: (Type -> Type) -> Type) a where
+--   runSource' :: HList (SourceVal s) -> a Opt -> a SourceParseResult
 
-class ( B.TraversableB a
-      , B.ProductB a
-      , B.FunctorB a
-      ) => GetSources c a where
-  getSources' :: c -> a Opt -> IO ([OptError], [a Maybe])
+instance {-# OVERLAPS #-} B.FunctorB a => RunSource '[EnvSource] a where
+  runSource' (HCons (EnvSource e) HNil) opt = [runEnvVarSource e opt]
 
-instance ( B.TraversableB a
-         , B.ProductB a
+-- instance B.FunctorB a => RunSource Env a where
+--   runSource' (HCons (EnvSource e) HNil) = runEnvVarSource e
+
+-- instance ( B.FunctorB a
+--          , JSON.FromJSON (a Maybe)
+--          ) => RunSource Jason a where
+--   runSource' (HCons (JSONSource j) HNil) = runJSONSource j
+
+instance {-# OVERLAPS #-}
+         ( JSON.FromJSON (a Maybe)
          , B.FunctorB a
-         ) => GetSources (Env f) a where
-  getSources' _ opts
+         ) => RunSource '[JSONSource] a where
+  runSource' (HCons (JSONSource j) HNil) opt = [runJSONSource j opt]
+
+instance ( RunSource xs a
+         , RunSource '[x] a
+         ) => RunSource (x ': xs) a where
+  runSource' (HCons x xs) opt = runSource' (HCons x HNil) opt ++ runSource' xs opt
+
+instance RunSource '[] a where
+  runSource' HNil _ = []
+
+class GetSources c f (a :: (Type -> Type) -> Type) where
+  getSources' :: c f -> IO (HList (SourceVal c)) -- IO ([OptError], [a Maybe])
+
+instance GetSources Env f a where
+  getSources' _
     = do
         env <- getEnvironment
-        let
-          (errs, res)
-            = accumSourceResults [runSource' @Env env opts]
-        pure (errs, res)
+        pure $ HCons (EnvSource env) HNil
+        -- let
+        --   (errs, res)
+        --     = accumSourceResults [runSource' @Env env opts]
+        -- pure (errs, res)
 
 dummyOpt :: Opt String
 dummyOpt
@@ -93,18 +114,16 @@ dummyOpt
       , _optType = FlagOptType ""
       }
 
-instance ( B.TraversableB a
-         , B.ProductB a
-         , B.FunctorB a
-         , JSON.FromJSON (a Maybe)
-         ) => GetSources (Jason Identity) a where
-  getSources' (Jason (Identity s)) opts
+instance (JSON.FromJSON (a Maybe)
+         ) => GetSources Jason Identity a where
+  getSources' (Jason (Identity s))
     = do
         Just json <- getJSON s
-        let
-          (errs, res)
-            = accumSourceResults [runSource' @Jason json opts]
-        pure (errs, res)
+        pure $ HCons (JSONSource json) HNil
+        -- let
+        --   (errs, res)
+        --     = accumSourceResults [runSource' @Jason json opts]
+        -- pure (errs, res)
 
 jsonOpt :: String -> Opt String
 jsonOpt s
@@ -119,18 +138,18 @@ jsonOpt s
       , _optType = OptionOptType
       }
 
-instance ( GetSources (l Identity) a
-         , GetSources (r Identity) a
-         , B.TraversableB a
-         , B.ProductB a
-         , B.FunctorB a
-         -- , JSON.FromJSON (a Maybe)
-         ) => GetSources ((l :* r) Identity) a where
-  getSources' (l :* r) f
+instance ( GetSources l f a
+         , GetSources r f a
+         ) => GetSources (l :* r) f a where
+  getSources' (l :* r)
     = do
-        (le, lv) <- getSources' l f
-        (re, rv) <- getSources' r f
-        pure (le ++ re, lv ++ rv)
+        ls <- getSources' @_ @_ @a l
+        rs <- getSources' @_ @_ @a r
+        pure (ls +++ rs) -- (le ++ re, lv ++ rv)
+
+(+++) :: HList as -> HList bs -> HList (as ++ bs)
+HNil +++ ys = ys
+(HCons x xs) +++ ys = HCons x (xs +++ ys)
 
 -- type family ConstraintsFor (a :: Type) :: Type -> Constraint
 

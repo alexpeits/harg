@@ -85,11 +85,13 @@ execParserDefPure (Parser parser err) args extra
 --        pure (p, err)
 
 execOpt'
-  :: ( B.TraversableB a
+  :: forall c a.
+     ( B.TraversableB a
      , B.ProductB a
      , B.TraversableB c
      , B.ProductB c
-     , GetSources (c Identity) a
+     , GetSources c Identity a
+     , RunSource (SourceVal c) a
      )
   => c Opt
   -> a Opt
@@ -102,8 +104,9 @@ execOpt' c a
       (yes, _notyet)
         <- Optparse.execParser
              (Optparse.info (Optparse.helper <*> allParser) mempty)
-      -- sources <- getSources' yes
-      (errs, sources) <- getSources' yes a
+      sourceVals <- getSources' @_ @_ @a yes
+      let (errs, sources) = accumSourceResults $ runSource' sourceVals a
+      -- (errs, sources) <- getSources' yes a
       p <- getOptParser sources a
       (res, _) <- execParserDef (Parser p errs) parser
       pure res
