@@ -136,11 +136,6 @@ toOptError
 type Environment
   = [(String, String)]
 
-data ParserSource
-  = EnvSource Environment
-  | JSONSource JSON.Value
-  deriving (Eq, Show)
-
 data SourceParseResult a
   = SourceNotAvailable
   | OptNotFound

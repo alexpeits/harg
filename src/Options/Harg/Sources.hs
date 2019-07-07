@@ -44,20 +44,23 @@ data Env (f :: Type -> Type) = Env
 newtype Jason f = Jason (f String)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
+data EnvSource = EnvSource Environment
+data JSONSource = JSONSource JSON.Value
+
 type family SourceVal (s :: (Type -> Type) -> Type) :: Type where
-  SourceVal Env   = Environment
-  SourceVal Jason = JSON.Value
+  SourceVal Env   = EnvSource
+  SourceVal Jason = JSONSource
 
 class RunSource (s :: (Type -> Type) -> Type) a where
   runSource' :: SourceVal s -> a Opt -> a SourceParseResult
 
 instance B.FunctorB a => RunSource Env a where
-  runSource' = runEnvVarSource
+  runSource' (EnvSource e) = runEnvVarSource e
 
 instance ( B.FunctorB a
          , JSON.FromJSON (a Maybe)
          ) => RunSource Jason a where
-  runSource' = runJSONSource
+  runSource' (JSONSource j) = runJSONSource j
 
 class ( B.TraversableB a
       , B.ProductB a
