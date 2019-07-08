@@ -32,13 +32,15 @@ library
                       Options.Harg.Het.Prod
                       Options.Harg.Het.Proofs
                       Options.Harg.Het.Variant
+                      Options.Harg.Nested
                       Options.Harg.Operations
-                      Options.Harg.Subcommands
                       Options.Harg.Pretty
+                      Options.Harg.Single
                       Options.Harg.Sources
                       Options.Harg.Sources.Env
                       Options.Harg.Sources.JSON
                       Options.Harg.Sources.Types
+                      Options.Harg.Subcommands
                       Options.Harg.Types
                       Options.Harg.Util
   hs-source-dirs:     src

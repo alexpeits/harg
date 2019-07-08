@@ -61,7 +61,9 @@ import Options.Harg.Construct
 import Options.Harg.Het.HList
 import Options.Harg.Het.Prod
 import Options.Harg.Het.Variant
+import Options.Harg.Nested
 import Options.Harg.Operations
+import Options.Harg.Single
 import Options.Harg.Sources
 import Options.Harg.Sources.Env
 import Options.Harg.Sources.JSON
