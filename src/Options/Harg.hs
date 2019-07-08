@@ -7,6 +7,9 @@ module Options.Harg
   , TSingle (..)
   , tsingle
 
+  , Nested (..)
+  , nested
+  , getNested
   , TNested (..)
   , tnested
   , getTNested
