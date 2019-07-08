@@ -112,7 +112,7 @@ execOpt c a
              (Optparse.info (Optparse.helper <*> allParser) mempty)
       sourceVals <- getSource config
       let
-        (errs, sources) = accumSourceResults $ runSource' sourceVals (compose Identity a)
+        (errs, sources) = accumSourceResults $ runSource sourceVals (compose Identity a)
         parser = mkOptparseParser sources (compose Identity a)
       (res, _) <- execParserDef (Parser parser errs) configParser
       pure res

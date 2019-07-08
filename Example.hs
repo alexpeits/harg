@@ -23,7 +23,7 @@ import qualified Data.Generic.HKD      as HKD
 
 mainSubparser :: IO ()
 mainSubparser = do
-  conf <- execOptS srcOpt configOpt
+  conf <- execOptSubcommand srcOpt configOpt
   foldF conf
     (
       \(db :* srv :* hh)
@@ -68,7 +68,7 @@ srcOpt' = Jason (jsonOpt "j1") :* Env
 
 mainParser :: IO ()
 mainParser = do
-  db :* srv :* hh <- execOpt' srcOpt appOpt
+  db :* srv :* hh <- execOpt srcOpt appOpt
   let ov
         = AppC
         <$> getNested (unTagged db)

@@ -33,8 +33,8 @@ module Options.Harg
   , execParserDef
   , execParserDefPure
   -- , execOpt
-  , execOpt'
-  , execOptS
+  , execOpt
+  , execOptSubcommand
   -- , execOptPure
   , Env (..)
   , Jason (..)
