@@ -21,7 +21,7 @@ mkOptparseParser
      )
   => [a (Compose Maybe f)]
   -> a (Compose Opt f)
-  -> IO (Optparse.Parser (a f))
+  -> Optparse.Parser (a f)
 mkOptparseParser sources opts
   = let
       srcOpts
@@ -29,9 +29,7 @@ mkOptparseParser sources opts
             (bpairwise (<|>))
             (B.bmap (const (Compose Nothing)) opts)
             sources
-      parser
-        = B.bsequence $ bpairwise mkParser srcOpts opts
-    in pure parser
+    in B.bsequence $ bpairwise mkParser srcOpts opts
 
 mkParser
   :: Compose Maybe f a

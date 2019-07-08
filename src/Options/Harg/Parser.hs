@@ -32,7 +32,7 @@ getOptParser
      )
   => [a Maybe]
   -> a Opt
-  -> IO (Optparse.Parser (a Identity))
+  -> Optparse.Parser (a Identity)
 getOptParser sources opts
   = mkOptparseParser
       (fmap (compose Identity) sources)
@@ -68,10 +68,10 @@ class Subcommands
     => SNat n
     -> HList s
     -> AssocListF ts xs (Compose Opt f)
-    -> IO [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)]
+    -> [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)]
 
 instance Subcommands n '[] '[] acc where
-  mapSubcommand _ _ _ = pure []
+  mapSubcommand _ _ _ = []
 
 -- ok wait
 -- hear me out:
@@ -86,27 +86,27 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
          ) => Subcommands n (t ': ts) (x ': xs) as where
 
   mapSubcommand n srcs (ACons opt opts)
-    = do
-        sc <- subcommand
-        rest <- hgcastWith (proof @as @x @xs)
+    = let
+        sc = subcommand
+        rest = hgcastWith (proof @as @x @xs)
                           (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) srcs opts)
-        pure (sc : rest)
+      in (sc : rest)
 
     where
 
       -- subcommand
         -- :: IO (Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity))
       subcommand
-        = do
-            let
-              (_err, src) = accumSourceResults $ runSource' srcs opt
-            parser <- mkOptparseParser src opt
-            let
-              cmd
-                = Optparse.command tag
-                $ injectPosF n
-                <$> Optparse.info (Optparse.helper <*> parser) mempty
-            pure cmd
+        = let
+            (_err, src)
+              = accumSourceResults $ runSource' srcs opt
+            parser
+              = mkOptparseParser src opt
+            cmd
+              = Optparse.command tag
+              $ injectPosF n
+              <$> Optparse.info (Optparse.helper <*> parser) mempty
+          in cmd
 
       tag
         = symbolVal (Proxy :: Proxy t)
