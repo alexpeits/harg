@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE BlockArguments   #-}
 {-# LANGUAGE DataKinds        #-}
@@ -8,20 +9,21 @@
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Example where
 
-import Data.Function         ((&))
-import Data.Functor.Identity (Identity (..))
-import GHC.Generics          (Generic)
-import System.Environment    (setEnv)
+import           Data.Function         ((&))
+import           Data.Functor.Identity (Identity (..))
+import           GHC.Generics          (Generic)
+import           System.Environment    (setEnv)
 
-import Options.Harg
+import           Options.Harg
 
-import qualified Data.Aeson as JSON
-import qualified Data.ByteString.Lazy as BS
-import qualified Data.Generic.HKD     as HKD
+import qualified Data.Aeson            as JSON
+import qualified Data.Barbie           as B
+import qualified Data.ByteString.Lazy  as BS
+import qualified Data.Generic.HKD      as HKD
 
 mainSubparser :: IO ()
 mainSubparser = do
-  conf <- execOptS Env configOpt
+  conf <- execOptS srcOpt configOpt
   foldF conf
     (
       \(db :* srv :* hh)
@@ -58,8 +60,8 @@ mainSubparser = do
             -- & runIdentity
             -- & print
 
-srcOpt :: (Env :* Jason :* Jason) Opt
-srcOpt = Env :* Jason (jsonOpt "j1") :* Jason (jsonOpt "j2")
+srcOpt :: (Env :* Jason) Opt
+srcOpt = Env :* Jason (jsonOpt "j1")
 
 srcOpt' :: (Jason :* Env) Opt
 srcOpt' = Jason (jsonOpt "j1") :* Env

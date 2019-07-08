@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveAnyClass #-}
@@ -126,14 +127,17 @@ execOptS
      , All (RunSource (SourceVal c)) xs
      , All (RunSource '[]) xs
      , Subcommands Z ts xs '[]
+     , DummySubcommands Z ts xs '[]
      , Show (c Identity)
+     , MapAssocList xs
+     , All' Show (SourceVal c)
      )
   => c Opt
   -> AssocListF ts xs Opt
   -> IO (VariantF xs Identity)
 execOptS c a = do
   parser <- mkOptparseParser [] (compose Identity c)
-  dummyCommands <- mapSubcommand @Z @ts @xs @'[] SZ HNil a
+  dummyCommands <- mapDummySubcommand @Z @ts @xs @'[] SZ (allToDummyOpts @String a)
   let
     dummyParser
       = Optparse.subparser (mconcat dummyCommands)
@@ -141,8 +145,9 @@ execOptS c a = do
   (yes, _notyet)
     <- Optparse.execParser
          (Optparse.info (Optparse.helper <*> allParser) mempty)
-  print yes
+  -- print yes
   sourceVals <- getSources' yes
+  -- print sourceVals
   realCommands <- mapSubcommand @Z @ts @xs @'[] SZ sourceVals a
   let
     realParser
@@ -152,6 +157,13 @@ execOptS c a = do
 
 class MapAssocList (as :: [(Type -> Type) -> Type]) where
   mapAssocList :: (forall a. B.FunctorB a => a f -> a g) -> AssocListF ts as f -> AssocListF ts as g
+
+instance MapAssocList '[] where
+  mapAssocList _ ANil = ANil
+
+instance (MapAssocList as, B.FunctorB a) => MapAssocList (a ': as) where
+  mapAssocList f (ACons x xs) = ACons (f x) (mapAssocList f xs)
+
 
 allToDummyOpts
   :: forall m ts xs.

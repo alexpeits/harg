@@ -118,6 +118,60 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
       tag
         = symbolVal (Proxy :: Proxy t)
 
+-- subcommands
+class DummySubcommands
+    (n :: Nat)
+    (ts :: [Symbol])
+    (xs :: [(Type -> Type) -> Type])
+    (acc :: [(Type -> Type) -> Type]) where
+  mapDummySubcommand
+    :: Applicative f
+    => SNat n
+    -> AssocListF ts xs (Compose Opt f)
+    -> IO [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)]
+
+instance DummySubcommands n '[] '[] acc where
+  mapDummySubcommand _ _ = pure []
+
+-- ok wait
+-- hear me out:
+instance ( DummySubcommands (S n) ts xs (as ++ '[x])
+         -- get the correct injection into the variant by position
+         , InjectPosF n x (as ++ (x ': xs))
+         , B.TraversableB x
+         , B.ProductB x
+         , KnownSymbol t
+         -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
+         , Proof as x xs
+         ) => DummySubcommands n (t ': ts) (x ': xs) as where
+
+  mapDummySubcommand n (ACons opt opts)
+    = do
+        sc <- subcommand
+        rest <- hgcastWith (proof @as @x @xs)
+                          (mapDummySubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) opts)
+        pure (sc : rest)
+
+    where
+
+      -- subcommand
+        -- :: IO (Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) f))
+      subcommand
+        = do
+            parser
+              <- mkOptparseParser
+                   []
+                   opt
+            let
+              cmd
+                = Optparse.command tag
+                $ injectPosF n
+                <$> Optparse.info (Optparse.helper <*> parser) mempty
+            pure cmd
+
+      tag
+        = symbolVal (Proxy :: Proxy t)
+
 -- The following allows to use one function for commands + subcommands
 type family OptResult' a where
   OptResult' (AssocListF ts xs) = VariantF xs Identity

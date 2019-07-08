@@ -13,7 +13,7 @@ import           GHC.Generics          (Generic)
 import           GHC.TypeLits          (KnownSymbol, symbolVal)
 
 import qualified Data.Text             as Tx
-import           Data.Aeson            ((.:))
+import           Data.Aeson            ((.:?), (.!=))
 import qualified Data.Aeson            as JSON
 import qualified Data.Barbie           as B
 
@@ -52,26 +52,28 @@ deriving instance
   , Show (b Identity)
   ) => Show ((a :* b) Identity)
 
-instance ( JSON.FromJSON (a f)
-         , JSON.FromJSON (b f)
+instance ( JSON.FromJSON (a Maybe)
+         , JSON.FromJSON (b Maybe)
+         , B.ProductB a, B.ProductB b
          , KnownSymbol t
-         ) => JSON.FromJSON ((Tagged t a :* b) f) where
+         ) => JSON.FromJSON ((Tagged t a :* b) Maybe) where
   parseJSON
     = JSON.withObject ":*"
     $ \o ->
           (:*)
-          <$> o .: Tx.pack (symbolVal (Proxy :: Proxy t))
+          <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy t)) .!= B.buniq Nothing
           <*> JSON.parseJSON (JSON.Object o)
 
 instance {-# OVERLAPS #-}
-    ( JSON.FromJSON (a f)
-    , JSON.FromJSON (b f)
+    ( JSON.FromJSON (a Maybe)
+    , JSON.FromJSON (b Maybe)
+    , B.ProductB a, B.ProductB b
     , KnownSymbol ta
     , KnownSymbol tb
-    ) => JSON.FromJSON ((Tagged ta a :* Tagged tb b) f) where
+    ) => JSON.FromJSON ((Tagged ta a :* Tagged tb b) Maybe) where
   parseJSON
     = JSON.withObject ":*"
     $ \o ->
           (:*)
-          <$> o .: Tx.pack (symbolVal (Proxy :: Proxy ta))
-          <*> o .: Tx.pack (symbolVal (Proxy :: Proxy tb))
+          <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy ta)) .!= B.buniq Nothing
+          <*> o .:? Tx.pack (symbolVal (Proxy :: Proxy tb)) .!= B.buniq Nothing

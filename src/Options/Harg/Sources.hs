@@ -53,7 +53,9 @@ newtype Jason f = Jason (f String)
 instance Show (Jason Identity) where show (Jason (Identity s)) = "JSON: " <> s
 
 data EnvSource = EnvSource Environment
+  deriving Show
 data JSONSource = JSONSource JSON.Value
+  deriving Show
 
 data HList (as :: [Type]) where
   HNil :: HList '[]

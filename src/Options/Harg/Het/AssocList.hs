@@ -3,8 +3,10 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Het.AssocList where
 
-import Data.Kind    (Type)
-import GHC.TypeLits (ErrorMessage(..), TypeError, Symbol)
+import           Data.Kind    (Type)
+import           GHC.TypeLits (ErrorMessage(..), TypeError, Symbol)
+
+import qualified Data.Barbie  as B
 
 
 data AssocListF
@@ -33,3 +35,11 @@ infixr 4 :+
 data (t :: Symbol) :-> (v :: (Type -> Type) -> Type) :: (Type -> Type) -> Type
 
 infixr 5 :->
+
+instance B.FunctorB (AssocListF '[] '[]) where
+  bmap _ ANil = ANil
+
+instance ( B.FunctorB (AssocListF ts as)
+         , B.FunctorB a
+         ) => B.FunctorB (AssocListF (t ': ts) (a ': as)) where
+  bmap nat (ACons x xs) = ACons (B.bmap nat x) (B.bmap nat xs)
