@@ -94,12 +94,10 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
 
     where
 
-      -- subcommand
-        -- :: IO (Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity))
       subcommand
         = let
             (_err, src)
-              = accumSourceResults $ runSource' srcs opt
+              = accumSourceResults $ runSource srcs opt
             parser
               = mkOptparseParser src opt
             cmd

@@ -89,69 +89,62 @@ execParserDefPure (Parser parser err) args extra
 --   = do Parser p err <- getParser sources a
 --        pure (p, err)
 
-execOpt'
+execOpt
   :: forall c a.
      ( B.TraversableB a
      , B.ProductB a
      , B.TraversableB c
      , B.ProductB c
-     , GetSources c Identity
+     , GetSource c Identity
      , RunSource (SourceVal c) a
      )
   => c Opt
   -> a Opt
   -> IO (a Identity)
-execOpt' c a
+execOpt c a
   = do
       let
-        parser = mkOptparseParser [] (compose Identity c)
+        configParser = mkOptparseParser [] (compose Identity c)
         dummyParser = mkOptparseParser [] (toDummyOpts @String a)
-        allParser = (,) <$> parser <*> dummyParser
-      (yes, _notyet)
+        allParser = (,) <$> configParser <*> dummyParser
+      (config, _)
         <- Optparse.execParser
              (Optparse.info (Optparse.helper <*> allParser) mempty)
-      sourceVals <- getSources' yes
+      sourceVals <- getSource config
       let
         (errs, sources) = accumSourceResults $ runSource' sourceVals (compose Identity a)
-      -- (errs, sources) <- getSources' yes a
-        p = getOptParser (map (B.bmap (fmap runIdentity . getCompose)) sources) a
-      (res, _) <- execParserDef (Parser p errs) parser
+        parser = mkOptparseParser sources (compose Identity a)
+      (res, _) <- execParserDef (Parser parser errs) configParser
       pure res
 
-execOptS
+execOptSubcommand
   :: forall c ts xs.
      ( B.TraversableB (VariantF xs)
      , B.TraversableB c
      , B.ProductB c
-     , GetSources c Identity
+     , GetSource c Identity
      , All (RunSource (SourceVal c)) xs
      , All (RunSource '[]) xs
      , Subcommands Z ts xs '[]
-     , Show (c Identity)
      , MapAssocList xs
-     , All Show (SourceVal c)
      )
   => c Opt
   -> AssocListF ts xs Opt
   -> IO (VariantF xs Identity)
-execOptS c a = do
+execOptSubcommand c a = do
   let
-    parser = mkOptparseParser [] (compose Identity c)
+    configParser = mkOptparseParser [] (compose Identity c)
     dummyCommands = mapSubcommand @Z @ts @xs @'[] SZ HNil (allToDummyOpts @String a)
-    dummyParser
-      = Optparse.subparser (mconcat dummyCommands)
-    allParser = (,) <$> parser <*> dummyParser
-  (yes, _notyet)
+    dummyParser = Optparse.subparser (mconcat dummyCommands)
+    allParser = (,) <$> configParser <*> dummyParser
+  (config, _)
     <- Optparse.execParser
          (Optparse.info (Optparse.helper <*> allParser) mempty)
-  -- print yes
-  sourceVals <- getSources' yes
-  -- print sourceVals
+  sourceVals <- getSource config
   let
-    realCommands = mapSubcommand @Z @ts @xs @'[] SZ sourceVals (mapAssocList (compose Identity) a)
-    realParser
-      = Optparse.subparser (mconcat realCommands)
-  (res, _) <- execParserDef (Parser realParser []) parser
+    commands = mapSubcommand @Z @ts @xs @'[] SZ sourceVals (mapAssocList (compose Identity) a)
+    parser = Optparse.subparser (mconcat commands)
+  (res, _) <- execParserDef (Parser parser []) configParser
   pure res
 
 allToDummyOpts

@@ -70,47 +70,47 @@ type family SourceVal (s :: (Type -> Type) -> Type) :: [Type] where
   SourceVal (a :* b) = SourceVal a ++ SourceVal b
 
 class RunSource (s :: [Type]) a where
-  runSource' :: Applicative f => HList s -> a (Compose Opt f) -> [a (Compose SourceParseResult f)]
+  runSource :: Applicative f => HList s -> a (Compose Opt f) -> [a (Compose SourceParseResult f)]
 
 instance {-# OVERLAPS #-} B.FunctorB a => RunSource '[EnvSource] a where
-  runSource' (HCons (EnvSource e) HNil) opt = [runEnvVarSource e opt]
+  runSource (HCons (EnvSource e) HNil) opt = [runEnvVarSource e opt]
 
 instance {-# OVERLAPS #-}
          ( JSON.FromJSON (a Maybe)
          , B.FunctorB a
          ) => RunSource '[JSONSource] a where
-  runSource' (HCons (JSONSource j) HNil) opt = [runJSONSource j opt]
+  runSource (HCons (JSONSource j) HNil) opt = [runJSONSource j opt]
 
 instance ( RunSource xs a
          , RunSource '[x] a
          ) => RunSource (x ': xs) a where
-  runSource' (HCons x xs) opt = runSource' (HCons x HNil) opt ++ runSource' xs opt
+  runSource (HCons x xs) opt = runSource (HCons x HNil) opt ++ runSource xs opt
 
 instance RunSource '[] a where
-  runSource' HNil _ = []
+  runSource HNil _ = []
 
-class GetSources c f where
-  getSources' :: c f -> IO (HList (SourceVal c))
+class GetSource c f where
+  getSource :: c f -> IO (HList (SourceVal c))
 
-instance GetSources Env f where
-  getSources' _
+instance GetSource Env f where
+  getSource _
     = do
         env <- getEnvironment
         pure $ HCons (EnvSource env) HNil
 
-instance GetSources Jason Identity where
-  getSources' (Jason (Identity s))
+instance GetSource Jason Identity where
+  getSource (Jason (Identity s))
     = do
         Just json <- getJSON s
         pure $ HCons (JSONSource json) HNil
 
-instance ( GetSources l f
-         , GetSources r f
-         ) => GetSources (l :* r) f where
-  getSources' (l :* r)
+instance ( GetSource l f
+         , GetSource r f
+         ) => GetSource (l :* r) f where
+  getSource (l :* r)
     = do
-        ls <- getSources' l
-        rs <- getSources' r
+        ls <- getSource l
+        rs <- getSource r
         pure (ls +++ rs) -- (le ++ re, lv ++ rv)
 
 dummyOpt :: Opt String
