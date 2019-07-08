@@ -1,33 +1,28 @@
-{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE PolyKinds            #-}
+{-# LANGUAGE ScopedTypeVariables  #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
 module Options.Harg.Parser where
 
-import           Data.Functor.Identity      (Identity (..))
-import           Data.Functor.Compose       (Compose (..))
-import           Data.Kind                  (Type, Constraint)
-import           Data.Proxy                 (Proxy (..))
-import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
+import           Data.Functor.Compose     (Compose (..))
+import           Data.Functor.Identity    (Identity (..))
+import           Data.Kind                (Type)
+import           Data.Proxy               (Proxy (..))
+import           GHC.TypeLits             (KnownSymbol, Symbol, symbolVal)
 
-import qualified Data.Barbie                as B
-import qualified Options.Applicative        as Optparse
+import qualified Data.Barbie              as B
+import qualified Options.Applicative      as Optparse
 
 import           Options.Harg.Cmdline
-import           Options.Harg.Het.AssocList
+import           Options.Harg.Het.All
+import           Options.Harg.Het.HList
 import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Proofs
 import           Options.Harg.Het.Variant
+import           Options.Harg.Sources
 import           Options.Harg.Types
 import           Options.Harg.Util
-import           Options.Harg.Sources
-
-import Debug.Trace (traceM)
-
-type family All (c :: k -> Constraint) (xs :: [k]) :: Constraint where
-  All _ '[] = ()
-  All c (x ': xs) = (c x, All c xs)
 
 getOptParser
   :: forall a.

@@ -1,8 +1,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE PolyKinds #-}
-module Configuration.Het.All where
+module Options.Harg.Het.All where
 
-import           Data.Kind                   (Type, Constraint)
+import Data.Kind (Type, Constraint)
 
 type family
   All

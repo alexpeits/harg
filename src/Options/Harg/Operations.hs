@@ -1,26 +1,24 @@
-{-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ConstraintKinds      #-}
+{-# LANGUAGE InstanceSigs         #-}
+{-# LANGUAGE PolyKinds            #-}
+{-# LANGUAGE RankNTypes           #-}
+{-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE ConstraintKinds #-}
 module Options.Harg.Operations where
 
-import           Data.Functor.Compose       (Compose(..))
-import           Data.Functor.Const         (Const(..))
-import           Data.Functor.Identity      (Identity(..))
-import           Data.Kind                  (Type, Constraint)
-import           System.Environment         (getArgs)
+import           Data.Functor.Compose     (Compose(..))
+import           Data.Functor.Const       (Const(..))
+import           Data.Functor.Identity    (Identity(..))
+import           System.Environment       (getArgs)
 
-import qualified Data.Barbie                as B
-import qualified Options.Applicative        as Optparse
+import qualified Data.Barbie              as B
+import qualified Options.Applicative      as Optparse
 
-import           Options.Harg.Cmdline       (mkOptparseParser)
-import           Options.Harg.Het.AssocList
-import           Options.Harg.Het.Variant
+import           Options.Harg.Cmdline     (mkOptparseParser)
+import           Options.Harg.Het.All
+import           Options.Harg.Het.HList
 import           Options.Harg.Het.Nat
+import           Options.Harg.Het.Variant
 import           Options.Harg.Parser
 import           Options.Harg.Pretty
 import           Options.Harg.Sources
@@ -130,7 +128,7 @@ execOptS
      , DummySubcommands Z ts xs '[]
      , Show (c Identity)
      , MapAssocList xs
-     , All' Show (SourceVal c)
+     , All Show (SourceVal c)
      )
   => c Opt
   -> AssocListF ts xs Opt
@@ -154,16 +152,6 @@ execOptS c a = do
       = Optparse.subparser (mconcat realCommands)
   (res, _) <- execParserDef (Parser realParser []) parser
   pure res
-
-class MapAssocList (as :: [(Type -> Type) -> Type]) where
-  mapAssocList :: (forall a. B.FunctorB a => a f -> a g) -> AssocListF ts as f -> AssocListF ts as g
-
-instance MapAssocList '[] where
-  mapAssocList _ ANil = ANil
-
-instance (MapAssocList as, B.FunctorB a) => MapAssocList (a ': as) where
-  mapAssocList f (ACons x xs) = ACons (f x) (mapAssocList f xs)
-
 
 allToDummyOpts
   :: forall m ts xs.

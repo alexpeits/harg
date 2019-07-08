@@ -1,28 +1,26 @@
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE DeriveAnyClass       #-}
+{-# LANGUAGE DeriveGeneric        #-}
+{-# LANGUAGE PolyKinds            #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Sources where
 
 import           Data.Foldable             (foldr')
-import           Data.Kind                 (Type, Constraint)
+import           Data.Kind                 (Type)
 import           System.Environment        (getEnvironment)
 import           GHC.Generics              (Generic)
 import           Data.Functor.Identity     (Identity(..))
 
 import qualified Data.Aeson                as JSON
 import qualified Data.Barbie               as B
-import qualified Options.Applicative       as Optparse
 
 import           Options.Harg.Sources.Env
 import           Options.Harg.Sources.JSON
 import           Options.Harg.Types
 import           Options.Harg.Het.Prod
 import           Options.Harg.Het.Proofs
-import           Options.Harg.Cmdline
+import           Options.Harg.Het.HList
 
 
 accumSourceResults
@@ -46,26 +44,15 @@ data Env (f :: Type -> Type) = Env
 
 instance Show (Env Identity) where show _ = "ENV"
 
-
 newtype Jason f = Jason (f String)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
 instance Show (Jason Identity) where show (Jason (Identity s)) = "JSON: " <> s
 
-data EnvSource = EnvSource Environment
+newtype EnvSource = EnvSource Environment
   deriving Show
-data JSONSource = JSONSource JSON.Value
+newtype JSONSource = JSONSource JSON.Value
   deriving Show
-
-data HList (as :: [Type]) where
-  HNil :: HList '[]
-  HCons :: a -> HList as -> HList (a ': as)
-
-type family All' (c :: k -> Constraint) (xs :: [k]) :: Constraint where
-  All' _ '[] = ()
-  All' c (x ': xs) = (c x, All' c xs)
-
-deriving instance (All' Show xs) => Show (HList xs)
 
 type family SourceVal (s :: (Type -> Type) -> Type) :: [Type] where
   SourceVal Env   = '[EnvSource]
@@ -75,19 +62,8 @@ type family SourceVal (s :: (Type -> Type) -> Type) :: [Type] where
 class RunSource (s :: [Type]) a where
   runSource' :: HList s -> a Opt -> [a SourceParseResult]
 
--- class RunSource (s :: (Type -> Type) -> Type) a where
---   runSource' :: HList (SourceVal s) -> a Opt -> a SourceParseResult
-
 instance {-# OVERLAPS #-} B.FunctorB a => RunSource '[EnvSource] a where
   runSource' (HCons (EnvSource e) HNil) opt = [runEnvVarSource e opt]
-
--- instance B.FunctorB a => RunSource Env a where
---   runSource' (HCons (EnvSource e) HNil) = runEnvVarSource e
-
--- instance ( B.FunctorB a
---          , JSON.FromJSON (a Maybe)
---          ) => RunSource Jason a where
---   runSource' (HCons (JSONSource j) HNil) = runJSONSource j
 
 instance {-# OVERLAPS #-}
          ( JSON.FromJSON (a Maybe)
@@ -104,17 +80,28 @@ instance RunSource '[] a where
   runSource' HNil _ = []
 
 class GetSources c f where
-  getSources' :: c f -> IO (HList (SourceVal c)) -- IO ([OptError], [a Maybe])
+  getSources' :: c f -> IO (HList (SourceVal c))
 
 instance GetSources Env f where
   getSources' _
     = do
         env <- getEnvironment
         pure $ HCons (EnvSource env) HNil
-        -- let
-        --   (errs, res)
-        --     = accumSourceResults [runSource' @Env env opts]
-        -- pure (errs, res)
+
+instance GetSources Jason Identity where
+  getSources' (Jason (Identity s))
+    = do
+        Just json <- getJSON s
+        pure $ HCons (JSONSource json) HNil
+
+instance ( GetSources l f
+         , GetSources r f
+         ) => GetSources (l :* r) f where
+  getSources' (l :* r)
+    = do
+        ls <- getSources' l
+        rs <- getSources' r
+        pure (ls +++ rs) -- (le ++ re, lv ++ rv)
 
 dummyOpt :: Opt String
 dummyOpt
@@ -129,16 +116,6 @@ dummyOpt
       , _optType = FlagOptType ""
       }
 
-instance GetSources Jason Identity where
-  getSources' (Jason (Identity s))
-    = do
-        Just json <- getJSON s
-        pure $ HCons (JSONSource json) HNil
-        -- let
-        --   (errs, res)
-        --     = accumSourceResults [runSource' @Jason json opts]
-        -- pure (errs, res)
-
 jsonOpt :: String -> Opt String
 jsonOpt s
   = Opt
@@ -151,28 +128,3 @@ jsonOpt s
       , _optReader = pure
       , _optType = OptionOptType
       }
-
-instance ( GetSources l f
-         , GetSources r f
-         ) => GetSources (l :* r) f where
-  getSources' (l :* r)
-    = do
-        ls <- getSources' l
-        rs <- getSources' r
-        pure (ls +++ rs) -- (le ++ re, lv ++ rv)
-
-(+++) :: HList as -> HList bs -> HList (as ++ bs)
-HNil +++ ys = ys
-(HCons x xs) +++ ys = HCons x (xs +++ ys)
-
--- type family ConstraintsFor (a :: Type) :: Type -> Constraint
-
--- type instance ConstraintsFor EnvS = EmptyConstraint
--- type instance ConstraintsFor JSONS = JSON.FromJSON
-
--- type family GatherConstraints (srcs :: [Type]) (a :: Type) :: Constraint where
---   GatherConstraints '[] _ = ()
---   GatherConstraints (s ': ss) a = (ConstraintsFor s a, GatherConstraints ss a)
-
--- class EmptyConstraint (a :: Type)
--- instance EmptyConstraint (a :: Type)

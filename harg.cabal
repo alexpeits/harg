@@ -26,7 +26,8 @@ library
   other-modules:      Options.Harg.Cmdline
                       Options.Harg.Construct
                       Options.Harg.Help
-                      Options.Harg.Het.AssocList
+                      Options.Harg.Het.All
+                      Options.Harg.Het.HList
                       Options.Harg.Het.Nat
                       Options.Harg.Het.Prod
                       Options.Harg.Het.Proofs
