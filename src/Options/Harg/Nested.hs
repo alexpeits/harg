@@ -1,7 +1,7 @@
-{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes        #-}
 {-# LANGUAGE DerivingStrategies         #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE PolyKinds                  #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE TypeFamilyDependencies     #-}
 {-# LANGUAGE UndecidableInstances       #-}
@@ -34,8 +34,7 @@ type family Nest
     (x :: Type -> (Type -> Type) -> Type)
     (a :: Type)
     (f :: Type -> Type)
-    = (res :: Type)
-    | res -> a where
+    = (res :: Type) | res -> a where
   Nest x (a -> b)      f = a -> Nest x b f
   Nest x (HKD.HKD a f) f = x a f
 
