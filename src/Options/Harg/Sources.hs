@@ -16,8 +16,7 @@ import           Options.Harg.Types
 
 accumSourceResults
   :: forall a f.
-     ( B.TraversableB a
-     )
+     B.TraversableB a
   => [a (Compose SourceParseResult f)]
   -> ([OptError], [a (Compose Maybe f)])
 accumSourceResults
