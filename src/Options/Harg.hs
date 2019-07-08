@@ -51,9 +51,6 @@ module Options.Harg
   , (:+)
   , pattern (:+)
   , (:->)
-
-  , dummyOpt
-  , jsonOpt
   ) where
 
 import Options.Harg.Construct
