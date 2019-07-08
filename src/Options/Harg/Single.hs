@@ -15,7 +15,7 @@ import qualified Data.Barbie           as B
 
 import           Options.Harg.Het.Prod
 
--- Single
+
 newtype Single (a :: Type) (f :: Type -> Type)
   = Single
       { getSingle :: f a

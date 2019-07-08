@@ -22,15 +22,15 @@ type Environment
 data EnvSource (f :: Type -> Type) = EnvSource
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
-data instance SourceValFor EnvSource
-  = EnvSourceVal Environment
+newtype EnvSourceVal = EnvSourceVal Environment
 
 instance {-# OVERLAPS #-}
-    B.FunctorB a => RunSource '[SourceValFor EnvSource] a where
+    B.FunctorB a => RunSource '[EnvSourceVal] a where
   runSource (HCons (EnvSourceVal e) HNil) opt
     = [runEnvVarSource e opt]
 
 instance GetSource EnvSource f where
+  type SourceVal EnvSource = '[EnvSourceVal]
   getSource _
     = do
         env <- getEnvironment

@@ -18,12 +18,6 @@ data SourceParseResult a
   | OptParsed a
   deriving Functor
 
-data family SourceValFor (s :: (Type -> Type) -> Type) :: Type
-
-type family SourceVal (s :: (Type -> Type) -> Type) :: [Type] where
-  SourceVal (a :* b) = SourceVal a ++ SourceVal b
-  SourceVal src      = '[SourceValFor src]
-
 class RunSource (s :: [Type]) a where
   runSource
     :: Applicative f
@@ -42,12 +36,16 @@ instance RunSource '[] a where
   runSource HNil _
     = []
 
-class GetSource c f where
+class GetSource
+    (c :: (Type -> Type) -> Type)
+    (f :: (Type -> Type)) where
+  type SourceVal c :: [Type]
   getSource :: c f -> IO (HList (SourceVal c))
 
 instance
     ( GetSource l f
     , GetSource r f
     ) => GetSource (l :* r) f where
+  type SourceVal (l :* r) = SourceVal l ++ SourceVal r
   getSource (l :* r)
     = (+++) <$> getSource l <*> getSource r

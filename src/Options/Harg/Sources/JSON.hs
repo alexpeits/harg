@@ -19,17 +19,17 @@ import           Options.Harg.Sources.Types
 newtype JSONSource f = JSONSource (f String)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
-data instance SourceValFor JSONSource
-  = JSONSourceVal JSON.Value
+newtype JSONSourceVal = JSONSourceVal JSON.Value
 
 instance {-# OVERLAPS #-}
     ( JSON.FromJSON (a Maybe)
     , B.FunctorB a
-    ) => RunSource '[SourceValFor JSONSource] a where
+    ) => RunSource '[JSONSourceVal] a where
   runSource (HCons (JSONSourceVal j) HNil) opt
     = [runJSONSource j opt]
 
 instance GetSource JSONSource Identity where
+  type SourceVal JSONSource = '[JSONSourceVal]
   getSource (JSONSource (Identity s))
     = do
         Just json <- getJSON s

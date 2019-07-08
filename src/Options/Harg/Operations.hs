@@ -98,7 +98,7 @@ execCommandsDef
   :: forall ts xs.
      ( B.TraversableB (VariantF xs)
      , Subcommands Z ts xs '[]
-     , All (RunSource '[SourceValFor EnvSource]) xs
+     , All (RunSource '[EnvSourceVal]) xs
      , All (RunSource '[]) xs
      , MapAssocList xs
      )
