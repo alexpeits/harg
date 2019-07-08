@@ -1,10 +1,11 @@
 module Options.Harg.Sources.Env where
 
-import Data.List          (find)
+import           Data.Functor.Compose (Compose (..))
+import           Data.List            (find)
 
-import qualified Data.Barbie as B
+import qualified Data.Barbie          as B
 
-import Options.Harg.Types
+import           Options.Harg.Types
 
 
 data EnvVarParseResult a
@@ -41,20 +42,23 @@ tryParseEnvVar env Opt{..}
       = either EnvVarFoundNoParse EnvVarParsed . _optReader
 
 runEnvVarSource
-  :: B.FunctorB a
+  :: forall a f.
+     ( B.FunctorB a
+     , Applicative f
+     )
   => Environment
-  -> a Opt
-  -> a SourceParseResult
+  -> a (Compose Opt f)
+  -> a (Compose SourceParseResult f)
 runEnvVarSource env
   = B.bmap go
   where
-    go :: Opt a -> SourceParseResult a
-    go opt@Opt{..}
+    go :: Compose Opt f x -> Compose SourceParseResult f x
+    go (Compose opt@Opt{..})
       = case _optEnvVar of
           Nothing
-            -> SourceNotAvailable
+            -> Compose $ pure <$> SourceNotAvailable
           Just envVar
-            -> maybe OptNotFound tryParse $ lookupEnv env envVar
+            -> Compose $ maybe OptNotFound tryParse (lookupEnv env envVar)
       where
         tryParse
           = either

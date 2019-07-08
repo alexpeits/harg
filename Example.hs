@@ -79,8 +79,8 @@ mainParser = do
 
 main :: IO ()
 main
-  = mainParser
-  -- = mainSubparser
+  -- = mainParser
+  = mainSubparser
 
 data AppC
   = AppC

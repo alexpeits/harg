@@ -110,9 +110,9 @@ execOpt' c a
         <- Optparse.execParser
              (Optparse.info (Optparse.helper <*> allParser) mempty)
       sourceVals <- getSources' yes
-      let (errs, sources) = accumSourceResults $ runSource' sourceVals a
+      let (errs, sources) = accumSourceResults $ runSource' sourceVals (compose Identity a)
       -- (errs, sources) <- getSources' yes a
-      p <- getOptParser sources a
+      p <- getOptParser (map (B.bmap (fmap runIdentity . getCompose)) sources) a
       (res, _) <- execParserDef (Parser p errs) parser
       pure res
 
@@ -125,7 +125,6 @@ execOptS
      , All (RunSource (SourceVal c)) xs
      , All (RunSource '[]) xs
      , Subcommands Z ts xs '[]
-     , DummySubcommands Z ts xs '[]
      , Show (c Identity)
      , MapAssocList xs
      , All Show (SourceVal c)
@@ -135,7 +134,7 @@ execOptS
   -> IO (VariantF xs Identity)
 execOptS c a = do
   parser <- mkOptparseParser [] (compose Identity c)
-  dummyCommands <- mapDummySubcommand @Z @ts @xs @'[] SZ (allToDummyOpts @String a)
+  dummyCommands <- mapSubcommand @Z @ts @xs @'[] SZ HNil (allToDummyOpts @String a)
   let
     dummyParser
       = Optparse.subparser (mconcat dummyCommands)
@@ -146,7 +145,7 @@ execOptS c a = do
   -- print yes
   sourceVals <- getSources' yes
   -- print sourceVals
-  realCommands <- mapSubcommand @Z @ts @xs @'[] SZ sourceVals a
+  realCommands <- mapSubcommand @Z @ts @xs @'[] SZ sourceVals (mapAssocList (compose Identity) a)
   let
     realParser
       = Optparse.subparser (mconcat realCommands)
