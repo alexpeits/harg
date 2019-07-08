@@ -63,4 +63,6 @@ import Options.Harg.Het.Prod
 import Options.Harg.Het.Variant
 import Options.Harg.Operations
 import Options.Harg.Sources
+import Options.Harg.Sources.Env
+import Options.Harg.Sources.JSON
 import Options.Harg.Types

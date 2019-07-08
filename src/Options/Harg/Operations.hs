@@ -17,9 +17,11 @@ import           Options.Harg.Het.All
 import           Options.Harg.Het.HList
 import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Variant
-import           Options.Harg.Subcommands
 import           Options.Harg.Pretty
 import           Options.Harg.Sources
+import           Options.Harg.Sources.Env
+import           Options.Harg.Sources.Types
+import           Options.Harg.Subcommands
 import           Options.Harg.Types
 import           Options.Harg.Util
 

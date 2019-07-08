@@ -1,15 +1,39 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric  #-}
+{-# LANGUAGE TypeFamilies   #-}
 module Options.Harg.Sources.JSON where
 
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import           Data.Functor.Compose       (Compose (..))
+import           Data.Functor.Identity      (Identity(..))
+import           GHC.Generics               (Generic)
 
 import qualified Data.Aeson                 as JSON
 import qualified Data.Barbie                as B
 
 import           Options.Harg.Types
+import           Options.Harg.Het.HList
+import           Options.Harg.Sources.Types
 
-import           Debug.Trace                (trace)
 
+newtype JSONSource f = JSONSource (f String)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+
+data instance SourceValFor JSONSource
+  = JSONSourceVal JSON.Value
+
+instance {-# OVERLAPS #-}
+    ( JSON.FromJSON (a Maybe)
+    , B.FunctorB a
+    ) => RunSource '[SourceValFor JSONSource] a where
+  runSource (HCons (JSONSourceVal j) HNil) opt
+    = [runJSONSource j opt]
+
+instance GetSource JSONSource Identity where
+  getSource (JSONSource (Identity s))
+    = do
+        Just json <- getJSON s
+        pure $ HCons (JSONSourceVal json) HNil
 
 getJSON
   :: String
@@ -41,4 +65,4 @@ runJSONSource json opt
         = Compose $ pure <$> OptNotFound
     in case res of
          JSON.Success v -> B.bmap toSuccess v
-         JSON.Error e -> trace (show e) $ B.bmap toFailure opt
+         JSON.Error _e  -> B.bmap toFailure opt

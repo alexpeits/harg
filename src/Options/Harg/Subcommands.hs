@@ -2,13 +2,13 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Subcommands where
 
-import           Data.Functor.Compose     (Compose (..))
-import           Data.Kind                (Type)
-import           Data.Proxy               (Proxy (..))
-import           GHC.TypeLits             (KnownSymbol, Symbol, symbolVal)
+import           Data.Functor.Compose       (Compose (..))
+import           Data.Kind                  (Type)
+import           Data.Proxy                 (Proxy (..))
+import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
 
-import qualified Data.Barbie              as B
-import qualified Options.Applicative      as Optparse
+import qualified Data.Barbie                as B
+import qualified Options.Applicative        as Optparse
 
 import           Options.Harg.Cmdline
 import           Options.Harg.Het.All
@@ -17,6 +17,7 @@ import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Proofs
 import           Options.Harg.Het.Variant
 import           Options.Harg.Sources
+import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 
 class Subcommands
@@ -50,9 +51,12 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
 
   mapSubcommand n srcs (ACons opt opts)
     = let
-        sc = subcommand
-        rest = hgcastWith (proof @as @x @xs)
-                          (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) srcs opts)
+        sc
+          = subcommand
+        rest
+          = hgcastWith
+              (proof @as @x @xs)
+              (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) srcs opts)
       in (sc : rest)
 
     where

@@ -1,12 +1,37 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric  #-}
+{-# LANGUAGE TypeFamilies   #-}
 module Options.Harg.Sources.Env where
 
-import           Data.Functor.Compose (Compose (..))
-import           Data.List            (find)
+import           Data.Functor.Compose       (Compose (..))
+import           Data.List                  (find)
+import           Data.Kind                  (Type)
+import           GHC.Generics               (Generic)
+import           System.Environment         (getEnvironment)
 
-import qualified Data.Barbie          as B
+import qualified Data.Barbie                as B
 
+import           Options.Harg.Het.HList
 import           Options.Harg.Types
+import           Options.Harg.Sources.Types
 
+
+data EnvSource (f :: Type -> Type) = EnvSource
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+
+data instance SourceValFor EnvSource
+  = EnvSourceVal Environment
+
+instance {-# OVERLAPS #-}
+    B.FunctorB a => RunSource '[SourceValFor EnvSource] a where
+  runSource (HCons (EnvSourceVal e) HNil) opt
+    = [runEnvVarSource e opt]
+
+instance GetSource EnvSource f where
+  getSource _
+    = do
+        env <- getEnvironment
+        pure $ HCons (EnvSourceVal env) HNil
 
 lookupEnv
   :: Environment

@@ -38,6 +38,7 @@ library
                       Options.Harg.Sources
                       Options.Harg.Sources.Env
                       Options.Harg.Sources.JSON
+                      Options.Harg.Sources.Types
                       Options.Harg.Types
                       Options.Harg.Util
   hs-source-dirs:     src

@@ -102,13 +102,6 @@ toOptError
 type Environment
   = [(String, String)]
 
-data SourceParseResult a
-  = SourceNotAvailable
-  | OptNotFound
-  | OptFoundNoParse OptError
-  | OptParsed a
-  deriving Functor
-
 -- Single
 newtype Single (b :: Type) (f :: Type -> Type)
   = Single
