@@ -49,37 +49,35 @@ accumSourceResults
           OptParsed a       -> ([], Compose (Just a))
           _                 -> ([], Compose Nothing)
 
-data Env (f :: Type -> Type) = Env
+
+data EnvSource (f :: Type -> Type) = EnvSource
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
-instance Show (Env Identity) where show _ = "ENV"
-
-newtype Jason f = Jason (f String)
+newtype JSONSource f = JSONSource (f String)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
-instance Show (Jason Identity) where show (Jason (Identity s)) = "JSON: " <> s
 
-newtype EnvSource = EnvSource Environment
-  deriving Show
-newtype JSONSource = JSONSource JSON.Value
-  deriving Show
+newtype EnvSourceVal = EnvSourceVal Environment
+newtype JSONSourceVal = JSONSourceVal JSON.Value
+
 
 type family SourceVal (s :: (Type -> Type) -> Type) :: [Type] where
-  SourceVal Env   = '[EnvSource]
-  SourceVal Jason = '[JSONSource]
-  SourceVal (a :* b) = SourceVal a ++ SourceVal b
+  SourceVal EnvSource  = '[EnvSourceVal]
+  SourceVal JSONSource = '[JSONSourceVal]
+  SourceVal (a :* b)   = SourceVal a ++ SourceVal b
+
 
 class RunSource (s :: [Type]) a where
   runSource :: Applicative f => HList s -> a (Compose Opt f) -> [a (Compose SourceParseResult f)]
 
-instance {-# OVERLAPS #-} B.FunctorB a => RunSource '[EnvSource] a where
-  runSource (HCons (EnvSource e) HNil) opt = [runEnvVarSource e opt]
+instance {-# OVERLAPS #-} B.FunctorB a => RunSource '[EnvSourceVal] a where
+  runSource (HCons (EnvSourceVal e) HNil) opt = [runEnvVarSource e opt]
 
 instance {-# OVERLAPS #-}
          ( JSON.FromJSON (a Maybe)
          , B.FunctorB a
-         ) => RunSource '[JSONSource] a where
-  runSource (HCons (JSONSource j) HNil) opt = [runJSONSource j opt]
+         ) => RunSource '[JSONSourceVal] a where
+  runSource (HCons (JSONSourceVal j) HNil) opt = [runJSONSource j opt]
 
 instance ( RunSource xs a
          , RunSource '[x] a
@@ -89,29 +87,27 @@ instance ( RunSource xs a
 instance RunSource '[] a where
   runSource HNil _ = []
 
+
 class GetSource c f where
   getSource :: c f -> IO (HList (SourceVal c))
 
-instance GetSource Env f where
+instance GetSource EnvSource f where
   getSource _
     = do
         env <- getEnvironment
-        pure $ HCons (EnvSource env) HNil
+        pure $ HCons (EnvSourceVal env) HNil
 
-instance GetSource Jason Identity where
-  getSource (Jason (Identity s))
+instance GetSource JSONSource Identity where
+  getSource (JSONSource (Identity s))
     = do
         Just json <- getJSON s
-        pure $ HCons (JSONSource json) HNil
+        pure $ HCons (JSONSourceVal json) HNil
 
 instance ( GetSource l f
          , GetSource r f
          ) => GetSource (l :* r) f where
   getSource (l :* r)
-    = do
-        ls <- getSource l
-        rs <- getSource r
-        pure (ls +++ rs) -- (le ++ re, lv ++ rv)
+    = (+++) <$> getSource l <*> getSource r
 
 dummyOpt :: Opt String
 dummyOpt

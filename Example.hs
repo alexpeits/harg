@@ -60,11 +60,11 @@ mainSubparser = do
             -- & runIdentity
             -- & print
 
-srcOpt :: (Env :* Jason) Opt
-srcOpt = Env :* Jason (jsonOpt "j1")
+srcOpt :: (EnvSource :* JSONSource) Opt
+srcOpt = EnvSource :* JSONSource (jsonOpt "j1")
 
-srcOpt' :: (Jason :* Env) Opt
-srcOpt' = Jason (jsonOpt "j1") :* Env
+srcOpt' :: (JSONSource :* EnvSource) Opt
+srcOpt' = JSONSource (jsonOpt "j1") :* EnvSource
 
 mainParser :: IO ()
 mainParser = do

@@ -32,8 +32,8 @@ module Options.Harg
 
   , execOpt
   , execCommands
-  , Env (..)
-  , Jason (..)
+  , EnvSource (..)
+  , JSONSource (..)
 
   , (:*) (..)
   , Tagged (..)

@@ -33,7 +33,7 @@ library
                       Options.Harg.Het.Proofs
                       Options.Harg.Het.Variant
                       Options.Harg.Operations
-                      Options.Harg.Parser
+                      Options.Harg.Subcommands
                       Options.Harg.Pretty
                       Options.Harg.Sources
                       Options.Harg.Sources.Env
