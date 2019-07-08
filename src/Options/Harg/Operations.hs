@@ -6,8 +6,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Operations where
 
-import           Data.Functor.Compose     (Compose(..))
-import           Data.Functor.Const       (Const(..))
 import           Data.Functor.Identity    (Identity(..))
 import           System.Environment       (getArgs)
 
@@ -25,30 +23,6 @@ import           Options.Harg.Sources
 import           Options.Harg.Types
 import           Options.Harg.Util
 
-
-execParserDef
-  :: Optparse.Parser a
-  -> [OptError]
-  -> IO a
-execParserDef parser errs
-  = do
-      args <- getArgs
-      let res = execParserDefPure args parser
-      case res of
-        Optparse.Success a
-          -> ppWarning errs >> pure a
-        _
-          -> ppError errs >> Optparse.handleParseResult res
-
-execParserDefPure
-  :: [String]
-  -> Optparse.Parser a
-  -> Optparse.ParserResult a
-execParserDefPure args parser
-  = let
-      parserInfo
-        = Optparse.info (Optparse.helper <*> parser) Optparse.forwardOptions
-    in Optparse.execParserPure Optparse.defaultPrefs parserInfo args
 
 execOpt
   :: forall c a.
@@ -76,6 +50,16 @@ execOpt c opts
         parser = mkOptparseParser sources (compose Identity opts)
       (res, _) <- execParserDef ((,) <$> parser <*> configParser) errs
       pure res
+
+execOptDef
+  :: forall a.
+     ( B.TraversableB a
+     , B.ProductB a
+     )
+  => a Opt
+  -> IO (a Identity)
+execOptDef
+  = execOpt defaultSources
 
 execCommands
   :: forall c ts xs.
@@ -108,35 +92,39 @@ execCommands c opts
       (res, _) <- execParserDef ((,) <$> parser <*> configParser) errs
       pure res
 
-allToDummyOpts
-  :: forall m ts xs.
-     ( Monoid m
+execCommandsDef
+  :: forall ts xs.
+     ( B.TraversableB (VariantF xs)
+     , Subcommands Z ts xs '[]
+     , All (RunSource '[SourceValFor EnvSource]) xs
+     , All (RunSource '[]) xs
      , MapAssocList xs
      )
   => AssocListF ts xs Opt
-  -> AssocListF ts xs (Compose Opt (Const m))
-allToDummyOpts
-  = mapAssocList toDummyOpts
+  -> IO (VariantF xs Identity)
+execCommandsDef
+  = execCommands defaultSources
 
-toDummyOpts
-  :: forall m a.
-     ( B.FunctorB a
-     , Monoid m
-     )
-  => a Opt
-  -> a (Compose Opt (Const m))
-toDummyOpts
-  = B.bmap toDummy
-  where
-    toDummy opt@Opt{..}
-      = Compose
-      $ Const
-      <$> opt
-            { _optDefault = Just mempty
-            , _optReader  = pure . const mempty
-            , _optType
-                = case _optType of
-                    OptionOptType   -> OptionOptType
-                    FlagOptType _   -> FlagOptType mempty
-                    ArgumentOptType -> ArgumentOptType
-            }
+execParserDef
+  :: Optparse.Parser a
+  -> [OptError]
+  -> IO a
+execParserDef parser errs
+  = do
+      args <- getArgs
+      let res = execParserDefPure args parser
+      case res of
+        Optparse.Success a
+          -> ppWarning errs >> pure a
+        _
+          -> ppError errs >> Optparse.handleParseResult res
+
+execParserDefPure
+  :: [String]
+  -> Optparse.Parser a
+  -> Optparse.ParserResult a
+execParserDefPure args parser
+  = let
+      parserInfo
+        = Optparse.info (Optparse.helper <*> parser) Optparse.forwardOptions
+    in Optparse.execParserPure Optparse.defaultPrefs parserInfo args

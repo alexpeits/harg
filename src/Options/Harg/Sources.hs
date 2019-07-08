@@ -118,3 +118,8 @@ instance
     ) => GetSource (l :* r) f where
   getSource (l :* r)
     = (+++) <$> getSource l <*> getSource r
+
+
+defaultSources :: EnvSource f
+defaultSources
+  = EnvSource
