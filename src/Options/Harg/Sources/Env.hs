@@ -58,7 +58,7 @@ runEnvVarSource env
     go (Compose opt@Opt{..})
       = case _optEnvVar of
           Nothing
-            -> Compose $ pure <$> SourceNotAvailable
+            -> Compose $ pure <$> OptNotFound
           Just envVar
             -> Compose $ maybe OptNotFound tryParse (lookupEnv env envVar)
       where

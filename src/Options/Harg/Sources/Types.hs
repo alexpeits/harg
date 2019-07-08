@@ -11,9 +11,13 @@ import Options.Harg.Het.Prod
 import Options.Harg.Het.Proofs
 import Options.Harg.Types
 
+data SourceReadResult a
+  = SourceNotAvailable String
+  | SourceFound a
+  deriving Functor
+
 data SourceParseResult a
-  = SourceNotAvailable
-  | OptNotFound
+  = OptNotFound
   | OptFoundNoParse OptError
   | OptParsed a
   deriving Functor
