@@ -11,9 +11,9 @@ import           GHC.Generics               (Generic)
 import qualified Data.Aeson                 as JSON
 import qualified Data.Barbie                as B
 
-import           Options.Harg.Types
 import           Options.Harg.Het.HList
 import           Options.Harg.Sources.Types
+import           Options.Harg.Types
 
 
 newtype JSONSource f = JSONSource (f String)

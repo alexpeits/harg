@@ -4,10 +4,10 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Sources where
 
-import           Data.Foldable             (foldr')
-import           Data.Functor.Compose      (Compose (..))
+import           Data.Foldable              (foldr')
+import           Data.Functor.Compose       (Compose (..))
 
-import qualified Data.Barbie               as B
+import qualified Data.Barbie                as B
 
 import           Options.Harg.Sources.Env
 import           Options.Harg.Sources.Types

@@ -4,9 +4,9 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Het.Variant where
 
-import           Data.Kind                   (Type)
+import           Data.Kind            (Type)
 
-import qualified Data.Barbie                 as B
+import qualified Data.Barbie          as B
 
 import           Options.Harg.Het.Nat
 

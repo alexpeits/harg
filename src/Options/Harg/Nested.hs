@@ -9,9 +9,9 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Options.Harg.Nested where
 
+import           Data.Coerce           (Coercible, coerce)
 import           Data.Kind             (Type)
 import           GHC.Generics          (Generic)
-import           Data.Coerce           (Coercible, coerce)
 
 import qualified Data.Aeson            as JSON
 

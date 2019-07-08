@@ -1,12 +1,12 @@
 module Options.Harg.Cmdline where
 
-import           Control.Applicative   ((<|>))
-import           Data.Functor.Compose  (Compose (..))
-import           Data.List             (foldl')
-import           Data.Maybe            (fromMaybe)
+import           Control.Applicative  ((<|>))
+import           Data.Functor.Compose (Compose (..))
+import           Data.List            (foldl')
+import           Data.Maybe           (fromMaybe)
 
-import qualified Data.Barbie           as B
-import qualified Options.Applicative   as Optparse
+import qualified Data.Barbie          as B
+import qualified Options.Applicative  as Optparse
 
 import           Options.Harg.Help
 import           Options.Harg.Types

@@ -6,13 +6,13 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Operations where
 
-import           Data.Functor.Identity    (Identity(..))
-import           System.Environment       (getArgs)
+import           Data.Functor.Identity      (Identity(..))
+import           System.Environment         (getArgs)
 
-import qualified Data.Barbie              as B
-import qualified Options.Applicative      as Optparse
+import qualified Data.Barbie                as B
+import qualified Options.Applicative        as Optparse
 
-import           Options.Harg.Cmdline     (mkOptparseParser)
+import           Options.Harg.Cmdline       (mkOptparseParser)
 import           Options.Harg.Het.All
 import           Options.Harg.Het.HList
 import           Options.Harg.Het.Nat
@@ -50,7 +50,7 @@ execOpt c opts
       let
         (errs, sources) = accumSourceResults $ runSource sourceVals (compose Identity opts)
         parser = mkOptparseParser sources (compose Identity opts)
-      (res, _) <- execParserDef ((,) <$> parser <*> configParser) errs
+      (res, _) <- execParser ((,) <$> parser <*> configParser) errs
       pure res
 
 execOptDef
@@ -91,7 +91,7 @@ execCommands c opts
         commands = mapSubcommand @Z @ts @xs @'[] SZ sourceVals (mapAssocList (compose Identity) opts)
         parser = Optparse.subparser (mconcat commands)
         errs = []
-      (res, _) <- execParserDef ((,) <$> parser <*> configParser) errs
+      (res, _) <- execParser ((,) <$> parser <*> configParser) errs
       pure res
 
 execCommandsDef
@@ -107,25 +107,25 @@ execCommandsDef
 execCommandsDef
   = execCommands defaultSources
 
-execParserDef
+execParser
   :: Optparse.Parser a
   -> [OptError]
   -> IO a
-execParserDef parser errs
+execParser parser errs
   = do
       args <- getArgs
-      let res = execParserDefPure args parser
+      let res = execParserPure args parser
       case res of
         Optparse.Success a
           -> ppWarning errs >> pure a
         _
           -> ppError errs >> Optparse.handleParseResult res
 
-execParserDefPure
+execParserPure
   :: [String]
   -> Optparse.Parser a
   -> Optparse.ParserResult a
-execParserDefPure args parser
+execParserPure args parser
   = let
       parserInfo
         = Optparse.info (Optparse.helper <*> parser) Optparse.forwardOptions

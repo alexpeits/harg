@@ -4,16 +4,16 @@
 module Options.Harg.Sources.Env where
 
 import           Data.Functor.Compose       (Compose (..))
-import           Data.List                  (find)
 import           Data.Kind                  (Type)
+import           Data.List                  (find)
 import           GHC.Generics               (Generic)
 import           System.Environment         (getEnvironment)
 
 import qualified Data.Barbie                as B
 
 import           Options.Harg.Het.HList
-import           Options.Harg.Types
 import           Options.Harg.Sources.Types
+import           Options.Harg.Types
 
 
 type Environment

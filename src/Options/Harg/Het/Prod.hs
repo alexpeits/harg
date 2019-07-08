@@ -12,10 +12,10 @@ import           Data.Proxy            (Proxy(..))
 import           GHC.Generics          (Generic)
 import           GHC.TypeLits          (KnownSymbol, symbolVal)
 
-import qualified Data.Text             as Tx
 import           Data.Aeson            ((.:?), (.!=))
 import qualified Data.Aeson            as JSON
 import qualified Data.Barbie           as B
+import qualified Data.Text             as Tx
 
 
 newtype Tagged
