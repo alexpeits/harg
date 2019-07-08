@@ -16,7 +16,6 @@ import           Data.Kind            (Type)
 import           GHC.Generics         (Generic)
 
 import qualified Data.Aeson           as JSON
-import qualified Options.Applicative  as Optparse
 
 import qualified Data.Barbie          as B
 import qualified Data.Functor.Product as P
@@ -79,39 +78,6 @@ data ArgumentOpt a
       , _aReader  :: OptReader a
       }
 
--- Parser
-data Parser a
-  = Parser (Optparse.Parser a) [OptError]
-  deriving Functor
-
-instance Applicative Parser where
-  pure x = Parser (pure x) []
-
-  Parser f e <*> Parser x e' = Parser (f <*> x) (e <> e')
-
-data WithWarnings f w a
-  = WithWarnings (f a) w
-  deriving Functor
-
-instance ( Applicative f
-         , Monoid w
-         ) => Applicative (WithWarnings f w) where
-  pure x = WithWarnings (pure x) mempty
-
-  WithWarnings f w <*> WithWarnings x w'
-    = WithWarnings (f <*> x) (w <> w')
-
--- newtype Parser a
---   = Parser_ (WithWarnings Optparse.Parser [OptError] a)
---   deriving Functor
---   deriving newtype Applicative
-
--- pattern Parser
---   :: Optparse.Parser a
---   -> [OptError]
---   -> Parser a
--- pattern Parser p e = Parser_ (WithWarnings p e)
-
 data OptError
   = OptError
       { _oeOpt  :: SomeOpt
@@ -142,12 +108,6 @@ data SourceParseResult a
   | OptFoundNoParse OptError
   | OptParsed a
   deriving Functor
-
-data ParserState
-  = ParserState
-
-emptyState :: ParserState
-emptyState = ParserState
 
 -- Single
 newtype Single (b :: Type) (f :: Type -> Type)
