@@ -9,14 +9,14 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Options.Harg.Nested where
 
-import           Data.Kind        (Type)
-import           GHC.Generics     (Generic)
-import           Data.Coerce      (Coercible, coerce)
+import           Data.Kind             (Type)
+import           GHC.Generics          (Generic)
+import           Data.Coerce           (Coercible, coerce)
 
-import qualified Data.Aeson       as JSON
+import qualified Data.Aeson            as JSON
 
-import qualified Data.Barbie      as B
-import qualified Data.Generic.HKD as HKD
+import qualified Data.Barbie           as B
+import qualified Data.Generic.HKD      as HKD
 
 import           Options.Harg.Het.Prod
 

@@ -5,13 +5,13 @@
 {-# LANGUAGE UndecidableInstances       #-}
 module Options.Harg.Single where
 
-import qualified Data.Functor.Product as P
-import           Data.Kind            (Type)
-import           GHC.Generics         (Generic)
+import qualified Data.Functor.Product  as P
+import           Data.Kind             (Type)
+import           GHC.Generics          (Generic)
 
-import qualified Data.Aeson           as JSON
+import qualified Data.Aeson            as JSON
 
-import qualified Data.Barbie          as B
+import qualified Data.Barbie           as B
 
 import           Options.Harg.Het.Prod
 
