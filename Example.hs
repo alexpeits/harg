@@ -19,22 +19,22 @@ import qualified Data.Aeson as JSON
 import qualified Data.ByteString.Lazy as BS
 import qualified Data.Generic.HKD     as HKD
 
--- mainSubparser :: IO ()
--- mainSubparser = do
-  -- conf <- execOpt configOpt
-  -- foldF conf
-    -- (
-      -- \(db :* srv :* hh)
-        -- -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
-           -- & runIdentity
-           -- & print
-    -- )
-    -- (
-      -- \(db :* tst)
-         -- -> TestAppC <$> getNested db <*> getNested tst
-            -- & runIdentity
-            -- & print
-    -- )
+mainSubparser :: IO ()
+mainSubparser = do
+  conf <- execOptS Env configOpt
+  foldF conf
+    (
+      \(db :* srv :* hh)
+        -> AppC <$> getNested (unTagged db) <*> getNested (unTagged srv) <*> getSingle (unTagged hh)
+           & runIdentity
+           & print
+    )
+    (
+      \(db :* tst)
+         -> TestAppC <$> getNested (unTagged db) <*> getNested (unTagged tst)
+            & runIdentity
+            & print
+    )
 
   -- or:
 
@@ -77,8 +77,8 @@ mainParser = do
 
 main :: IO ()
 main
-  = mainParser
-  -- = mainSubparser
+  -- = mainParser
+  = mainSubparser
 
 data AppC
   = AppC
@@ -128,12 +128,13 @@ data TestAppC
   deriving Show
 
 type TestAppConfig
-  =  Nested DBConfig
-  :* Nested TestConfig
+  =  Tagged "db" (Nested DBConfig)
+  :* Tagged "tst" (Nested TestConfig)
 
 testAppOpt :: TestAppConfig Opt
 testAppOpt
-  = dbConf :* testConf
+  =  Tagged dbConf
+  :* Tagged testConf
   where
     testConf
       = nested @TestConfig

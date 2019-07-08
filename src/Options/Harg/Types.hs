@@ -141,6 +141,7 @@ data SourceParseResult a
   | OptNotFound
   | OptFoundNoParse OptError
   | OptParsed a
+  deriving Functor
 
 data ParserState
   = ParserState

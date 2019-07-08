@@ -1,11 +1,13 @@
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes  #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE ScopedTypeVariables  #-}
 module Options.Harg.Parser where
 
 import           Data.Functor.Identity      (Identity (..))
 import           Data.Functor.Compose       (Compose (..))
-import           Data.Kind                  (Type)
+import           Data.Kind                  (Type, Constraint)
 import           Data.Proxy                 (Proxy (..))
 import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
 
@@ -19,7 +21,13 @@ import           Options.Harg.Het.Proofs
 import           Options.Harg.Het.Variant
 import           Options.Harg.Types
 import           Options.Harg.Util
+import           Options.Harg.Sources
 
+import Debug.Trace (traceM)
+
+type family All (c :: k -> Constraint) (xs :: [k]) :: Constraint where
+  All _ '[] = ()
+  All c (x ': xs) = (c x, All c xs)
 
 getOptParser
   :: forall a.
@@ -53,58 +61,62 @@ getOptParser sources opts
       -- pure $ Parser parser err
 
 -- subcommands
--- class Subcommands
---     (n :: Nat)
---     (ts :: [Symbol])
---     (xs :: [(Type -> Type) -> Type])
---     (acc :: [(Type -> Type) -> Type]) where
---   mapSubcommand
---     :: SNat n
---     -> [a Maybe]
---     -> AssocListF ts xs Opt
---     -> IO ([Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) Identity)], [OptError])
+class Subcommands
+    (n :: Nat)
+    (ts :: [Symbol])
+    (xs :: [(Type -> Type) -> Type])
+    (acc :: [(Type -> Type) -> Type]) where
+  mapSubcommand
+    :: ( All (RunSource s) xs
+       )
+    => SNat n
+    -> HList s
+    -> AssocListF ts xs Opt
+    -> IO [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) Identity)]
 
--- instance Subcommands n '[] '[] acc where
---   mapSubcommand _ _ _ = pure ([], [])
+instance Subcommands n '[] '[] acc where
+  mapSubcommand _ _ _ = pure []
 
 -- ok wait
 -- hear me out:
--- instance ( Subcommands (S n) ts xs (as ++ '[x])
+instance ( Subcommands (S n) ts xs (as ++ '[x])
          -- get the correct injection into the variant by position
-         -- , InjectPosF n x (as ++ (x ': xs))
-         -- , B.TraversableB x
-         -- , B.ProductB x
-         -- , KnownSymbol t
+         , InjectPosF n x (as ++ (x ': xs))
+         , B.TraversableB x
+         , B.ProductB x
+         , KnownSymbol t
          -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
-         -- , Proof as x xs
-         -- ) => Subcommands n (t ': ts) (x ': xs) as where
+         , Proof as x xs
+         ) => Subcommands n (t ': ts) (x ': xs) as where
 
-  -- mapSubcommand n sources (ACons opt opts)
-  --   = do
-  --       (sc, err) <- subcommand
-  --       (rest, errs) <- hgcastWith (proof @as @x @xs)
-  --                         (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) sources opts)
-  --       pure (sc : rest, err <> errs)
+  mapSubcommand n srcs (ACons opt opts)
+    = do
+        sc <- subcommand
+        rest <- hgcastWith (proof @as @x @xs)
+                          (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) srcs opts)
+        pure (sc : rest)
 
-  --   where
+    where
 
-  --     subcommand
-  --       :: IO ( Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity)
-  --             , [OptError]
-  --             )
-  --     subcommand
-  --       = do
-  --           (parser, err)
-  --             <- mkOptparseParser sources opt
-  --           let
-  --             cmd
-  --               = Optparse.command tag
-  --               $ injectPosF n
-  --               <$> Optparse.info (Optparse.helper <*> parser) mempty
-  --           pure (cmd, err)
+      subcommand
+        :: IO (Optparse.Mod Optparse.CommandFields (VariantF (as ++ (x ': xs)) Identity))
+      subcommand
+        = do
+            let
+              (_err, src) = accumSourceResults $ runSource' srcs opt
+            parser
+              <- mkOptparseParser
+                   (fmap (compose Identity) src)
+                   (compose Identity opt)
+            let
+              cmd
+                = Optparse.command tag
+                $ injectPosF n
+                <$> Optparse.info (Optparse.helper <*> parser) mempty
+            pure cmd
 
-  --     tag
-  --       = symbolVal (Proxy :: Proxy t)
+      tag
+        = symbolVal (Proxy :: Proxy t)
 
 -- The following allows to use one function for commands + subcommands
 type family OptResult' a where

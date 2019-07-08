@@ -1,3 +1,5 @@
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -5,20 +7,24 @@
 {-# LANGUAGE ConstraintKinds #-}
 module Options.Harg.Operations where
 
-import           System.Environment    (getArgs)
-import           Data.Functor.Identity (Identity(..))
-import           Data.Functor.Compose  (Compose(..))
-import           Data.Functor.Const    (Const(..))
+import           Data.Functor.Compose       (Compose(..))
+import           Data.Functor.Const         (Const(..))
+import           Data.Functor.Identity      (Identity(..))
+import           Data.Kind                  (Type, Constraint)
+import           System.Environment         (getArgs)
 
-import qualified Data.Barbie           as B
-import qualified Options.Applicative   as Optparse
+import qualified Data.Barbie                as B
+import qualified Options.Applicative        as Optparse
 
+import           Options.Harg.Cmdline       (mkOptparseParser)
+import           Options.Harg.Het.AssocList
+import           Options.Harg.Het.Variant
+import           Options.Harg.Het.Nat
 import           Options.Harg.Parser
 import           Options.Harg.Pretty
 import           Options.Harg.Sources
 import           Options.Harg.Types
 import           Options.Harg.Util
-import           Options.Harg.Cmdline  (mkOptparseParser)
 
 
 execParserDef
@@ -90,7 +96,7 @@ execOpt'
      , B.ProductB a
      , B.TraversableB c
      , B.ProductB c
-     , GetSources c Identity a
+     , GetSources c Identity
      , RunSource (SourceVal c) a
      )
   => c Opt
@@ -104,12 +110,58 @@ execOpt' c a
       (yes, _notyet)
         <- Optparse.execParser
              (Optparse.info (Optparse.helper <*> allParser) mempty)
-      sourceVals <- getSources' @_ @_ @a yes
+      sourceVals <- getSources' yes
       let (errs, sources) = accumSourceResults $ runSource' sourceVals a
       -- (errs, sources) <- getSources' yes a
       p <- getOptParser sources a
       (res, _) <- execParserDef (Parser p errs) parser
       pure res
+
+execOptS
+  :: forall c ts xs.
+     ( B.TraversableB (VariantF xs)
+     , B.TraversableB c
+     , B.ProductB c
+     , GetSources c Identity
+     , All (RunSource (SourceVal c)) xs
+     , All (RunSource '[]) xs
+     , Subcommands Z ts xs '[]
+     , Show (c Identity)
+     )
+  => c Opt
+  -> AssocListF ts xs Opt
+  -> IO (VariantF xs Identity)
+execOptS c a = do
+  parser <- mkOptparseParser [] (compose Identity c)
+  dummyCommands <- mapSubcommand @Z @ts @xs @'[] SZ HNil a
+  let
+    dummyParser
+      = Optparse.subparser (mconcat dummyCommands)
+    allParser = (,) <$> parser <*> dummyParser
+  (yes, _notyet)
+    <- Optparse.execParser
+         (Optparse.info (Optparse.helper <*> allParser) mempty)
+  print yes
+  sourceVals <- getSources' yes
+  realCommands <- mapSubcommand @Z @ts @xs @'[] SZ sourceVals a
+  let
+    realParser
+      = Optparse.subparser (mconcat realCommands)
+  (res, _) <- execParserDef (Parser realParser []) parser
+  pure res
+
+class MapAssocList (as :: [(Type -> Type) -> Type]) where
+  mapAssocList :: (forall a. B.FunctorB a => a f -> a g) -> AssocListF ts as f -> AssocListF ts as g
+
+allToDummyOpts
+  :: forall m ts xs.
+     ( Monoid m
+     , MapAssocList xs
+     )
+  => AssocListF ts xs Opt
+  -> AssocListF ts xs (Compose Opt (Const m))
+allToDummyOpts
+  = mapAssocList toDummyOpts
 
 toDummyOpts
   :: forall m a.

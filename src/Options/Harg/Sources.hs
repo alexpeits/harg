@@ -1,3 +1,5 @@
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE AllowAmbiguousTypes  #-}
@@ -6,7 +8,7 @@
 module Options.Harg.Sources where
 
 import           Data.Foldable             (foldr')
-import           Data.Kind                 (Type)
+import           Data.Kind                 (Type, Constraint)
 import           System.Environment        (getEnvironment)
 import           GHC.Generics              (Generic)
 import           Data.Functor.Identity     (Identity(..))
@@ -42,8 +44,13 @@ accumSourceResults
 data Env (f :: Type -> Type) = Env
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
+instance Show (Env Identity) where show _ = "ENV"
+
+
 newtype Jason f = Jason (f String)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+
+instance Show (Jason Identity) where show (Jason (Identity s)) = "JSON: " <> s
 
 data EnvSource = EnvSource Environment
 data JSONSource = JSONSource JSON.Value
@@ -51,6 +58,12 @@ data JSONSource = JSONSource JSON.Value
 data HList (as :: [Type]) where
   HNil :: HList '[]
   HCons :: a -> HList as -> HList (a ': as)
+
+type family All' (c :: k -> Constraint) (xs :: [k]) :: Constraint where
+  All' _ '[] = ()
+  All' c (x ': xs) = (c x, All' c xs)
+
+deriving instance (All' Show xs) => Show (HList xs)
 
 type family SourceVal (s :: (Type -> Type) -> Type) :: [Type] where
   SourceVal Env   = '[EnvSource]
@@ -88,10 +101,10 @@ instance ( RunSource xs a
 instance RunSource '[] a where
   runSource' HNil _ = []
 
-class GetSources c f (a :: (Type -> Type) -> Type) where
+class GetSources c f where
   getSources' :: c f -> IO (HList (SourceVal c)) -- IO ([OptError], [a Maybe])
 
-instance GetSources Env f a where
+instance GetSources Env f where
   getSources' _
     = do
         env <- getEnvironment
@@ -114,8 +127,7 @@ dummyOpt
       , _optType = FlagOptType ""
       }
 
-instance (JSON.FromJSON (a Maybe)
-         ) => GetSources Jason Identity a where
+instance GetSources Jason Identity where
   getSources' (Jason (Identity s))
     = do
         Just json <- getJSON s
@@ -138,13 +150,13 @@ jsonOpt s
       , _optType = OptionOptType
       }
 
-instance ( GetSources l f a
-         , GetSources r f a
-         ) => GetSources (l :* r) f a where
+instance ( GetSources l f
+         , GetSources r f
+         ) => GetSources (l :* r) f where
   getSources' (l :* r)
     = do
-        ls <- getSources' @_ @_ @a l
-        rs <- getSources' @_ @_ @a r
+        ls <- getSources' l
+        rs <- getSources' r
         pure (ls +++ rs) -- (le ++ re, lv ++ rv)
 
 (+++) :: HList as -> HList bs -> HList (as ++ bs)
