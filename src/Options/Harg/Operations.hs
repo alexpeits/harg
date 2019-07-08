@@ -27,13 +27,13 @@ import           Options.Harg.Util
 
 
 execParserDef
-  :: Parser a
-  -> Optparse.Parser b
-  -> IO (a, b)
-execParserDef p extra
+  :: Optparse.Parser a
+  -> [OptError]
+  -> IO a
+execParserDef parser errs
   = do
       args <- getArgs
-      let (res, errs) = execParserDefPure p args extra
+      let res = execParserDefPure args parser
       case res of
         Optparse.Success a
           -> ppWarning errs >> pure a
@@ -41,18 +41,14 @@ execParserDef p extra
           -> ppError errs >> Optparse.handleParseResult res
 
 execParserDefPure
-  :: Parser a
-  -> [String]
-  -> Optparse.Parser b
-  -> (Optparse.ParserResult (a, b), [OptError])
-execParserDefPure (Parser parser err) args extra
+  :: [String]
+  -> Optparse.Parser a
+  -> Optparse.ParserResult a
+execParserDefPure args parser
   = let
       parserInfo
-        = Optparse.info (Optparse.helper <*> ((,) <$> parser <*> extra)) Optparse.forwardOptions
-      res
-        = Optparse.execParserPure Optparse.defaultPrefs parserInfo args
-
-    in (res, err)
+        = Optparse.info (Optparse.helper <*> parser) Optparse.forwardOptions
+    in Optparse.execParserPure Optparse.defaultPrefs parserInfo args
 
 -- getOptparseParser
 --   :: GetParser a
@@ -101,51 +97,51 @@ execOpt
   => c Opt
   -> a Opt
   -> IO (a Identity)
-execOpt c a
+execOpt c opts
   = do
       let
         configParser = mkOptparseParser [] (compose Identity c)
-        dummyParser = mkOptparseParser [] (toDummyOpts @String a)
+        dummyParser = mkOptparseParser [] (toDummyOpts @String opts)
         allParser = (,) <$> configParser <*> dummyParser
-      (config, _)
-        <- Optparse.execParser
-             (Optparse.info (Optparse.helper <*> allParser) mempty)
+      (config, _) <- Optparse.execParser
+                       (Optparse.info (Optparse.helper <*> allParser) mempty)
       sourceVals <- getSource config
       let
-        (errs, sources) = accumSourceResults $ runSource sourceVals (compose Identity a)
-        parser = mkOptparseParser sources (compose Identity a)
-      (res, _) <- execParserDef (Parser parser errs) configParser
+        (errs, sources) = accumSourceResults $ runSource sourceVals (compose Identity opts)
+        parser = mkOptparseParser sources (compose Identity opts)
+      (res, _) <- execParserDef ((,) <$> parser <*> configParser) errs
       pure res
 
-execOptSubcommand
+execCommands
   :: forall c ts xs.
      ( B.TraversableB (VariantF xs)
      , B.TraversableB c
      , B.ProductB c
+     , Subcommands Z ts xs '[]
      , GetSource c Identity
      , All (RunSource (SourceVal c)) xs
      , All (RunSource '[]) xs
-     , Subcommands Z ts xs '[]
      , MapAssocList xs
      )
   => c Opt
   -> AssocListF ts xs Opt
   -> IO (VariantF xs Identity)
-execOptSubcommand c a = do
-  let
-    configParser = mkOptparseParser [] (compose Identity c)
-    dummyCommands = mapSubcommand @Z @ts @xs @'[] SZ HNil (allToDummyOpts @String a)
-    dummyParser = Optparse.subparser (mconcat dummyCommands)
-    allParser = (,) <$> configParser <*> dummyParser
-  (config, _)
-    <- Optparse.execParser
-         (Optparse.info (Optparse.helper <*> allParser) mempty)
-  sourceVals <- getSource config
-  let
-    commands = mapSubcommand @Z @ts @xs @'[] SZ sourceVals (mapAssocList (compose Identity) a)
-    parser = Optparse.subparser (mconcat commands)
-  (res, _) <- execParserDef (Parser parser []) configParser
-  pure res
+execCommands c opts
+  = do
+      let
+        configParser = mkOptparseParser [] (compose Identity c)
+        dummyCommands = mapSubcommand @Z @ts @xs @'[] SZ HNil (allToDummyOpts @String opts)
+        dummyParser = Optparse.subparser (mconcat dummyCommands)
+        allParser = (,) <$> configParser <*> dummyParser
+      (config, _) <- Optparse.execParser
+                       (Optparse.info (Optparse.helper <*> allParser) mempty)
+      sourceVals <- getSource config
+      let
+        commands = mapSubcommand @Z @ts @xs @'[] SZ sourceVals (mapAssocList (compose Identity) opts)
+        parser = Optparse.subparser (mconcat commands)
+        errs = []
+      (res, _) <- execParserDef ((,) <$> parser <*> configParser) errs
+      pure res
 
 allToDummyOpts
   :: forall m ts xs.

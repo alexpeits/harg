@@ -23,7 +23,7 @@ import qualified Data.Generic.HKD      as HKD
 
 mainSubparser :: IO ()
 mainSubparser = do
-  conf <- execOptSubcommand srcOpt configOpt
+  conf <- execCommands srcOpt configOpt
   foldF conf
     (
       \(db :* srv :* hh)

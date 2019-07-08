@@ -30,12 +30,8 @@ module Options.Harg
   , readParser
   , strParser
 
-  , execParserDef
-  , execParserDefPure
-  -- , execOpt
   , execOpt
-  , execOptSubcommand
-  -- , execOptPure
+  , execCommands
   , Env (..)
   , Jason (..)
 
