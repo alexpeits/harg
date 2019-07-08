@@ -1,11 +1,15 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Options.Harg
   ( Opt
+
   , Single (..)
   , single
-  , Nested (..)
-  , nested
-  , getNested
+  , TSingle (..)
+  , tsingle
+
+  , TNested (..)
+  , tnested
+  , getTNested
 
   , toOpt
   , option
