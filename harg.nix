@@ -1,5 +1,5 @@
-{ mkDerivation, barbies, base, higgledy, lib, markdown-unlit,
-  optparse-applicative, stdenv
+{ mkDerivation, lib, markdown-unlit, base, aeson, bytestring, text, barbies,
+  higgledy, optparse-applicative, stdenv
 }:
 mkDerivation {
   pname = "harg";
@@ -16,10 +16,7 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    barbies base higgledy optparse-applicative
-  ];
-  executableHaskellDepends = [
-    barbies base higgledy optparse-applicative
+    aeson barbies base bytestring higgledy optparse-applicative text
   ];
   testHaskellDepends = [
     barbies base higgledy optparse-applicative
