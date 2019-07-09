@@ -67,7 +67,7 @@ toFlagParser sources (Compose opt@Opt{..}) active
       mDef
         = case getCompose sources of
             Nothing -> _optDefault
-            Just _  -> Just active
+            Just x  -> Just x
       modifiers
         = foldMap (fromMaybe mempty)
             [ Optparse.long <$> _optLong

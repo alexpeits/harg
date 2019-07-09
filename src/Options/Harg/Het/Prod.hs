@@ -4,6 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PolyKinds                  #-}
 {-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE UndecidableInstances       #-}
 module Options.Harg.Het.Prod where
 
 import           Data.Functor.Identity (Identity)
@@ -53,15 +54,16 @@ deriving instance
   ) => Show ((a :* b) Identity)
 
 instance ( JSON.FromJSON (a Maybe)
-         , JSON.FromJSON (b Maybe)
-         , B.ProductB a, B.ProductB b
-         , KnownSymbol t
-         ) => JSON.FromJSON ((Tagged t a :* b) Maybe) where
+         , JSON.FromJSON (b' Maybe)
+         , B.ProductB a, B.ProductB b'
+         , KnownSymbol ta
+         , b' ~ (Tagged tb b :* c)
+         ) => JSON.FromJSON ((Tagged ta a :* (Tagged tb b :* c)) Maybe) where
   parseJSON
     = JSON.withObject ":*"
     $ \o ->
           (:*)
-          <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy t)) .!= B.buniq Nothing
+          <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy ta)) .!= B.buniq Nothing
           <*> JSON.parseJSON (JSON.Object o)
 
 instance {-# OVERLAPS #-}
