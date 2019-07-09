@@ -24,17 +24,17 @@ data EnvSource (f :: Type -> Type) = EnvSource
 
 newtype EnvSourceVal = EnvSourceVal Environment
 
-instance {-# OVERLAPS #-}
-    B.FunctorB a => RunSource '[EnvSourceVal] a where
-  runSource (HCons (EnvSourceVal e) HNil) opt
-    = [runEnvVarSource e opt]
-
 instance GetSource EnvSource f where
   type SourceVal EnvSource = '[EnvSourceVal]
   getSource _
     = do
         env <- getEnvironment
         pure $ HCons (EnvSourceVal env) HNil
+
+instance {-# OVERLAPS #-}
+    B.FunctorB a => RunSource '[EnvSourceVal] a where
+  runSource (HCons (EnvSourceVal e) HNil) opt
+    = [runEnvVarSource e opt]
 
 lookupEnv
   :: Environment

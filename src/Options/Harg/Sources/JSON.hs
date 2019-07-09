@@ -3,7 +3,6 @@
 {-# LANGUAGE TypeFamilies   #-}
 module Options.Harg.Sources.JSON where
 
-import qualified Data.ByteString.Lazy.Char8 as LBS
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Functor.Identity      (Identity(..))
 import           GHC.Generics               (Generic)
@@ -14,6 +13,7 @@ import qualified Data.Barbie                as B
 import           Options.Harg.Het.HList
 import           Options.Harg.Sources.Types
 import           Options.Harg.Types
+import           Options.Harg.Util
 
 
 newtype JSONSource f = JSONSource (f String)
@@ -21,27 +21,24 @@ newtype JSONSource f = JSONSource (f String)
 
 newtype JSONSourceVal = JSONSourceVal JSON.Value
 
+instance GetSource JSONSource Identity where
+  type SourceVal JSONSource = '[JSONSourceVal]
+  getSource (JSONSource (Identity path))
+    = do
+        contents <- readFileLBS path
+        case JSON.eitherDecode contents of
+          Right json
+            -> pure $ HCons (JSONSourceVal json) HNil
+          Left err
+            -> printAndExit
+               $ "Error decoding " <> path <> " to JSON: " <> err
+
 instance {-# OVERLAPS #-}
     ( JSON.FromJSON (a Maybe)
     , B.FunctorB a
     ) => RunSource '[JSONSourceVal] a where
   runSource (HCons (JSONSourceVal j) HNil) opt
     = [runJSONSource j opt]
-
-instance GetSource JSONSource Identity where
-  type SourceVal JSONSource = '[JSONSourceVal]
-  getSource (JSONSource (Identity s))
-    = do
-        Just json <- getJSON s
-        pure $ HCons (JSONSourceVal json) HNil
-
-getJSON
-  :: String
-  -> IO (Maybe JSON.Value)
-getJSON path
-  = do
-      contents <- LBS.readFile path
-      pure $ JSON.decode contents
 
 runJSONSource
   :: forall a f.

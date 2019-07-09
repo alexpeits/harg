@@ -1,11 +1,15 @@
 {-# LANGUAGE RankNTypes #-}
 module Options.Harg.Util where
 
-import           Data.Functor.Compose   (Compose (..))
-import           Data.Functor.Const     (Const(..))
-import           Data.Functor.Product   (Product (..))
+import           Control.Exception          (catch, displayException, IOException)
+import qualified Data.ByteString.Lazy.Char8 as LBS
+import           Data.Functor.Compose       (Compose (..))
+import           Data.Functor.Const         (Const(..))
+import           Data.Functor.Product       (Product (..))
+import           System.Directory           (doesFileExist)
+import           System.Exit                (exitFailure)
 
-import qualified Data.Barbie            as B
+import qualified Data.Barbie                as B
 
 import           Options.Harg.Het.HList
 import           Options.Harg.Types
@@ -63,3 +67,29 @@ toDummyOpts
                     FlagOptType _   -> FlagOptType mempty
                     ArgumentOptType -> ArgumentOptType
             }
+
+printAndExit
+  :: forall a.
+     String
+  -> IO a
+printAndExit
+  = (>> exitFailure) . putStrLn
+
+readFileLBS
+  :: FilePath
+  -> IO LBS.ByteString
+readFileLBS path
+  = do
+      exists <- doesFileExist path
+      if exists
+        then readFile_
+        else printAndExit ("File not found: " <> path)
+  where
+    readFile_
+      = LBS.readFile path
+          `catch` (printAndExit . showExc)
+
+    showExc :: IOException -> String
+    showExc exc
+      = "Could not read file " <> path <> ": "
+      <> displayException exc
