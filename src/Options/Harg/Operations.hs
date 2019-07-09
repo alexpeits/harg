@@ -15,7 +15,6 @@ import qualified Options.Applicative        as Optparse
 import           Options.Harg.Cmdline       (mkOptparseParser)
 import           Options.Harg.Het.All
 import           Options.Harg.Het.HList
-import           Options.Harg.Het.Nat
 import           Options.Harg.Het.Variant
 import           Options.Harg.Pretty
 import           Options.Harg.Sources
@@ -43,8 +42,8 @@ execOpt c opts
       let
         configParser = mkOptparseParser [] (compose Identity c)
         dummyParser = mkOptparseParser [] (toDummyOpts @String opts)
-        allParser = (,) <$> configParser <*> dummyParser
-      (config, _) <- Optparse.execParser
+        allParser = (,) <$> dummyParser <*> configParser
+      (_, config) <- Optparse.execParser
                        (Optparse.info (Optparse.helper <*> allParser) mempty)
       sourceVals <- getSource config
       let
@@ -68,7 +67,7 @@ execCommands
      ( B.TraversableB (VariantF xs)
      , B.TraversableB c
      , B.ProductB c
-     , Subcommands Z ts xs '[]
+     , Subcommands ts xs
      , GetSource c Identity
      , All (RunSource (SourceVal c)) xs
      , All (RunSource '[]) xs
@@ -81,14 +80,14 @@ execCommands c opts
   = do
       let
         configParser = mkOptparseParser [] (compose Identity c)
-        dummyCommands = mapSubcommand @Z @ts @xs @'[] SZ HNil (allToDummyOpts @String opts)
+        dummyCommands = mapSubcommand HNil (allToDummyOpts @String opts)
         dummyParser = Optparse.subparser (mconcat dummyCommands)
-        allParser = (,) <$> configParser <*> dummyParser
-      (config, _) <- Optparse.execParser
+        allParser = (,) <$> dummyParser <*> configParser
+      (_, config) <- Optparse.execParser
                        (Optparse.info (Optparse.helper <*> allParser) mempty)
       sourceVals <- getSource config
       let
-        commands = mapSubcommand @Z @ts @xs @'[] SZ sourceVals (mapAssocList (compose Identity) opts)
+        commands = mapSubcommand sourceVals (mapAssocList (compose Identity) opts)
         parser = Optparse.subparser (mconcat commands)
         errs = []
       (res, _) <- execParser ((,) <$> parser <*> configParser) errs
@@ -97,7 +96,7 @@ execCommands c opts
 execCommandsDef
   :: forall ts xs.
      ( B.TraversableB (VariantF xs)
-     , Subcommands Z ts xs '[]
+     , Subcommands ts xs
      , All (RunSource '[EnvSourceVal]) xs
      , All (RunSource '[]) xs
      , MapAssocList xs

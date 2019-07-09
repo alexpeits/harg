@@ -21,11 +21,26 @@ import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 
 class Subcommands
+    (ts :: [Symbol])
+    (xs :: [(Type -> Type) -> Type]) where
+  mapSubcommand
+    :: ( All (RunSource s) xs
+       , Applicative f
+       )
+    => HList s
+    -> AssocListF ts xs (Compose Opt f)
+    -> [Optparse.Mod Optparse.CommandFields (VariantF xs f)]
+
+instance ExplSubcommands Z ts xs '[] => Subcommands ts xs where
+  mapSubcommand = explMapSubcommand @Z @ts @xs @'[] SZ
+
+
+class ExplSubcommands
     (n :: Nat)
     (ts :: [Symbol])
     (xs :: [(Type -> Type) -> Type])
     (acc :: [(Type -> Type) -> Type]) where
-  mapSubcommand
+  explMapSubcommand
     :: ( All (RunSource s) xs
        , Applicative f
        )
@@ -34,12 +49,12 @@ class Subcommands
     -> AssocListF ts xs (Compose Opt f)
     -> [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)]
 
-instance Subcommands n '[] '[] acc where
-  mapSubcommand _ _ _ = []
+instance ExplSubcommands n '[] '[] acc where
+  explMapSubcommand _ _ _ = []
 
 -- ok wait
 -- hear me out:
-instance ( Subcommands (S n) ts xs (as ++ '[x])
+instance ( ExplSubcommands (S n) ts xs (as ++ '[x])
          -- get the correct injection into the variant by position
          , InjectPosF n x (as ++ (x ': xs))
          , B.TraversableB x
@@ -47,31 +62,32 @@ instance ( Subcommands (S n) ts xs (as ++ '[x])
          , KnownSymbol t
          -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
          , Proof as x xs
-         ) => Subcommands n (t ': ts) (x ': xs) as where
+         ) => ExplSubcommands n (t ': ts) (x ': xs) as where
 
-  mapSubcommand n srcs (ACons opt opts)
+  explMapSubcommand n srcs (ACons opt opts)
     = let
         sc
           = subcommand
         rest
-          = hgcastWith
-              (proof @as @x @xs)
-              (mapSubcommand @(S n) @ts @xs @(as ++ '[x]) (SS n) srcs opts)
+          = hgcastWith (proof @as @x @xs)
+          $ explMapSubcommand
+              @(S n) @ts @xs @(as ++ '[x])
+              (SS n) srcs opts
+
       in (sc : rest)
 
     where
-
       subcommand
         = let
+            -- TODO: accumulate errors
             (_err, src)
               = accumSourceResults $ runSource srcs opt
             parser
               = mkOptparseParser src opt
+            tag
+              = symbolVal (Proxy :: Proxy t)
             cmd
               = Optparse.command tag
               $ injectPosF n
               <$> Optparse.info (Optparse.helper <*> parser) mempty
           in cmd
-
-      tag
-        = symbolVal (Proxy :: Proxy t)
