@@ -68,11 +68,11 @@ toDummyOpts
                     ArgumentOptType -> ArgumentOptType
             }
 
-printAndExit
+printErrAndExit
   :: forall a.
      String
   -> IO a
-printAndExit
+printErrAndExit
   = (>> exitFailure) . putStrLn
 
 readFileLBS
@@ -83,13 +83,12 @@ readFileLBS path
       exists <- doesFileExist path
       if exists
         then readFile_
-        else printAndExit ("File not found: " <> path)
+        else printErrAndExit ("File not found: " <> path)
   where
     readFile_
       = LBS.readFile path
-          `catch` (printAndExit . showExc)
+          `catch` (printErrAndExit . showExc)
 
     showExc :: IOException -> String
     showExc exc
-      = "Could not read file " <> path <> ": "
-      <> displayException exc
+      = "Could not read file " <> path <> ": " <> displayException exc

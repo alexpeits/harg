@@ -30,7 +30,7 @@ instance GetSource JSONSource Identity where
           Right json
             -> pure $ HCons (JSONSourceVal json) HNil
           Left err
-            -> printAndExit
+            -> printErrAndExit
                $ "Error decoding " <> path <> " to JSON: " <> err
 
 instance {-# OVERLAPS #-}
