@@ -14,7 +14,6 @@ mkDerivation {
     "LICENSE"
   ];
   isLibrary = true;
-  isExecutable = true;
   libraryHaskellDepends = [
     aeson barbies base bytestring higgledy optparse-applicative text
   ];
