@@ -39,12 +39,13 @@ data OptionOpt a
 -- value
 data FlagOpt a
   = FlagOpt
-      { _sLong    :: Maybe String
-      , _sShort   :: Maybe Char
-      , _sHelp    :: Maybe String
-      , _sEnvVar  :: Maybe String
-      , _sDefault :: a
-      , _sActive  :: a
+      { _fLong    :: Maybe String
+      , _fShort   :: Maybe Char
+      , _fHelp    :: Maybe String
+      , _fEnvVar  :: Maybe String
+      , _fDefault :: a
+      , _fReader  :: OptReader a
+      , _fActive  :: a
       }
 
 -- Option for arguments (no long/short specifiers)

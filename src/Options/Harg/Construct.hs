@@ -1,5 +1,7 @@
+{-# LANGUAGE ViewPatterns #-}
 module Options.Harg.Construct where
 
+import Data.Char          (toLower)
 import Data.Kind          (Type)
 import Text.Read          (readMaybe)
 
@@ -14,7 +16,7 @@ instance HasLong OptionOpt where
   optLong s o = o { _oLong = Just s }
 
 instance HasLong FlagOpt where
-  optLong s o = o { _sLong = Just s }
+  optLong s o = o { _fLong = Just s }
 
 -- short
 class HasShort (o :: Type -> Type) where
@@ -24,7 +26,7 @@ instance HasShort OptionOpt where
   optShort c o = o { _oShort = Just c }
 
 instance HasShort FlagOpt where
-  optShort c o = o { _sShort = Just c }
+  optShort c o = o { _fShort = Just c }
 
 -- help
 class HasHelp (o :: Type -> Type) where
@@ -34,7 +36,7 @@ instance HasHelp OptionOpt where
   optHelp s o = o { _oHelp = Just s }
 
 instance HasHelp FlagOpt where
-  optHelp s o = o { _sHelp = Just s }
+  optHelp s o = o { _fHelp = Just s }
 
 instance HasHelp ArgumentOpt where
   optHelp s o = o { _aHelp = Just s }
@@ -57,7 +59,7 @@ instance HasEnvVar OptionOpt where
   optEnvVar s o = o { _oEnvVar = Just s }
 
 instance HasEnvVar FlagOpt where
-  optEnvVar s o = o { _sEnvVar = Just s }
+  optEnvVar s o = o { _fEnvVar = Just s }
 
 instance HasEnvVar ArgumentOpt where
   optEnvVar s o = o { _aEnvVar = Just s }
@@ -92,14 +94,14 @@ instance IsOpt OptionOpt where
 instance IsOpt FlagOpt where
   toOpt FlagOpt{..}
     = Opt
-        { _optLong    = _sLong
-        , _optShort   = _sShort
-        , _optHelp    = _sHelp
+        { _optLong    = _fLong
+        , _optShort   = _fShort
+        , _optHelp    = _fHelp
         , _optMetavar = Nothing
-        , _optEnvVar  = _sEnvVar
-        , _optDefault = Just _sDefault
-        , _optReader  = const (pure _sDefault)
-        , _optType    = FlagOptType _sActive
+        , _optEnvVar  = _fEnvVar
+        , _optDefault = Just _fDefault
+        , _optReader  = _fReader
+        , _optType    = FlagOptType _fActive
         }
 
 instance IsOpt ArgumentOpt where
@@ -143,12 +145,13 @@ flag
   -> FlagOpt a
 flag d active
   = FlagOpt
-      { _sLong    = Nothing
-      , _sShort   = Nothing
-      , _sHelp    = Nothing
-      , _sEnvVar  = Nothing
-      , _sDefault = d
-      , _sActive  = active
+      { _fLong    = Nothing
+      , _fShort   = Nothing
+      , _fHelp    = Nothing
+      , _fEnvVar  = Nothing
+      , _fDefault = d
+      , _fActive  = active
+      , _fReader  = const (pure d)  -- TODO
       }
 
 flagWith
@@ -161,7 +164,9 @@ flagWith d active f
 
 switch :: FlagOpt Bool
 switch
-  = flag False True
+  = fl { _fReader = boolParser }
+  where
+    fl = flag False True
 
 switchWith
   :: (FlagOpt Bool -> FlagOpt Bool)
@@ -171,7 +176,9 @@ switchWith f
 
 switch' :: FlagOpt Bool
 switch'
-  = flag True False
+  = fl { _fReader = boolParser }
+  where
+    fl = flag True False
 
 switchWith'
   :: (FlagOpt Bool -> FlagOpt Bool)
@@ -216,3 +223,10 @@ readParser
 strParser :: String -> Either String String
 strParser
   = pure
+
+boolParser :: String -> Either String Bool
+boolParser s
+  = case map toLower s of
+      "true"  -> Right True
+      "false" -> Right False
+      _       -> Left ("Unable to parse " <> s <> "to Bool")

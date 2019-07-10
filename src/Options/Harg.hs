@@ -36,6 +36,7 @@ module Options.Harg
   , parseWith
   , readParser
   , strParser
+  , boolParser
 
   , execOpt
   , execOptDef
