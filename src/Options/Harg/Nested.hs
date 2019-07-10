@@ -11,29 +11,20 @@ module Options.Harg.Nested where
 
 import           Data.Coerce           (Coercible, coerce)
 import           Data.Kind             (Type)
-import           GHC.Generics          (Generic, Rep)
+import           GHC.Generics          (Generic)
 
 import qualified Data.Aeson            as JSON
 import qualified Data.Barbie           as B
 import qualified Data.Generic.HKD      as HKD
-import qualified Dhall
 
 import           Options.Harg.Het.Prod
-import           Options.Harg.Sources.Dhall
 
-
-import Data.Void
 
 instance JSON.GFromJSON JSON.Zero (HKD.HKD_ f structure)
     => JSON.FromJSON (HKD.HKD structure f) where
   parseJSON
     = fmap HKD.HKD
     . JSON.gParseJSON JSON.defaultOptions JSON.NoFromArgs
-
-deriving instance
-  ( Dhall.Interpret structure
-  , Dhall.Interpret (HKD.GHKD_ Id (Rep structure) Void)
-  ) => Dhall.Interpret (HKD.HKD structure Id)
 
 newtype Nested (b :: Type) (f :: Type -> Type)
   = Nested (HKD.HKD b f)

@@ -45,7 +45,7 @@ module Options.Harg
   , EnvSource (..)
   , JSONSource (..)
   , YAMLSource (..)
-  , DhallSource (..)
+  , noSources
   , defaultSources
 
   , (:*) (..)
@@ -74,8 +74,8 @@ import Options.Harg.Nested
 import Options.Harg.Operations
 import Options.Harg.Single
 import Options.Harg.Sources
-import Options.Harg.Sources.Dhall
 import Options.Harg.Sources.Env
 import Options.Harg.Sources.JSON
+import Options.Harg.Sources.NoSource
 import Options.Harg.Sources.YAML
 import Options.Harg.Types

@@ -39,6 +39,7 @@ library
                       Options.Harg.Sources
                       Options.Harg.Sources.Env
                       Options.Harg.Sources.JSON
+                      Options.Harg.Sources.NoSource
                       Options.Harg.Sources.Types
                       Options.Harg.Sources.YAML
                       Options.Harg.Subcommands
