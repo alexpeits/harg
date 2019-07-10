@@ -1,8 +1,8 @@
-{-# LANGUAGE ViewPatterns #-}
 module Options.Harg.Construct where
 
 import Data.Char          (toLower)
 import Data.Kind          (Type)
+import Data.String        (IsString(..))
 import Text.Read          (readMaybe)
 
 import Options.Harg.Types
@@ -220,9 +220,12 @@ readParser :: Read a => OptReader a
 readParser
   = parseWith readMaybe
 
-strParser :: String -> Either String String
 strParser
-  = pure
+  :: IsString s
+  => String
+  -> Either String s
+strParser
+  = pure . fromString
 
 boolParser :: String -> Either String Bool
 boolParser s
