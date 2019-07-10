@@ -7,7 +7,7 @@
 module Options.Harg.Operations where
 
 import           Data.Functor.Identity      (Identity(..))
-import           System.Environment         (getArgs)
+import           System.Environment         (getArgs, getEnvironment)
 
 import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
@@ -39,16 +39,23 @@ execOpt
   -> IO (a Identity)
 execOpt c opts
   = do
+      env <- getEnvironment
       let
-        configParser = mkOptparseParser [] (compose Identity c)
+        (_, cFromEnv)
+          = accumSourceResults
+          $ runSource (EnvSourceVal env) (compose Identity c)
+        configParser = mkOptparseParser cFromEnv (compose Identity c)
         dummyParser = mkOptparseParser [] (toDummyOpts @String opts)
         allParser = (,) <$> dummyParser <*> configParser
       (_, config) <- Optparse.execParser
                        (Optparse.info (Optparse.helper <*> allParser) mempty)
       sourceVals <- getSource config
       let
-        (errs, sources) = accumSourceResults $ runSource sourceVals (compose Identity opts)
-        parser = mkOptparseParser sources (compose Identity opts)
+        (errs, sources)
+          = accumSourceResults
+          $ runSource sourceVals (compose Identity opts)
+        parser
+          = mkOptparseParser sources (compose Identity opts)
       (res, _) <- execParser ((,) <$> parser <*> configParser) errs
       pure res
 
@@ -78,8 +85,12 @@ execCommands
   -> IO (VariantF xs Identity)
 execCommands c opts
   = do
+      env <- getEnvironment
       let
-        configParser = mkOptparseParser [] (compose Identity c)
+        (_, cFromEnv)
+          = accumSourceResults
+          $ runSource (EnvSourceVal env) (compose Identity c)
+        configParser = mkOptparseParser cFromEnv (compose Identity c)
         dummyCommands = mapSubcommand () (allToDummyOpts @String opts)
         dummyParser = Optparse.subparser (mconcat dummyCommands)
         allParser = (,) <$> dummyParser <*> configParser
