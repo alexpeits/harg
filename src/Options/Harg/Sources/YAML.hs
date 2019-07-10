@@ -57,7 +57,8 @@ runYAMLSource yaml opt
         -> Compose Opt f x
         -> Compose SourceRunResult f x
       toFailure exc (Compose o)
-        = Compose $ OptFoundNoParse (toOptError o (displayException exc))
+        = Compose
+        $ OptFoundNoParse (toOptError o "YAMLSource" (displayException exc))
     in case res of
          Right v  -> B.bmap toSuccess v
          Left exc -> B.bmap (toFailure exc) opt

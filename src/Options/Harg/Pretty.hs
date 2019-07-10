@@ -41,14 +41,15 @@ ppOptErrors
   . map ppOptError
   . nubBy cmpOptErr
   where
-    cmpOptErr (OptError (SomeOpt l) dl) (OptError (SomeOpt r) dr)
-      =  _optLong l == _optLong r && dl == dr
+    cmpOptErr (OptError (SomeOpt l) sl dl) (OptError (SomeOpt r) sr dr)
+      =  _optLong l == _optLong r && sl == sr && dl == dr
     ppOptError :: OptError -> String
-    ppOptError (OptError (SomeOpt opt) desc)
+    ppOptError (OptError (SomeOpt opt) src desc)
       =  "\t"
       <> fromMaybe "<no opt name>" (_optLong opt)
       <> "\t\t"
       <> desc
+      <> " (source: " <> src <> ")"
       <> ppEnvVar (_optEnvVar opt)
 
 ppEnvVar

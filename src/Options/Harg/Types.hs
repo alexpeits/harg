@@ -60,8 +60,9 @@ data ArgumentOpt a
 
 data OptError
   = OptError
-      { _oeOpt  :: SomeOpt
-      , _oeDesc :: String
+      { _oeOpt    :: SomeOpt
+      , _oeSource :: String
+      , _oeDesc   :: String
       }
 
 data SomeOpt where
@@ -70,6 +71,7 @@ data SomeOpt where
 toOptError
   :: Opt a
   -> String
+  -> String
   -> OptError
-toOptError
-  = OptError . SomeOpt
+toOptError opt src desc
+  = OptError (SomeOpt opt) src desc

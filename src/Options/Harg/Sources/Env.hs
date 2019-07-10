@@ -61,6 +61,6 @@ runEnvVarSource env
       where
         tryParse
           = either
-              (OptFoundNoParse . toOptError opt)
+              (OptFoundNoParse . toOptError opt "EnvSource")
               OptParsed
           . _optReader
