@@ -64,12 +64,6 @@ data OptError
       , _oeDesc :: String
       }
 
--- TODO: fix that
-instance Eq OptError where
-  OptError (SomeOpt opt) desc == OptError (SomeOpt opt') desc'
-    =  _optLong opt == _optLong opt'
-    && desc == desc'
-
 data SomeOpt where
   SomeOpt :: Opt a -> SomeOpt
 
