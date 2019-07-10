@@ -48,16 +48,16 @@ runJSONSource
      )
   => JSON.Value
   -> a (Compose Opt f)
-  -> a (Compose SourceParseResult f)
+  -> a (Compose SourceRunResult f)
 runJSONSource json opt
   = let
       res :: JSON.Result (a Maybe)
       res
         = JSON.fromJSON json
-      toSuccess :: Maybe x -> Compose SourceParseResult f x
+      toSuccess :: Maybe x -> Compose SourceRunResult f x
       toSuccess mx
         = Compose $ pure <$> maybe OptNotFound OptParsed mx
-      toFailure :: Compose Opt f x -> Compose SourceParseResult f x
+      toFailure :: Compose Opt f x -> Compose SourceRunResult f x
       toFailure _
         = Compose $ pure <$> OptNotFound
     in case res of

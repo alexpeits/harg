@@ -9,6 +9,7 @@
   aeson,
   barbies,
   bytestring,
+  directory,
   higgledy,
   optparse-applicative,
   text,
@@ -28,10 +29,23 @@ mkDerivation {
   ];
   isLibrary = true;
   libraryHaskellDepends = [
-    aeson barbies base bytestring higgledy optparse-applicative text
+    base
+
+    aeson
+    barbies
+    bytestring
+    directory
+    higgledy
+    optparse-applicative
+    text
+    yaml
   ];
   testHaskellDepends = [
-    barbies base higgledy optparse-applicative
+    base
+
+    barbies
+    higgledy
+    optparse-applicative
   ];
   testToolDepends = [ markdown-unlit ];
   homepage = "https://github.com/alexpeits/harg#readme";

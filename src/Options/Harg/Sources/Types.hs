@@ -3,18 +3,14 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Sources.Types where
 
-import Data.Functor.Compose    (Compose (..))
-import Data.Kind               (Type)
+import Data.Functor.Compose  (Compose (..))
+import Data.Kind             (Type)
 
 import Options.Harg.Het.Prod
 import Options.Harg.Types
 
-data SourceReadResult a
-  = SourceNotAvailable String
-  | SourceFound a
-  deriving Functor
 
-data SourceParseResult a
+data SourceRunResult a
   = OptNotFound
   | OptFoundNoParse OptError
   | OptParsed a
@@ -39,7 +35,7 @@ class RunSource s a where
     :: Applicative f
     => s
     -> a (Compose Opt f)
-    -> [a (Compose SourceParseResult f)]
+    -> [a (Compose SourceRunResult f)]
 
 instance
     ( RunSource l a

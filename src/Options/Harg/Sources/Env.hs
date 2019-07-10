@@ -47,11 +47,11 @@ runEnvVarSource
      )
   => Environment
   -> a (Compose Opt f)
-  -> a (Compose SourceParseResult f)
+  -> a (Compose SourceRunResult f)
 runEnvVarSource env
   = B.bmap go
   where
-    go :: Compose Opt f x -> Compose SourceParseResult f x
+    go :: Compose Opt f x -> Compose SourceRunResult f x
     go (Compose opt@Opt{..})
       = case _optEnvVar of
           Nothing

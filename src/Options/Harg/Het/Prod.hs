@@ -40,6 +40,7 @@ instance B.ProductB a => B.ProductB (Tagged t a) where
   bprod (Tagged l) (Tagged r) = Tagged (B.bprod l r)
   buniq f = Tagged (B.buniq f)
 
+-- Infix version of Data.Functor.Product
 data
     ((a :: (Type -> Type) -> Type) :* (b :: (Type -> Type) -> Type))
     (f :: Type -> Type)
@@ -53,6 +54,8 @@ deriving instance
   , Show (b Identity)
   ) => Show ((a :* b) Identity)
 
+-- The following JSON instances need to work if and only if all elements in
+-- the product are `Tagged`, hence the weird pattern matches
 instance ( JSON.FromJSON (a Maybe)
          , JSON.FromJSON (b' Maybe)
          , B.ProductB a, B.ProductB b'

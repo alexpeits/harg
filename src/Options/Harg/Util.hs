@@ -1,14 +1,12 @@
 {-# LANGUAGE RankNTypes #-}
 module Options.Harg.Util where
 
-import           Control.Exception          (catch, displayException, IOException)
+import qualified Control.Exception          as Exc
 import qualified Data.ByteString            as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Functor.Const         (Const(..))
 import           Data.Functor.Product       (Product (..))
-import qualified Data.Text                  as Tx
-import qualified Data.Text.IO               as Tx.IO
 import           System.Directory           (doesFileExist)
 import           System.Exit                (exitFailure)
 
@@ -58,14 +56,14 @@ toDummyOpts
 toDummyOpts
   = B.bmap toDummy
   where
-    toDummy opt@Opt{..}
+    toDummy opt
       = Compose
       $ Const
       <$> opt
             { _optDefault = Just mempty
             , _optReader  = pure . const mempty
             , _optType
-                = case _optType of
+                = case _optType opt of
                     OptionOptType   -> OptionOptType
                     FlagOptType _   -> FlagOptType mempty
                     ArgumentOptType -> ArgumentOptType
@@ -91,11 +89,11 @@ readFileWith f path
   where
     readFile_
       = f path
-          `catch` (printErrAndExit . showExc)
+          `Exc.catch` (printErrAndExit . showExc)
 
-    showExc :: IOException -> String
+    showExc :: Exc.IOException -> String
     showExc exc
-      = "Could not read file " <> path <> ": " <> displayException exc
+      = "Could not read file " <> path <> ": " <> Exc.displayException exc
 
 readFileLBS
   :: FilePath
@@ -108,9 +106,3 @@ readFileBS
   -> IO BS.ByteString
 readFileBS
   = readFileWith BS.readFile
-
-readFileTx
-  :: FilePath
-  -> IO Tx.Text
-readFileTx
-  = readFileWith Tx.IO.readFile

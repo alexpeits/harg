@@ -17,20 +17,20 @@ import           Options.Harg.Types
 accumSourceResults
   :: forall a f.
      B.TraversableB a
-  => [a (Compose SourceParseResult f)]
+  => [a (Compose SourceRunResult f)]
   -> ([OptError], [a (Compose Maybe f)])
 accumSourceResults
   = foldr' accumResult ([], [])
   where
     accumResult
-      :: a (Compose SourceParseResult f)
+      :: a (Compose SourceRunResult f)
       -> ([OptError], [a (Compose Maybe f)])
       -> ([OptError], [a (Compose Maybe f)])
     accumResult res (e, a)
       = case B.btraverse go res of
           (e', a') -> (e' <> e, a' : a)
     go
-      :: Compose SourceParseResult f x
+      :: Compose SourceRunResult f x
       -> ([OptError], Compose Maybe f x)
     go x
       = case getCompose x of

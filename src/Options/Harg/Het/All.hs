@@ -4,16 +4,14 @@ module Options.Harg.Het.All where
 
 import Data.Kind (Type, Constraint)
 
-type family
-  All
+type family All
     (c :: k -> Constraint)
     (xs :: [k])
     :: Constraint where
   All _ '[]       = ()
   All c (x ': xs) = (c x, All c xs)
 
-type family
-  AllF
+type family AllF
     (c :: k -> Constraint)
     (xs :: [(Type -> Type) -> Type])
     (f :: Type -> Type)

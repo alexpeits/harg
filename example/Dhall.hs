@@ -68,16 +68,16 @@ runDhallSource
      )
   => Expr Src X
   -> a (Compose Opt f)
-  -> a (Compose SourceParseResult f)
+  -> a (Compose SourceRunResult f)
 runDhallSource expr opt
   = let
       res :: Maybe (a Id)
       res
         = Dhall.rawInput Dhall.auto expr
-      toSuccess :: Id x -> Compose SourceParseResult f x
+      toSuccess :: Id x -> Compose SourceRunResult f x
       toSuccess (Id x)
         = Compose $ pure <$> maybe OptNotFound OptParsed (Just x)
-      toFailure :: Compose Opt f x -> Compose SourceParseResult f x
+      toFailure :: Compose Opt f x -> Compose SourceRunResult f x
       toFailure _
         = Compose $ pure <$> OptNotFound
     in case res of

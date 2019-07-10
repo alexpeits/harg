@@ -54,15 +54,16 @@ instance ExplSubcommands n '[] '[] acc where
 
 -- ok wait
 -- hear me out:
-instance ( ExplSubcommands (S n) ts xs (as ++ '[x])
-         -- get the correct injection into the variant by position
-         , InjectPosF n x (as ++ (x ': xs))
-         , B.TraversableB x
-         , B.ProductB x
-         , KnownSymbol t
-         -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
-         , Proof as x xs
-         ) => ExplSubcommands n (t ': ts) (x ': xs) as where
+instance
+    ( ExplSubcommands (S n) ts xs (as ++ '[x])
+      -- get the correct injection into the variant by position
+    , InjectPosF n x (as ++ (x ': xs))
+    , B.TraversableB x
+    , B.ProductB x
+    , KnownSymbol t
+      -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
+    , Proof as x xs
+    ) => ExplSubcommands n (t ': ts) (x ': xs) as where
 
   explMapSubcommand n srcs (ACons opt opts)
     = let

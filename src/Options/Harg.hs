@@ -15,6 +15,14 @@ module Options.Harg
   , getTNested
 
   , toOpt
+
+  , optLong
+  , optShort
+  , optHelp
+  , optMetavar
+  , optEnvVar
+  , optDefault
+
   , option
   , optionWith
   , flag
@@ -25,13 +33,6 @@ module Options.Harg
   , switchWith'
   , argument
   , argumentWith
-
-  , optLong
-  , optShort
-  , optHelp
-  , optMetavar
-  , optEnvVar
-  , optDefault
 
   , parseWith
   , readParser
