@@ -1,5 +1,18 @@
-{ mkDerivation, lib, markdown-unlit, base, aeson, bytestring, text, barbies,
-  higgledy, optparse-applicative, stdenv
+{ mkDerivation,
+  stdenv,
+
+  lib,
+  markdown-unlit,
+
+  base,
+
+  aeson,
+  barbies,
+  bytestring,
+  higgledy,
+  optparse-applicative,
+  text,
+  yaml
 }:
 mkDerivation {
   pname = "harg";
