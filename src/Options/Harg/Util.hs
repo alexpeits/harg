@@ -2,10 +2,13 @@
 module Options.Harg.Util where
 
 import           Control.Exception          (catch, displayException, IOException)
+import qualified Data.ByteString            as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Functor.Const         (Const(..))
 import           Data.Functor.Product       (Product (..))
+import qualified Data.Text                  as Tx
+import qualified Data.Text.IO               as Tx.IO
 import           System.Directory           (doesFileExist)
 import           System.Exit                (exitFailure)
 
@@ -75,10 +78,11 @@ printErrAndExit
 printErrAndExit
   = (>> exitFailure) . putStrLn
 
-readFileLBS
-  :: FilePath
-  -> IO LBS.ByteString
-readFileLBS path
+readFileWith
+  :: (FilePath -> IO a)
+  -> FilePath
+  -> IO a
+readFileWith f path
   = do
       exists <- doesFileExist path
       if exists
@@ -86,9 +90,27 @@ readFileLBS path
         else printErrAndExit ("File not found: " <> path)
   where
     readFile_
-      = LBS.readFile path
+      = f path
           `catch` (printErrAndExit . showExc)
 
     showExc :: IOException -> String
     showExc exc
       = "Could not read file " <> path <> ": " <> displayException exc
+
+readFileLBS
+  :: FilePath
+  -> IO LBS.ByteString
+readFileLBS
+  = readFileWith LBS.readFile
+
+readFileBS
+  :: FilePath
+  -> IO BS.ByteString
+readFileBS
+  = readFileWith BS.readFile
+
+readFileTx
+  :: FilePath
+  -> IO Tx.Text
+readFileTx
+  = readFileWith Tx.IO.readFile

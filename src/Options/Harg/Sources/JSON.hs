@@ -1,7 +1,7 @@
+{-# LANGUAGE DeriveAnyClass       #-}
+{-# LANGUAGE DeriveGeneric        #-}
+{-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric  #-}
-{-# LANGUAGE TypeFamilies   #-}
 module Options.Harg.Sources.JSON where
 
 import           Data.Functor.Compose       (Compose (..))

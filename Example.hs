@@ -23,7 +23,7 @@ import qualified Data.Generic.HKD      as HKD
 
 mainSubparser :: IO ()
 mainSubparser = do
-  conf <- execCommands srcOpt configOpt
+  conf <- execCommands srcOpt' configOpt
   foldF conf
     (
       \(db :* srv :* hh)
@@ -65,15 +65,23 @@ jsonOpt :: Opt String
 jsonOpt
   = toOpt
     $ option strParser
-    & optLong "config"
-    & optShort 'c'
+    & optLong "json-config"
+    & optShort 'j'
     & optHelp "JSON config"
+
+yamlOpt :: Opt String
+yamlOpt
+  = toOpt
+    $ option strParser
+    & optLong "yaml-config"
+    & optShort 'y'
+    & optHelp "YAML config"
 
 srcOpt :: (EnvSource :* JSONSource) Opt
 srcOpt = EnvSource :* JSONSource jsonOpt
 
-srcOpt' :: (JSONSource :* EnvSource) Opt
-srcOpt' = JSONSource jsonOpt :* EnvSource
+srcOpt' :: (EnvSource :* YAMLSource) Opt
+srcOpt' = EnvSource :* YAMLSource yamlOpt
 
 mainParser :: IO ()
 mainParser = do
