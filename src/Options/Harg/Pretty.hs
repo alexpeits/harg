@@ -1,6 +1,6 @@
 module Options.Harg.Pretty where
 
-import Data.List          (intercalate, nub)
+import Data.List          (intercalate, nubBy)
 import Data.Maybe         (fromMaybe)
 
 import Options.Harg.Types
@@ -38,9 +38,11 @@ ppOptErrors
 ppOptErrors
   = putStrLn
   . intercalate "\n"
-  . nub
   . map ppOptError
+  . nubBy cmpOptErr
   where
+    cmpOptErr (OptError (SomeOpt l) dl) (OptError (SomeOpt r) dr)
+      =  _optLong l == _optLong r && dl == dr
     ppOptError :: OptError -> String
     ppOptError (OptError (SomeOpt opt) desc)
       =  "\t"
