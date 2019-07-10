@@ -6,13 +6,19 @@ import Data.Maybe         (fromMaybe)
 import Options.Harg.Types
 
 
+ppHelp
+  :: Opt a
+  -> Maybe String
+ppHelp Opt{..}
+  = (<> prettyEnvVar _optEnvVar) <$> _optHelp
+
 ppWarning
   :: [OptError]
   -> IO ()
 ppWarning []
   = pure ()
 ppWarning err
-  =  putStrLn "Parser succeeded with warnings when parsing env vars:"
+  =  putStrLn "Parser succeeded with warnings:"
   >> ppOptErrors err
   >> putStrLn ""
 
@@ -22,7 +28,7 @@ ppError
 ppError []
   = pure ()
 ppError err
-  =  putStrLn "Parser errors when parsing env vars:"
+  =  putStrLn "Parser errors:"
   >> ppOptErrors err
   >> putStrLn ""
 
@@ -40,6 +46,10 @@ ppOptErrors
       <> fromMaybe "<no opt name>" (_optLong opt)
       <> "\t\t"
       <> desc
-      <> " (env var:"
-      <> fromMaybe "<no env vars>" (_optEnvVar opt)
-      <> ")"
+      <> prettyEnvVar (_optEnvVar opt)
+
+prettyEnvVar
+  :: Maybe String
+  -> String
+prettyEnvVar
+  = maybe "" $ \s -> " (env var: " <> s <> ")"

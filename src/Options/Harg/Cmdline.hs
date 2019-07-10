@@ -8,7 +8,7 @@ import           Data.Maybe           (fromMaybe)
 import qualified Data.Barbie          as B
 import qualified Options.Applicative  as Optparse
 
-import           Options.Harg.Help
+import           Options.Harg.Pretty
 import           Options.Harg.Types
 import           Options.Harg.Util
 
@@ -50,7 +50,7 @@ toOptionParser sources (Compose opt@Opt{..})
       ( foldMap (fromMaybe mempty)
           [ Optparse.long <$> _optLong
           , Optparse.short <$> _optShort
-          , Optparse.help <$> mkHelp opt
+          , Optparse.help <$> ppHelp opt
           , Optparse.metavar <$> _optMetavar
           , Optparse.value <$> (getCompose sources <|> _optDefault)
           ]
@@ -72,7 +72,7 @@ toFlagParser sources (Compose opt@Opt{..}) active
         = foldMap (fromMaybe mempty)
             [ Optparse.long <$> _optLong
             , Optparse.short <$> _optShort
-            , Optparse.help <$> mkHelp opt
+            , Optparse.help <$> ppHelp opt
             ]
       in Compose $ case mDef of
            Nothing ->
@@ -87,7 +87,7 @@ toArgumentParser
 toArgumentParser sources (Compose opt@Opt{..})
   = Compose $ Optparse.argument (Optparse.eitherReader _optReader)
       ( foldMap (fromMaybe mempty)
-          [ Optparse.help <$> mkHelp opt
+          [ Optparse.help <$> ppHelp opt
           , Optparse.metavar <$> _optMetavar
           , Optparse.value <$> (getCompose sources <|> _optDefault)
           ]

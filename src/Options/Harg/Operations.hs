@@ -86,21 +86,29 @@ execCommands
 execCommands c opts
   = do
       env <- getEnvironment
+
       let
         (_, cFromEnv)
           = accumSourceResults
           $ runSource (EnvSourceVal env) (compose Identity c)
-        configParser = mkOptparseParser cFromEnv (compose Identity c)
-        dummyCommands = mapSubcommand () (allToDummyOpts @String opts)
-        dummyParser = Optparse.subparser (mconcat dummyCommands)
-        allParser = (,) <$> dummyParser <*> configParser
+        configParser
+          = mkOptparseParser cFromEnv (compose Identity c)
+        (_, dummyCommands)
+          = mapSubcommand () (allToDummyOpts @String opts)
+        dummyParser
+          = Optparse.subparser (mconcat dummyCommands)
+        allParser
+          = (,) <$> dummyParser <*> configParser
+
       (_, config) <- Optparse.execParser
                        (Optparse.info (Optparse.helper <*> allParser) mempty)
       sourceVals <- getSource config
+
       let
-        commands = mapSubcommand sourceVals (mapAssocList (compose Identity) opts)
-        parser = Optparse.subparser (mconcat commands)
-        errs = []
+        (errs, commands)
+          = mapSubcommand sourceVals (mapAssocList (compose Identity) opts)
+        parser
+          = Optparse.subparser (mconcat commands)
       (res, _) <- execParser ((,) <$> parser <*> configParser) errs
       pure res
 

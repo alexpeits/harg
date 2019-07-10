@@ -25,7 +25,6 @@ library
   exposed-modules:    Options.Harg
   other-modules:      Options.Harg.Cmdline
                       Options.Harg.Construct
-                      Options.Harg.Help
                       Options.Harg.Het.All
                       Options.Harg.Het.HList
                       Options.Harg.Het.Nat

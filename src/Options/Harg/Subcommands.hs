@@ -29,7 +29,7 @@ class Subcommands
        )
     => s
     -> AssocListF ts xs (Compose Opt f)
-    -> [Optparse.Mod Optparse.CommandFields (VariantF xs f)]
+    -> ([OptError], [Optparse.Mod Optparse.CommandFields (VariantF xs f)])
 
 instance ExplSubcommands Z ts xs '[] => Subcommands ts xs where
   mapSubcommand = explMapSubcommand @Z @ts @xs @'[] SZ
@@ -47,10 +47,10 @@ class ExplSubcommands
     => SNat n
     -> s
     -> AssocListF ts xs (Compose Opt f)
-    -> [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)]
+    -> ([OptError], [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)])
 
 instance ExplSubcommands n '[] '[] acc where
-  explMapSubcommand _ _ _ = []
+  explMapSubcommand _ _ _ = ([], [])
 
 -- ok wait
 -- hear me out:
@@ -67,21 +67,21 @@ instance
 
   explMapSubcommand n srcs (ACons opt opts)
     = let
-        sc
+        (errs, sc)
           = subcommand
-        rest
+        (errs', rest)
           = hgcastWith (proof @as @x @xs)
           $ explMapSubcommand
               @(S n) @ts @xs @(as ++ '[x])
               (SS n) srcs opts
 
-      in (sc : rest)
+      in (errs ++ errs', sc : rest)
 
     where
       subcommand
         = let
             -- TODO: accumulate errors
-            (_err, src)
+            (errs, src)
               = accumSourceResults $ runSource srcs opt
             parser
               = mkOptparseParser src opt
@@ -91,4 +91,4 @@ instance
               = Optparse.command tag
               $ injectPosF n
               <$> Optparse.info (Optparse.helper <*> parser) mempty
-          in cmd
+          in (errs, cmd)
