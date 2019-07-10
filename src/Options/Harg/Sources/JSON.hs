@@ -16,7 +16,7 @@ import           Options.Harg.Types
 import           Options.Harg.Util
 
 
-newtype JSONSource f = JSONSource (f String)
+newtype JSONSource f = JSONSource (f FilePath)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
 newtype JSONSourceVal = JSONSourceVal JSON.Value

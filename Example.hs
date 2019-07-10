@@ -60,7 +60,7 @@ mainSubparser = do
             -- & print
 
 
-jsonOpt :: Opt String
+jsonOpt :: Opt FilePath
 jsonOpt
   = toOpt
     $ option strParser
@@ -68,7 +68,7 @@ jsonOpt
     & optShort 'j'
     & optHelp "JSON config"
 
-yamlOpt :: Opt String
+yamlOpt :: Opt FilePath
 yamlOpt
   = toOpt
     $ option strParser

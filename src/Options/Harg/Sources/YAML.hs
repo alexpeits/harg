@@ -18,7 +18,7 @@ import           Options.Harg.Types
 import           Options.Harg.Util
 
 
-newtype YAMLSource f = YAMLSource (f String)
+newtype YAMLSource f = YAMLSource (f FilePath)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
 newtype YAMLSourceVal = YAMLSourceVal BS.ByteString
