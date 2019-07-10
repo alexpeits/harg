@@ -70,7 +70,7 @@ execCommands
      , Subcommands ts xs
      , GetSource c Identity
      , All (RunSource (SourceVal c)) xs
-     , All (RunSource '[]) xs
+     , All (RunSource ()) xs
      , MapAssocList xs
      )
   => c Opt
@@ -80,7 +80,7 @@ execCommands c opts
   = do
       let
         configParser = mkOptparseParser [] (compose Identity c)
-        dummyCommands = mapSubcommand HNil (allToDummyOpts @String opts)
+        dummyCommands = mapSubcommand () (allToDummyOpts @String opts)
         dummyParser = Optparse.subparser (mconcat dummyCommands)
         allParser = (,) <$> dummyParser <*> configParser
       (_, config) <- Optparse.execParser
@@ -97,8 +97,8 @@ execCommandsDef
   :: forall ts xs.
      ( B.TraversableB (VariantF xs)
      , Subcommands ts xs
-     , All (RunSource '[EnvSourceVal]) xs
-     , All (RunSource '[]) xs
+     , All (RunSource EnvSourceVal) xs
+     , All (RunSource ()) xs
      , MapAssocList xs
      )
   => AssocListF ts xs Opt

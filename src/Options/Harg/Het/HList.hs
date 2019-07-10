@@ -1,6 +1,5 @@
 {-# LANGUAGE PatternSynonyms      #-}
 {-# LANGUAGE RankNTypes           #-}
-{-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Het.HList where
@@ -9,9 +8,6 @@ import           Data.Kind               (Type)
 import           GHC.TypeLits            (ErrorMessage(..), TypeError, Symbol)
 
 import qualified Data.Barbie             as B
-
-import           Options.Harg.Het.All
-import           Options.Harg.Het.Proofs
 
 
 data AssocListF
@@ -49,14 +45,3 @@ instance MapAssocList '[] where
 
 instance (MapAssocList as, B.FunctorB a) => MapAssocList (a ': as) where
   mapAssocList f (ACons x xs) = ACons (f x) (mapAssocList f xs)
-
-
-data HList (as :: [Type]) where
-  HNil :: HList '[]
-  HCons :: a -> HList as -> HList (a ': as)
-
-deriving instance (All Show xs) => Show (HList xs)
-
-(+++) :: HList as -> HList bs -> HList (as ++ bs)
-HNil +++ ys = ys
-(HCons x xs) +++ ys = HCons x (xs +++ ys)

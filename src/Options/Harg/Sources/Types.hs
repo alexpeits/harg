@@ -6,9 +6,7 @@ module Options.Harg.Sources.Types where
 import Data.Functor.Compose    (Compose (..))
 import Data.Kind               (Type)
 
-import Options.Harg.Het.HList
 import Options.Harg.Het.Prod
-import Options.Harg.Het.Proofs
 import Options.Harg.Types
 
 data SourceReadResult a
@@ -25,31 +23,31 @@ data SourceParseResult a
 class GetSource
     (c :: (Type -> Type) -> Type)
     (f :: (Type -> Type)) where
-  type SourceVal c :: [Type]
-  getSource :: c f -> IO (HList (SourceVal c))
+  type SourceVal c :: Type
+  getSource :: c f -> IO (SourceVal c)
 
 instance
     ( GetSource l f
     , GetSource r f
     ) => GetSource (l :* r) f where
-  type SourceVal (l :* r) = SourceVal l ++ SourceVal r
+  type SourceVal (l :* r) = (SourceVal l, SourceVal r)
   getSource (l :* r)
-    = (+++) <$> getSource l <*> getSource r
+    = (,) <$> getSource l <*> getSource r
 
-class RunSource (s :: [Type]) a where
+class RunSource s a where
   runSource
     :: Applicative f
-    => HList s
+    => s
     -> a (Compose Opt f)
     -> [a (Compose SourceParseResult f)]
 
 instance
-    ( RunSource xs a
-    , RunSource '[x] a
-    ) => RunSource (x ': xs) a where
-  runSource (HCons x xs) opt
-    = runSource (HCons x HNil) opt ++ runSource xs opt
+    ( RunSource l a
+    , RunSource r a
+    ) => RunSource (l, r) a where
+  runSource (l, r) opt
+    = runSource l opt ++ runSource r opt
 
-instance RunSource '[] a where
-  runSource HNil _
+instance RunSource () a where
+  runSource () _
     = []

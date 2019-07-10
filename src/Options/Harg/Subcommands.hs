@@ -27,7 +27,7 @@ class Subcommands
     :: ( All (RunSource s) xs
        , Applicative f
        )
-    => HList s
+    => s
     -> AssocListF ts xs (Compose Opt f)
     -> [Optparse.Mod Optparse.CommandFields (VariantF xs f)]
 
@@ -45,7 +45,7 @@ class ExplSubcommands
        , Applicative f
        )
     => SNat n
-    -> HList s
+    -> s
     -> AssocListF ts xs (Compose Opt f)
     -> [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)]
 

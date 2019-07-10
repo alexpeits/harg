@@ -11,7 +11,6 @@ import           System.Environment         (getEnvironment)
 
 import qualified Data.Barbie                as B
 
-import           Options.Harg.Het.HList
 import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 
@@ -25,15 +24,13 @@ data EnvSource (f :: Type -> Type) = EnvSource
 newtype EnvSourceVal = EnvSourceVal Environment
 
 instance GetSource EnvSource f where
-  type SourceVal EnvSource = '[EnvSourceVal]
+  type SourceVal EnvSource = EnvSourceVal
   getSource _
-    = do
-        env <- getEnvironment
-        pure $ HCons (EnvSourceVal env) HNil
+    = EnvSourceVal <$> getEnvironment
 
 instance {-# OVERLAPS #-}
-    B.FunctorB a => RunSource '[EnvSourceVal] a where
-  runSource (HCons (EnvSourceVal e) HNil) opt
+    B.FunctorB a => RunSource EnvSourceVal a where
+  runSource (EnvSourceVal e) opt
     = [runEnvVarSource e opt]
 
 lookupEnv

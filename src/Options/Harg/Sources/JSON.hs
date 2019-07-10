@@ -1,3 +1,4 @@
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric  #-}
 {-# LANGUAGE TypeFamilies   #-}
@@ -10,7 +11,6 @@ import           GHC.Generics               (Generic)
 import qualified Data.Aeson                 as JSON
 import qualified Data.Barbie                as B
 
-import           Options.Harg.Het.HList
 import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 import           Options.Harg.Util
@@ -22,13 +22,13 @@ newtype JSONSource f = JSONSource (f String)
 newtype JSONSourceVal = JSONSourceVal JSON.Value
 
 instance GetSource JSONSource Identity where
-  type SourceVal JSONSource = '[JSONSourceVal]
+  type SourceVal JSONSource = JSONSourceVal
   getSource (JSONSource (Identity path))
     = do
         contents <- readFileLBS path
         case JSON.eitherDecode contents of
           Right json
-            -> pure $ HCons (JSONSourceVal json) HNil
+            -> pure $ JSONSourceVal json
           Left err
             -> printErrAndExit
                $ "Error decoding " <> path <> " to JSON: " <> err
@@ -36,8 +36,8 @@ instance GetSource JSONSource Identity where
 instance {-# OVERLAPS #-}
     ( JSON.FromJSON (a Maybe)
     , B.FunctorB a
-    ) => RunSource '[JSONSourceVal] a where
-  runSource (HCons (JSONSourceVal j) HNil) opt
+    ) => RunSource JSONSourceVal a where
+  runSource (JSONSourceVal j) opt
     = [runJSONSource j opt]
 
 runJSONSource
