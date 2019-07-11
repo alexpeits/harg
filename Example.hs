@@ -40,7 +40,7 @@ srcOpt = EnvSource :* JSONSource jsonOpt :* YAMLSource yamlOpt
 mainSubparser :: IO ()
 mainSubparser = do
   conf <- execCommands srcOpt configOpt
-  foldF conf
+  fromVariantF conf
     (
       \(db :* srv :* smth)
         -> AppC

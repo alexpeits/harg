@@ -65,7 +65,7 @@ module Options.Harg
   , pattern In4
   , pattern In5
 
-  , foldF
+  , fromVariantF
 
   , AssocListF (..)
   , (:+)

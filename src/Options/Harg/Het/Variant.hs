@@ -56,20 +56,20 @@ type family FoldSignatureF (xs :: [(Type -> Type) -> Type]) r f where
   FoldSignatureF (x ': xs) r f = (x f -> r) -> FoldSignatureF xs r f
   FoldSignatureF '[] r f = r
 
-class BuildFoldF xs result f where
-  foldF :: VariantF xs f -> FoldSignatureF xs result f
+class FromVariantF xs result f where
+  fromVariantF :: VariantF xs f -> FoldSignatureF xs result f
 
-instance BuildFoldF '[x] result f where
-  foldF (HereF  x) f = f x
-  foldF (ThereF _) _ = error "Impossible: empty variant"
+instance FromVariantF '[x] result f where
+  fromVariantF (HereF  x) f = f x
+  fromVariantF (ThereF _) _ = error "Impossible: empty variant"
 
 instance
     ( tail ~ (x' ': xs)
-    , BuildFoldF tail result f
+    , FromVariantF tail result f
     , IgnoreF tail result f
-    ) => BuildFoldF (x ': x' ': xs) result f where
-  foldF (ThereF x) _ = foldF @_ @result x
-  foldF (HereF  x) f = ignoreF @tail (f x)
+    ) => FromVariantF (x ': x' ': xs) result f where
+  fromVariantF (ThereF x) _ = fromVariantF @_ @result x
+  fromVariantF (HereF  x) f = ignoreF @tail (f x)
 
 class IgnoreF (args :: [(Type -> Type) -> Type]) result f where
   ignoreF :: result -> FoldSignatureF args result f
