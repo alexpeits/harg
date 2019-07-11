@@ -86,6 +86,18 @@ getCtx :: IO HargCtx
 getCtx
   = HargCtx <$> getEnvironment <*> getArgs
 
+ctxFromArgs :: Args -> IO HargCtx
+ctxFromArgs args
+  = HargCtx <$> getEnvironment <*> pure args
+
+ctxFromEnv :: Environment -> IO HargCtx
+ctxFromEnv env
+  = HargCtx <$> pure env <*> getArgs
+
+pureCtx :: Environment -> Args -> HargCtx
+pureCtx
+  = HargCtx
+
 toOptError
   :: Opt a
   -> String
