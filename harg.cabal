@@ -24,6 +24,7 @@ source-repository head
 library
   exposed-modules:    Options.Harg
   other-modules:      Options.Harg.Cmdline
+                      Options.Harg.Config
                       Options.Harg.Construct
                       Options.Harg.Het.All
                       Options.Harg.Het.HList

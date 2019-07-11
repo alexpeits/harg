@@ -23,6 +23,7 @@ import           Options.Harg.Sources.Types
 import           Options.Harg.Subcommands
 import           Options.Harg.Types
 import           Options.Harg.Util
+import           Options.Harg.Config
 
 
 execOpt
@@ -37,18 +38,13 @@ execOpt
   => c Opt
   -> a Opt
   -> IO (a Identity)
-execOpt c opts
+execOpt conf opts
   = do
       env <- getEnvironment
       let
-        (_, cFromEnv)
-          = accumSourceResults
-          $ runSource (EnvSourceVal env) (compose Identity c)
-        configParser = mkOptparseParser cFromEnv (compose Identity c)
+        configParser = mkConfigParser (compose Identity conf) env
         dummyParser = mkOptparseParser [] (toDummyOpts @String opts)
-        allParser = (,) <$> dummyParser <*> configParser
-      (_, config) <- Optparse.execParser
-                       (Optparse.info (Optparse.helper <*> allParser) mempty)
+      config <- getConfig configParser dummyParser
       sourceVals <- getSource config
       let
         (errs, sources)
@@ -83,25 +79,18 @@ execCommands
   => c Opt
   -> AssocListF ts xs Opt
   -> IO (VariantF xs Identity)
-execCommands c opts
+execCommands conf opts
   = do
       env <- getEnvironment
 
       let
-        (_, cFromEnv)
-          = accumSourceResults
-          $ runSource (EnvSourceVal env) (compose Identity c)
-        configParser
-          = mkOptparseParser cFromEnv (compose Identity c)
+        configParser = mkConfigParser (compose Identity conf) env
         (_, dummyCommands)
           = mapSubcommand () (allToDummyOpts @String opts)
         dummyParser
           = Optparse.subparser (mconcat dummyCommands)
-        allParser
-          = (,) <$> dummyParser <*> configParser
 
-      (_, config) <- Optparse.execParser
-                       (Optparse.info (Optparse.helper <*> allParser) mempty)
+      config <- getConfig configParser dummyParser
       sourceVals <- getSource config
 
       let

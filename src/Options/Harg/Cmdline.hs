@@ -14,10 +14,10 @@ import           Options.Harg.Util
 
 
 mkOptparseParser
-  :: forall a f.
-     ( B.TraversableB a
+  :: forall f a.
+     ( Applicative f
+     , B.TraversableB a
      , B.ProductB a
-     , Applicative f
      )
   => [a (Compose Maybe f)]
   -> a (Compose Opt f)

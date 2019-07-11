@@ -68,6 +68,9 @@ data OptError
 data SomeOpt where
   SomeOpt :: Opt a -> SomeOpt
 
+type Environment
+  = [(String, String)]
+
 toOptError
   :: Opt a
   -> String

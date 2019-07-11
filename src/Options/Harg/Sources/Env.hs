@@ -15,9 +15,6 @@ import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 
 
-type Environment
-  = [(String, String)]
-
 data EnvSource (f :: Type -> Type) = EnvSource
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
