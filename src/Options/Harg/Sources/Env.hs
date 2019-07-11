@@ -25,7 +25,7 @@ instance GetSource EnvSource f where
   getSource _
     = EnvSourceVal <$> getEnvironment
 
-instance {-# OVERLAPS #-}
+instance
     B.FunctorB a => RunSource EnvSourceVal a where
   runSource (EnvSourceVal e) opt
     = [runEnvVarSource e opt]

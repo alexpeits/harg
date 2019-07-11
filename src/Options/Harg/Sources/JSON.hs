@@ -33,7 +33,7 @@ instance GetSource JSONSource Identity where
             -> printErrAndExit
                $ "Error decoding " <> path <> " to JSON: " <> err
 
-instance {-# OVERLAPS #-}
+instance
     ( JSON.FromJSON (a Maybe)
     , B.FunctorB a
     ) => RunSource JSONSourceVal a where

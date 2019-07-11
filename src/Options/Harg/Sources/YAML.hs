@@ -28,7 +28,7 @@ instance GetSource YAMLSource Identity where
   getSource (YAMLSource (Identity path))
     = YAMLSourceVal <$> readFileBS path
 
-instance {-# OVERLAPS #-}
+instance
     ( YAML.FromJSON (a Maybe)
     , B.FunctorB a
     ) => RunSource YAMLSourceVal a where

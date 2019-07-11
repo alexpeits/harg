@@ -69,7 +69,7 @@ instance ( JSON.FromJSON (a Maybe)
           <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy ta)) .!= B.buniq Nothing
           <*> JSON.parseJSON (JSON.Object o)
 
-instance {-# OVERLAPS #-}
+instance
     ( JSON.FromJSON (a Maybe)
     , JSON.FromJSON (b Maybe)
     , B.ProductB a, B.ProductB b
