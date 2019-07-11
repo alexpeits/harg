@@ -7,7 +7,6 @@
 module Options.Harg.Operations where
 
 import           Data.Functor.Identity      (Identity(..))
-import           System.Environment         (getArgs, getEnvironment)
 
 import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
@@ -40,9 +39,9 @@ execOpt
   -> IO (a Identity)
 execOpt conf opts
   = do
-      env <- getEnvironment
+      ctx <- getCtx
       let
-        configParser = mkConfigParser (compose Identity conf) env
+        configParser = mkConfigParser ctx (compose Identity conf)
         dummyParser = mkOptparseParser [] (toDummyOpts @String opts)
       config <- getConfig configParser dummyParser
       sourceVals <- getSource config
@@ -81,10 +80,10 @@ execCommands
   -> IO (VariantF xs Identity)
 execCommands conf opts
   = do
-      env <- getEnvironment
+      ctx <- getCtx
 
       let
-        configParser = mkConfigParser (compose Identity conf) env
+        configParser = mkConfigParser ctx (compose Identity conf)
         (_, dummyCommands)
           = mapSubcommand () (allToDummyOpts @String opts)
         dummyParser

@@ -1,6 +1,8 @@
 {-# LANGUAGE DeriveFunctor #-}
 module Options.Harg.Types where
 
+import System.Environment (getArgs, getEnvironment)
+
 type OptReader a = String -> Either String a
 
 -- Option
@@ -71,10 +73,23 @@ data SomeOpt where
 type Environment
   = [(String, String)]
 
+type Args
+  = [String]
+
+data HargCtx
+  = HargCtx
+      { _hcEnv  :: Environment
+      , _hcArgs :: Args
+      }
+
+getCtx :: IO HargCtx
+getCtx
+  = HargCtx <$> getEnvironment <*> getArgs
+
 toOptError
   :: Opt a
   -> String
   -> String
   -> OptError
-toOptError opt src desc
-  = OptError (SomeOpt opt) src desc
+toOptError
+  = OptError . SomeOpt

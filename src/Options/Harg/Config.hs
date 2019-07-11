@@ -18,14 +18,14 @@ mkConfigParser
      , B.TraversableB c
      , B.ProductB c
      )
-  => c (Compose Opt f)
-  -> Environment
+  => HargCtx
+  -> c (Compose Opt f)
   -> Optparse.Parser (c f)
-mkConfigParser conf env
+mkConfigParser HargCtx{..} conf
   = let
       (_, envC)
         = accumSourceResults
-        $ runSource (EnvSourceVal env) conf
+        $ runSource (EnvSourceVal _hcEnv) conf
     in mkOptparseParser envC conf
 
 getConfig
