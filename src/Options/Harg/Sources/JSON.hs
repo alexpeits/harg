@@ -23,7 +23,7 @@ newtype JSONSourceVal = JSONSourceVal JSON.Value
 
 instance GetSource JSONSource Identity where
   type SourceVal JSONSource = JSONSourceVal
-  getSource (JSONSource (Identity path))
+  getSource _ctx (JSONSource (Identity path))
     = do
         contents <- readFileLBS path
         case JSON.eitherDecode contents of

@@ -25,7 +25,7 @@ newtype YAMLSourceVal = YAMLSourceVal BS.ByteString
 
 instance GetSource YAMLSource Identity where
   type SourceVal YAMLSource = YAMLSourceVal
-  getSource (YAMLSource (Identity path))
+  getSource _ctx (YAMLSource (Identity path))
     = YAMLSourceVal <$> readFileBS path
 
 instance

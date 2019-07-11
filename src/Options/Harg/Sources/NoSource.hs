@@ -16,7 +16,7 @@ data NoSource (f :: Type -> Type) = NoSource
 
 instance GetSource NoSource f where
   type SourceVal NoSource = ()
-  getSource _ = pure ()
+  getSource _ctx _ = pure ()
 
 noSources :: NoSource f
 noSources
