@@ -16,9 +16,7 @@ import           System.Environment    (setEnv)
 import           Options.Harg
 
 import qualified Data.Aeson            as JSON
-import qualified Data.Barbie           as B
 import qualified Data.ByteString.Lazy  as BS
-import qualified Data.Generic.HKD      as HKD
 
 mainSubparser :: IO ()
 mainSubparser = do
@@ -198,19 +196,6 @@ data TestConfig
       , _tMock :: Bool
       }
   deriving (Show, Generic)
-
-data TestConfig'
-  = TestConfig'
-      { tDir  :: String
-      , tMock :: Booly
-      }
-  deriving (Show, Generic)
-
-newtype Booly = Booly { getBooly :: Bool }
-  deriving (Show)
-
-foo :: BS.ByteString -> Maybe (HKD.HKD TestConfig Maybe)
-foo = JSON.decode
 
 dbConf :: Nested DBConfig Opt
 dbConf

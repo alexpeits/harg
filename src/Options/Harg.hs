@@ -39,6 +39,11 @@ module Options.Harg
   , strParser
   , boolParser
 
+  , getCtx
+  , ctxFromArgs
+  , ctxFromEnv
+  , pureCtx
+
   , execOpt
   , execOptDef
   , execCommands
@@ -66,18 +71,30 @@ module Options.Harg
   , (:+)
   , pattern (:+)
   , (:->)
+
+  -- re-exports
+  , B.FunctorB
+  , B.TraversableB
+  , B.ProductB
+
+  , HKD.HKD
+  , HKD.build
+  , HKD.construct
   ) where
 
-import Options.Harg.Construct
-import Options.Harg.Het.HList
-import Options.Harg.Het.Prod
-import Options.Harg.Het.Variant
-import Options.Harg.Nested
-import Options.Harg.Operations
-import Options.Harg.Single
-import Options.Harg.Sources
-import Options.Harg.Sources.Env
-import Options.Harg.Sources.JSON
-import Options.Harg.Sources.NoSource
-import Options.Harg.Sources.YAML
-import Options.Harg.Types
+import           Options.Harg.Construct
+import           Options.Harg.Het.HList
+import           Options.Harg.Het.Prod
+import           Options.Harg.Het.Variant
+import           Options.Harg.Nested
+import           Options.Harg.Operations
+import           Options.Harg.Single
+import           Options.Harg.Sources
+import           Options.Harg.Sources.Env
+import           Options.Harg.Sources.JSON
+import           Options.Harg.Sources.NoSource
+import           Options.Harg.Sources.YAML
+import           Options.Harg.Types
+
+import qualified Data.Barbie                   as B
+import qualified Data.Generic.HKD              as HKD
