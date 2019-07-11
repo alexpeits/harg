@@ -1,6 +1,7 @@
 module Options.Harg.Config where
 
 import           Data.Functor.Compose       (Compose (..))
+import           Data.Kind                  (Type)
 
 import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
@@ -29,17 +30,17 @@ mkConfigParser HargCtx{..} conf
     in mkOptparseParser envC conf
 
 getConfig
-  :: ( Applicative f
-     , Applicative g
-     )
-  => Optparse.Parser (c f)
-  -> Optparse.Parser (a g)
+  :: HargCtx
+  -> Optparse.Parser (c (f :: Type -> Type))
+  -> Optparse.Parser (a (g :: Type -> Type))
   -> IO (c f)
-getConfig confParser optParser
+getConfig HargCtx{..} confParser optParser
   = do
       let
-        allParser
+        parser
           = (,) <$> confParser <*> optParser
-        pInfo
-          = Optparse.info (Optparse.helper <*> allParser) mempty
-      fst <$> Optparse.execParser pInfo
+        parserInfo
+          = Optparse.info (Optparse.helper <*> parser) mempty
+        res
+          = Optparse.execParserPure Optparse.defaultPrefs parserInfo _hcArgs
+      fst <$> Optparse.handleParseResult res

@@ -63,7 +63,7 @@ data ArgumentOpt a
 data OptError
   = OptError
       { _oeOpt    :: SomeOpt
-      , _oeSource :: String
+      , _oeSource :: Maybe String
       , _oeDesc   :: String
       }
 
@@ -100,7 +100,7 @@ pureCtx
 
 toOptError
   :: Opt a
-  -> String
+  -> Maybe String
   -> String
   -> OptError
 toOptError

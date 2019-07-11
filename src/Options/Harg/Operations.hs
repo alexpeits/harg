@@ -43,7 +43,7 @@ execOptWithCtx ctx conf opts
       let
         configParser = mkConfigParser ctx (compose Identity conf)
         dummyParser = mkOptparseParser [] (toDummyOpts @String opts)
-      config <- getConfig configParser dummyParser
+      config <- getConfig ctx configParser dummyParser
       sourceVals <- getSource ctx config
       let
         (errs, sources)
@@ -116,7 +116,7 @@ execCommandsWithCtx ctx conf opts
         dummyParser
           = Optparse.subparser (mconcat dummyCommands)
 
-      config <- getConfig configParser dummyParser
+      config <- getConfig ctx configParser dummyParser
       sourceVals <- getSource ctx config
 
       let
