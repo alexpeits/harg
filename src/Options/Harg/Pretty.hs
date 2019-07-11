@@ -49,8 +49,14 @@ ppOptErrors
       <> fromMaybe "<no opt name>" (_optLong opt)
       <> "\t\t"
       <> desc
-      <> " (source: " <> src <> ")"
+      <> ppSource src
       <> ppEnvVar (_optEnvVar opt)
+
+ppSource
+  :: Maybe String
+  -> String
+ppSource
+  = maybe "" $ \s -> " (source: " <> s <> ")"
 
 ppEnvVar
   :: Maybe String

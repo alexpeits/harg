@@ -7,7 +7,6 @@
 module Options.Harg.Operations where
 
 import           Data.Functor.Identity      (Identity(..))
-import           System.Environment         (getArgs, getEnvironment)
 
 import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
@@ -26,6 +25,35 @@ import           Options.Harg.Util
 import           Options.Harg.Config
 
 
+execOptWithCtx
+  :: forall c a.
+     ( B.TraversableB a
+     , B.ProductB a
+     , B.TraversableB c
+     , B.ProductB c
+     , GetSource c Identity
+     , RunSource (SourceVal c) a
+     )
+  => HargCtx
+  -> c Opt
+  -> a Opt
+  -> IO (a Identity)
+execOptWithCtx ctx conf opts
+  = do
+      let
+        configParser = mkConfigParser ctx (compose Identity conf)
+        dummyParser = mkOptparseParser [] (toDummyOpts @String opts)
+      config <- getConfig ctx configParser dummyParser
+      sourceVals <- getSource ctx config
+      let
+        (errs, sources)
+          = accumSourceResults
+          $ runSource sourceVals (compose Identity opts)
+        parser
+          = mkOptparseParser sources (compose Identity opts)
+      (res, _) <- execParser ctx ((,) <$> parser <*> configParser) errs
+      pure res
+
 execOpt
   :: forall c a.
      ( B.TraversableB a
@@ -40,20 +68,19 @@ execOpt
   -> IO (a Identity)
 execOpt conf opts
   = do
-      env <- getEnvironment
-      let
-        configParser = mkConfigParser (compose Identity conf) env
-        dummyParser = mkOptparseParser [] (toDummyOpts @String opts)
-      config <- getConfig configParser dummyParser
-      sourceVals <- getSource config
-      let
-        (errs, sources)
-          = accumSourceResults
-          $ runSource sourceVals (compose Identity opts)
-        parser
-          = mkOptparseParser sources (compose Identity opts)
-      (res, _) <- execParser ((,) <$> parser <*> configParser) errs
-      pure res
+      ctx <- getCtx
+      execOptWithCtx ctx conf opts
+
+execOptWithCtxDef
+  :: forall a.
+     ( B.TraversableB a
+     , B.ProductB a
+     )
+  => HargCtx
+  -> a Opt
+  -> IO (a Identity)
+execOptWithCtxDef ctx
+  = execOptWithCtx ctx defaultSources
 
 execOptDef
   :: forall a.
@@ -64,6 +91,41 @@ execOptDef
   -> IO (a Identity)
 execOptDef
   = execOpt defaultSources
+
+execCommandsWithCtx
+  :: forall c ts xs.
+     ( B.TraversableB (VariantF xs)
+     , B.TraversableB c
+     , B.ProductB c
+     , Subcommands ts xs
+     , GetSource c Identity
+     , All (RunSource (SourceVal c)) xs
+     , All (RunSource ()) xs
+     , MapAssocList xs
+     )
+  => HargCtx
+  -> c Opt
+  -> AssocListF ts xs Opt
+  -> IO (VariantF xs Identity)
+execCommandsWithCtx ctx conf opts
+  = do
+      let
+        configParser = mkConfigParser ctx (compose Identity conf)
+        (_, dummyCommands)
+          = mapSubcommand () (allToDummyOpts @String opts)
+        dummyParser
+          = Optparse.subparser (mconcat dummyCommands)
+
+      config <- getConfig ctx configParser dummyParser
+      sourceVals <- getSource ctx config
+
+      let
+        (errs, commands)
+          = mapSubcommand sourceVals (mapAssocList (compose Identity) opts)
+        parser
+          = Optparse.subparser (mconcat commands)
+      (res, _) <- execParser ctx ((,) <$> parser <*> configParser) errs
+      pure res
 
 execCommands
   :: forall c ts xs.
@@ -81,25 +143,22 @@ execCommands
   -> IO (VariantF xs Identity)
 execCommands conf opts
   = do
-      env <- getEnvironment
+      ctx <- getCtx
+      execCommandsWithCtx ctx conf opts
 
-      let
-        configParser = mkConfigParser (compose Identity conf) env
-        (_, dummyCommands)
-          = mapSubcommand () (allToDummyOpts @String opts)
-        dummyParser
-          = Optparse.subparser (mconcat dummyCommands)
-
-      config <- getConfig configParser dummyParser
-      sourceVals <- getSource config
-
-      let
-        (errs, commands)
-          = mapSubcommand sourceVals (mapAssocList (compose Identity) opts)
-        parser
-          = Optparse.subparser (mconcat commands)
-      (res, _) <- execParser ((,) <$> parser <*> configParser) errs
-      pure res
+execCommandsWithCtxDef
+  :: forall ts xs.
+     ( B.TraversableB (VariantF xs)
+     , Subcommands ts xs
+     , All (RunSource EnvSourceVal) xs
+     , All (RunSource ()) xs
+     , MapAssocList xs
+     )
+  => HargCtx
+  -> AssocListF ts xs Opt
+  -> IO (VariantF xs Identity)
+execCommandsWithCtxDef ctx
+  = execCommandsWithCtx ctx defaultSources
 
 execCommandsDef
   :: forall ts xs.
@@ -115,13 +174,14 @@ execCommandsDef
   = execCommands defaultSources
 
 execParser
-  :: Optparse.Parser a
+  :: HargCtx
+  -> Optparse.Parser a
   -> [OptError]
   -> IO a
-execParser parser errs
+execParser HargCtx{..} parser errs
   = do
-      args <- getArgs
-      let res = execParserPure args parser
+      let
+        res = execParserPure _hcArgs parser
       case res of
         Optparse.Success a
           -> ppWarning errs >> pure a

@@ -7,7 +7,6 @@ import           Data.Functor.Compose       (Compose (..))
 import           Data.Kind                  (Type)
 import           Data.List                  (find)
 import           GHC.Generics               (Generic)
-import           System.Environment         (getEnvironment)
 
 import qualified Data.Barbie                as B
 
@@ -22,8 +21,8 @@ newtype EnvSourceVal = EnvSourceVal Environment
 
 instance GetSource EnvSource f where
   type SourceVal EnvSource = EnvSourceVal
-  getSource _
-    = EnvSourceVal <$> getEnvironment
+  getSource HargCtx{..} _
+    = pure (EnvSourceVal _hcEnv)
 
 instance
     B.FunctorB a => RunSource EnvSourceVal a where
@@ -58,6 +57,6 @@ runEnvVarSource env
       where
         tryParse
           = either
-              (OptFoundNoParse . toOptError opt "EnvSource")
+              (OptFoundNoParse . toOptError opt (Just "EnvSource"))
               OptParsed
           . _optReader

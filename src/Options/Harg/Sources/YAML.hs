@@ -25,7 +25,7 @@ newtype YAMLSourceVal = YAMLSourceVal BS.ByteString
 
 instance GetSource YAMLSource Identity where
   type SourceVal YAMLSource = YAMLSourceVal
-  getSource (YAMLSource (Identity path))
+  getSource _ctx (YAMLSource (Identity path))
     = YAMLSourceVal <$> readFileBS path
 
 instance
@@ -58,7 +58,7 @@ runYAMLSource yaml opt
         -> Compose SourceRunResult f x
       toFailure exc (Compose o)
         = Compose
-        $ OptFoundNoParse (toOptError o "YAMLSource" (displayException exc))
+        $ OptFoundNoParse (toOptError o (Just "YAMLSource") (displayException exc))
     in case res of
          Right v  -> B.bmap toSuccess v
          Left exc -> B.bmap (toFailure exc) opt

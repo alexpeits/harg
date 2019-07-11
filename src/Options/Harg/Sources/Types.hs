@@ -20,15 +20,15 @@ class GetSource
     (c :: (Type -> Type) -> Type)
     (f :: (Type -> Type)) where
   type SourceVal c :: Type
-  getSource :: c f -> IO (SourceVal c)
+  getSource :: HargCtx -> c f -> IO (SourceVal c)
 
 instance
     ( GetSource l f
     , GetSource r f
     ) => GetSource (l :* r) f where
   type SourceVal (l :* r) = (SourceVal l, SourceVal r)
-  getSource (l :* r)
-    = (,) <$> getSource l <*> getSource r
+  getSource ctx (l :* r)
+    = (,) <$> getSource ctx l <*> getSource ctx r
 
 class RunSource s a where
   runSource
