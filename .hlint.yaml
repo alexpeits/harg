@@ -36,7 +36,3 @@
 
 - ignore:
     name: Reduce duplication
-
-- ignore:
-    name: Redundant if
-
