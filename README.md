@@ -484,7 +484,8 @@ data Variant (xs :: [Type]) where
 
 `Variant` is like a sum type which holds all the summands in a type-level list. Instead of pattern
 matching in `Left` or `Right` like when using `Either`, we pattern match on `Here x`, `There (Here x)`
-etc.
+etc. For a pretty thorough introduction to `Variant` and more heterogeneous types, check out
+[this repo](https://github.com/i-am-tom/learn-me-a-haskell) by [i-am-tom](https://github.com/i-am-tom).
 
 ``` haskell
 x :: Variant '[Int, Bool, Char]
