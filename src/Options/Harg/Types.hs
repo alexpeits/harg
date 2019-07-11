@@ -1,23 +1,7 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE AllowAmbiguousTypes        #-}
-{-# LANGUAGE DeriveFunctor              #-}
-{-# LANGUAGE DerivingVia                #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE StandaloneDeriving         #-}
-{-# LANGUAGE TypeFamilyDependencies     #-}
-{-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE DeriveFunctor #-}
 module Options.Harg.Types where
 
-import           Data.Coerce          (Coercible, coerce)
-import           Data.Kind            (Type)
-import           GHC.Generics         (Generic)
-
-import qualified Options.Applicative  as Optparse
-
-import qualified Data.Barbie          as B
-import qualified Data.Functor.Product as P
-import qualified Data.Generic.HKD     as HKD
-
+import System.Environment (getArgs, getEnvironment)
 
 type OptReader a = String -> Either String a
 
@@ -57,12 +41,13 @@ data OptionOpt a
 -- value
 data FlagOpt a
   = FlagOpt
-      { _sLong    :: Maybe String
-      , _sShort   :: Maybe Char
-      , _sHelp    :: Maybe String
-      , _sEnvVar  :: Maybe String
-      , _sDefault :: a
-      , _sActive  :: a
+      { _fLong    :: Maybe String
+      , _fShort   :: Maybe Char
+      , _fHelp    :: Maybe String
+      , _fEnvVar  :: Maybe String
+      , _fDefault :: a
+      , _fReader  :: OptReader a
+      , _fActive  :: a
       }
 
 -- Option for arguments (no long/short specifiers)
@@ -75,99 +60,48 @@ data ArgumentOpt a
       , _aReader  :: OptReader a
       }
 
--- Parser
-data Parser a
-  = Parser (Optparse.Parser a) [OptError]
-  deriving Functor
-
-instance Applicative Parser where
-  pure x = Parser (pure x) []
-
-  Parser f e <*> Parser x e' = Parser (f <*> x) (e <> e')
-
 data OptError
   = OptError
-      { _oeOpt  :: SomeOpt
-      , _oeDesc :: String
+      { _oeOpt    :: SomeOpt
+      , _oeSource :: Maybe String
+      , _oeDesc   :: String
       }
-
-instance Eq OptError where
-  OptError (SomeOpt opt) desc == OptError (SomeOpt opt') desc'
-    =  _optLong opt == _optLong opt'
-    && desc == desc'
 
 data SomeOpt where
   SomeOpt :: Opt a -> SomeOpt
 
+type Environment
+  = [(String, String)]
+
+type Args
+  = [String]
+
+data HargCtx
+  = HargCtx
+      { _hcEnv  :: Environment
+      , _hcArgs :: Args
+      }
+
+getCtx :: IO HargCtx
+getCtx
+  = HargCtx <$> getEnvironment <*> getArgs
+
+ctxFromArgs :: Args -> IO HargCtx
+ctxFromArgs args
+  = HargCtx <$> getEnvironment <*> pure args
+
+ctxFromEnv :: Environment -> IO HargCtx
+ctxFromEnv env
+  = HargCtx <$> pure env <*> getArgs
+
+pureCtx :: Environment -> Args -> HargCtx
+pureCtx
+  = HargCtx
+
 toOptError
   :: Opt a
+  -> Maybe String
   -> String
   -> OptError
 toOptError
   = OptError . SomeOpt
-
-type Environment
-  = [(String, String)]
-
-data ParserSource
-  = EnvSource Environment
-  deriving Eq
-
-data SourceParseResult a
-  = SourceNotAvailable
-  | OptNotFound
-  | OptFoundNoParse OptError
-  | OptParsed a
-
--- Single
-newtype Single (b :: Type) (f :: Type -> Type)
-  = Single
-      { getSingle :: f b
-      }
-
-single :: f b -> Single b f
-single = Single
-
-deriving instance (Show b, Show (f b)) => Show (Single b f)
-deriving newtype instance Generic (f b) => Generic (Single b f)
-
-instance B.FunctorB (Single b) where
-  bmap nat (Single p) = Single (nat p)
-
-instance B.ProductB (Single b) where
-  bprod (Single l) (Single r) = Single (P.Pair l r)
-  buniq = Single
-
-instance B.TraversableB (Single b) where
-  btraverse nat (Single p) = Single <$> nat p
-
--- Nested
-newtype Nested (b :: Type) (f :: Type -> Type)
-  = Nested (HKD.HKD b f)
-
-type family Nest (a :: Type) (f :: Type -> Type) = (res :: Type) | res -> a where
-  Nest (a -> b)      f = a -> Nest b f
-  Nest (HKD.HKD a f) f = Nested a f
-
-nested
-  :: forall b f k.
-     ( HKD.Build b f k
-     , Coercible (HKD.HKD b f) (Nested b f)
-     , Coercible k (Nest k f)
-     )
-  => Nest k f
-nested = coerce @k @(Nest k f) hkd
-  where hkd = HKD.build @b @f @k
-
-getNested
-  :: HKD.Construct f b
-  => Nested b f
-  -> f b
-getNested (Nested hkd) = HKD.construct hkd
-
-deriving newtype instance Generic (HKD.HKD b f) => Generic (Nested b f)
-deriving newtype instance B.FunctorB (HKD.HKD b) => B.FunctorB (Nested b)
-deriving newtype instance B.ProductB (HKD.HKD b) => B.ProductB (Nested b)
-
-instance (B.TraversableB (HKD.HKD b)) => B.TraversableB (Nested b) where
-  btraverse nat (Nested hkd) = Nested <$> B.btraverse nat hkd

@@ -186,7 +186,7 @@ Now to actually run things:
 ``` haskell
 getFlatConfig1 :: IO ()
 getFlatConfig1 = do
-  FlatConfigB host port dir log <- execOpt flatConfigOpt1
+  FlatConfigB host port dir log <- execOptDef flatConfigOpt1
   print $ runIdentity (FlatConfig <$> host <*> port <*> dir <*> log)
 ```
 
@@ -216,7 +216,7 @@ flatConfigOpt2
 
 getFlatConfig2 :: IO ()
 getFlatConfig2 = do
-  host :* port :* dir :* log <- execOpt flatConfigOpt2
+  host :* port :* dir :* log <- execOptDef flatConfigOpt2
   print $ runIdentity
     (FlatConfig <$> getSingle host <*> getSingle port <*> getSingle dir <*> getSingle log)
 ```
@@ -243,7 +243,7 @@ flatConfigOpt3
 
 getFlatConfig3 :: IO ()
 getFlatConfig3 = do
-  result <- execOpt flatConfigOpt3
+  result <- execOptDef flatConfigOpt3
   print $ runIdentity (HKD.construct result)
 ```
 

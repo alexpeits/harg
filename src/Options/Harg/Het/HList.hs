@@ -1,10 +1,13 @@
 {-# LANGUAGE PatternSynonyms      #-}
+{-# LANGUAGE RankNTypes           #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Options.Harg.Het.AssocList where
+module Options.Harg.Het.HList where
 
-import Data.Kind    (Type)
-import GHC.TypeLits (ErrorMessage(..), TypeError, Symbol)
+import           Data.Kind    (Type)
+import           GHC.TypeLits (ErrorMessage(..), TypeError, Symbol)
+
+import qualified Data.Barbie  as B
 
 
 data AssocListF
@@ -33,3 +36,17 @@ infixr 4 :+
 data (t :: Symbol) :-> (v :: (Type -> Type) -> Type) :: (Type -> Type) -> Type
 
 infixr 5 :->
+
+class MapAssocList (as :: [(Type -> Type) -> Type]) where
+  mapAssocList
+    :: (forall a. B.FunctorB a => a f -> a g)
+    -> AssocListF ts as f
+    -> AssocListF ts as g
+
+instance MapAssocList '[] where
+  mapAssocList _ ANil
+    = ANil
+
+instance (MapAssocList as, B.FunctorB a) => MapAssocList (a ': as) where
+  mapAssocList f (ACons x xs)
+    = ACons (f x) (mapAssocList f xs)

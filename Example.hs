@@ -1,32 +1,36 @@
-{-# LANGUAGE BlockArguments   #-}
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE DeriveGeneric    #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeOperators    #-}
+{-# LANGUAGE BlockArguments    #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE TypeOperators     #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Example where
 
-import Data.Function         ((&))
-import Data.Functor.Identity (Identity (..))
-import GHC.Generics          (Generic)
-import System.Environment    (setEnv)
+import           Data.Function         ((&))
+import           Data.Functor.Identity (Identity (..))
+import           GHC.Generics          (Generic)
+import           System.Environment    (setEnv)
 
-import Options.Harg
+import           Options.Harg
+
+import qualified Data.Aeson            as JSON
+import qualified Data.ByteString.Lazy  as BS
 
 mainSubparser :: IO ()
 mainSubparser = do
-  conf <- execOpt configOpt
+  conf <- execCommands srcOpt' configOpt
   foldF conf
     (
       \(db :* srv :* hh)
-        -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
+        -> AppC <$> getNested (unTagged db) <*> getNested (unTagged srv) <*> getSingle (unTagged hh)
            & runIdentity
            & print
     )
     (
       \(db :* tst)
-         -> TestAppC <$> getNested db <*> getNested tst
+         -> TestAppC <$> getNested (unTagged db) <*> getNested (unTagged tst)
             & runIdentity
             & print
     )
@@ -53,14 +57,37 @@ mainSubparser = do
             -- & runIdentity
             -- & print
 
+
+jsonOpt :: Opt FilePath
+jsonOpt
+  = toOpt
+    $ option strParser
+    & optLong "json-config"
+    & optShort 'j'
+    & optHelp "JSON config"
+
+yamlOpt :: Opt FilePath
+yamlOpt
+  = toOpt
+    $ option strParser
+    & optLong "yaml-config"
+    & optShort 'y'
+    & optHelp "YAML config"
+
+srcOpt :: (EnvSource :* JSONSource) Opt
+srcOpt = EnvSource :* JSONSource jsonOpt
+
+srcOpt' :: (EnvSource :* YAMLSource) Opt
+srcOpt' = EnvSource :* YAMLSource yamlOpt
+
 mainParser :: IO ()
 mainParser = do
-  db :* srv :* hh <- execOpt appOpt
+  db :* srv :* hh <- execOpt srcOpt appOpt
   let ov
         = AppC
-        <$> getNested db
-        <*> getNested srv
-        <*> getSingle hh
+        <$> getNested (unTagged db)
+        <*> getNested (unTagged srv)
+        <*> getSingle (unTagged hh)
 
   print $ runIdentity ov
 
@@ -78,13 +105,15 @@ data AppC
   deriving Show
 
 type AppConfig
-  =  Nested DBConfig
-  :* Nested ServiceConfig
-  :* Single Int
+  =  Tagged "db" (Nested DBConfig)
+  :* Tagged "srv" (Nested ServiceConfig)
+  :* Tagged "smth" (Single Int)
 
 appOpt :: AppConfig Opt
 appOpt
-  = dbConf :* srvConf :* single something
+  =  Tagged dbConf
+  :* Tagged srvConf
+  :* Tagged (single something)
   where
     srvConf
       = nested @ServiceConfig
@@ -115,12 +144,13 @@ data TestAppC
   deriving Show
 
 type TestAppConfig
-  =  Nested DBConfig
-  :* Nested TestConfig
+  =  Tagged "db" (Nested DBConfig)
+  :* Tagged "tst" (Nested TestConfig)
 
 testAppOpt :: TestAppConfig Opt
 testAppOpt
-  = dbConf :* testConf
+  =  Tagged dbConf
+  :* Tagged testConf
   where
     testConf
       = nested @TestConfig
@@ -166,7 +196,6 @@ data TestConfig
       , _tMock :: Bool
       }
   deriving (Show, Generic)
-
 
 dbConf :: Nested DBConfig Opt
 dbConf
