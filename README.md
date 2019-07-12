@@ -40,6 +40,7 @@ import           Data.Kind             (Type)
 import           GHC.Generics          (Generic)
 
 import qualified Data.Barbie           as B
+import           Data.Aeson            (FromJSON)
 import           Data.Generic.HKD      (HKD, build, construct)
 
 import           Options.Harg
@@ -466,15 +467,15 @@ Pretty cool.
 
 ## Subcommands
 
-`harg` also offers the (somewhat limited) ability to support subcommands, again by using subcommands
-from `optparse-applicative` underneath.
+`harg` also supports (somewhat limited) subcommands, again by using `optparse-applicative`
+underneath.
 
 Because of limitations with higher kinded data when it comes to sum types, `harg` uses a different
-way to define subcommands. `optparse-applicative` allows defining subcommands that result to
-the same type, which means the user needs to define a sum type, where each subcommand results in
-a different constructor. In contrast, `harg` defines subcommands for different types. Instead of the
-result being a sum type, where the user has to pattern match on constructors, the result is a
-`Variant`, which is defined (almost) like this:
+way to define subcommands. `optparse-applicative` allows defining subcommands that result to the
+same type, which means the user needs to define a sum type, and each subcommand results in a
+different constructor. In contrast, `harg` defines subcommands that can return completely different
+types. Instead of the result being a sum type, where the user has to pattern match on constructors,
+the result is a `Variant`, which is defined (almost) like this:
 
 ``` haskell
 data Variant (xs :: [Type]) where
@@ -495,6 +496,9 @@ run :: Variant '[Int, Bool, Char] -> Maybe Bool
 run (Here _)                 = Nothing
 run (There (Here b))         = Just b
 run (There (There (Here _))) = Nothing
+
+-- > run x
+-- Just True
 ```
 
 `harg` defines another kind of variant called `VariantF`:
@@ -503,12 +507,12 @@ run (There (There (Here _))) = Nothing
 data VariantF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where
 ```
 
-to hold a type-level list of `barbie` types.
+to hold a type-level list of `barbie` types and the `f` to wrap every type with.
 
 To define a type to be used in a subcommand parser we need the target type and the subcommand name,
 which is encoded as a type-level string `Symbol`. There's a handy way to define this. Suppose that
-the `Config` type (and its associated `ConfigP` type that uses `Nested`) is to be used when the
-command is `app`, and another type is to be used when the command is `test`:
+the the `Config` type above is the configuration type when the command is `app` and another type,
+e.g.`TestConfig` is the configuration when the command is `test`:
 
 ``` haskell
 data TestConfig
@@ -605,8 +609,103 @@ fromVariantF
   -> r
 ```
 
-The signature will accept the appropriate number of functions depending on the types in the type
+The signature will accept the appropriate number of functions depending on the length of the type
 level list.
+
+## More than just environment variables
+
+You may have noticed the use of `execOptDef` and `execCommandsDef` in all of the examples up to now.
+There are actually more configurable versions of these, called `execOpt` and `execCommands`
+respectively. With these functions the user can select where to get options from. For example,
+`execOptDef` is a shorthand for `execOpt EnvSource`, which means that options will be fetched from
+environment variables only (along with the command line, which is always required, and defaults,
+which can be optionally provided by the user).
+
+The sources currently supported are environment variables, json and yaml files.
+
+### Configuring using a json file
+
+First of all, let's use `FlatConfig` from the first example:
+
+``` haskell ignore
+data FlatConfig
+  = FlatConfig
+      { _fcDbHost :: String
+      , _fcDbPort :: Int
+      , _fcDir    :: String
+      , _fcLog    :: Bool  -- whether to log or not
+      }
+  deriving (Show, Generic)
+
+dbHostOpt :: Opt String
+dbHostOpt
+  = toOpt ( option strParser
+          & optLong "host"
+          & optShort 'h'
+          & optMetavar "DB_HOST"
+          & optHelp "The database host"
+          )
+
+dbPortOpt :: Opt Int
+dbPortOpt
+  = toOpt ( option readParser
+          & optLong "port"
+          & optHelp "The database port"
+          & optEnvVar "DB_PORT"
+          & optDefault 5432
+          )
+
+dirOpt :: Opt String
+dirOpt
+  = toOpt ( argument strParser
+          & optHelp "Some directory"
+          & optDefault "/home/user/something"
+          )
+
+logOpt :: Opt Bool
+logOpt
+  = toOpt ( switch
+          & optLong "log"
+          & optHelp "Whether to log or not"
+          )
+
+flatConfigOpt3 :: HKD FlatConfig Opt
+flatConfigOpt3
+  = build @FlatConfig dbHostOpt dbPortOpt dirOpt logOpt
+```
+
+To use the JSON source, a `FromJSON` instance is required. Thankfully that's easy, since
+`FlatConfig` has `Generic` instance:
+
+``` haskell
+instance FromJSON FlatConfig
+```
+
+In `harg`, sources are defined as products (using `:*`) of options, which means that the definition
+of the sources is not very different than defining options! If we only needed the environment
+variable source, the options would be:
+
+``` haskell ignore
+envSource :: EnvSource Opt
+envSource = EnvSource
+```
+
+There's no need to actually define an option because there's no meaningful configuration for this.
+To use the `EnvSource` along with a json config, we use the following option:
+
+``` haskell
+sourceOpt :: (EnvSource :* JSONSource) Opt
+sourceOpt
+  = EnvSource :* JSONSource jsonOpt
+  where
+    -- jsonOpt :: JSONSource Opt
+    jsonOpt
+      = toOpt ( option strParser
+              & optLong "json"
+              & optShort 'j'
+              & optHelp "JSON config filepath"
+              )
+```
 
 # Roadmap
 

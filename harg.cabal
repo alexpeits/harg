@@ -96,6 +96,7 @@ test-suite readme-test
                       -fno-warn-type-defaults
                       -pgmL markdown-unlit
   build-depends:      base
+                    , aeson
                     , barbies
                     , higgledy
                     , optparse-applicative
