@@ -10,7 +10,6 @@ import qualified Options.Applicative  as Optparse
 
 import           Options.Harg.Pretty
 import           Options.Harg.Types
-import           Options.Harg.Util
 
 
 mkOptparseParser
@@ -26,10 +25,10 @@ mkOptparseParser sources opts
   = let
       srcOpts
         = foldl'
-            (bpairwise (<|>))
+            (B.bzipWith (<|>))
             (B.bmap (const (Compose Nothing)) opts)
             sources
-    in B.bsequence $ bpairwise mkParser srcOpts opts
+    in B.bsequence $ B.bzipWith mkParser srcOpts opts
 
 mkParser
   :: Compose Maybe f a

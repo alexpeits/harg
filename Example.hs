@@ -1,22 +1,26 @@
-{-# LANGUAGE BlockArguments    #-}
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications  #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE BlockArguments     #-}
+{-# LANGUAGE DataKinds          #-}
+{-# LANGUAGE DeriveGeneric      #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE TypeApplications   #-}
+{-# LANGUAGE TypeOperators      #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Example where
 
 import           Data.Function         ((&))
 import           Data.Functor.Identity (Identity (..))
+import           Data.Kind             (Type)
 import           GHC.Generics          (Generic)
 import           System.Environment    (setEnv)
 
+import qualified Data.Aeson            as JSON
+import qualified Data.Barbie           as B
+import qualified Data.ByteString.Lazy  as BS
+
 import           Options.Harg
 
-import qualified Data.Aeson            as JSON
-import qualified Data.ByteString.Lazy  as BS
 
 jsonOpt :: Opt FilePath
 jsonOpt
@@ -34,8 +38,16 @@ yamlOpt
     & optShort 'y'
     & optHelp "YAML config"
 
-srcOpt :: (EnvSource :* JSONSource :* YAMLSource) Opt
-srcOpt = EnvSource :* JSONSource jsonOpt :* YAMLSource yamlOpt
+type SourceOpt
+  =  EnvSource
+  :* JSONSource
+  :* YAMLSource
+
+srcOpt :: SourceOpt Opt
+srcOpt
+  =  EnvSource
+  :* JSONSource jsonOpt
+  :* YAMLSource yamlOpt
 
 mainSubparser :: IO ()
 mainSubparser = do
@@ -72,8 +84,8 @@ mainParser = do
 
 main :: IO ()
 main
-  -- = mainParser
-  = mainSubparser
+  = mainParser
+  -- = mainSubparser
 
 data AppC
   = AppC

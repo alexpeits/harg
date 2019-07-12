@@ -12,17 +12,17 @@ import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
 
 import           Options.Harg.Cmdline       (mkOptparseParser)
-import           Options.Harg.Het.All
-import           Options.Harg.Het.HList
-import           Options.Harg.Het.Variant
-import           Options.Harg.Pretty
-import           Options.Harg.Sources
-import           Options.Harg.Sources.Env
-import           Options.Harg.Sources.Types
-import           Options.Harg.Subcommands
-import           Options.Harg.Types
-import           Options.Harg.Util
-import           Options.Harg.Config
+import           Options.Harg.Config        (mkConfigParser, getConfig)
+import           Options.Harg.Het.All       (All)
+import           Options.Harg.Het.HList     (AssocListF, MapAssocList(..))
+import           Options.Harg.Het.Variant   (VariantF)
+import           Options.Harg.Pretty        (ppWarning, ppError)
+import           Options.Harg.Sources       (accumSourceResults, defaultSources)
+import           Options.Harg.Sources.Env   (EnvSourceVal)
+import           Options.Harg.Sources.Types (GetSource(..), RunSource(..))
+import           Options.Harg.Subcommands   (Subcommands(..))
+import           Options.Harg.Types         (HargCtx(..), getCtx, Opt, OptError)
+import           Options.Harg.Util          (toDummyOpts, allToDummyOpts, compose)
 
 
 execOptWithCtx

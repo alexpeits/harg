@@ -6,7 +6,6 @@ import qualified Data.ByteString            as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Functor.Const         (Const(..))
-import           Data.Functor.Product       (Product (..))
 import           System.Directory           (doesFileExist)
 import           System.Exit                (exitFailure)
 
@@ -15,15 +14,6 @@ import qualified Data.Barbie                as B
 import           Options.Harg.Het.HList
 import           Options.Harg.Types
 
-
-bpairwise
-  :: forall a f g h. B.ProductB a
-  => (forall x. f x -> g x -> h x)
-  -> a f
-  -> a g
-  -> a h
-bpairwise f xs ys
-  = B.bmap (\(Pair x y) -> f x y) (B.bprod xs ys)
 
 compose
   :: forall f g a.
