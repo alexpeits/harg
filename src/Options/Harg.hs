@@ -6,6 +6,7 @@ module Options.Harg
   , single
   , TSingle (..)
   , tsingle
+  , getTSingle
 
   , Nested (..)
   , nested

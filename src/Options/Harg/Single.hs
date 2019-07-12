@@ -42,12 +42,13 @@ newtype TSingle
     (t :: k)
     (a :: Type)
     (f :: Type -> Type)
-  = TSingle
-      { getTSingle :: Tagged t (Single a) f
-      }
+  = TSingle (Tagged t (Single a) f)
 
 tsingle :: f a -> TSingle t a f
 tsingle = TSingle . Tagged . Single
+
+getTSingle :: TSingle t a f -> f a
+getTSingle (TSingle s) = getSingle $ unTagged s
 
 deriving newtype instance Generic (TSingle t a f)
 deriving newtype instance JSON.FromJSON (f a) => JSON.FromJSON (TSingle t a f)
