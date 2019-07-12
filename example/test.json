@@ -1,6 +1,6 @@
 {
   "db": {
-    "_dbUser": "DB USER",
+    "_dbUser": "DB USER_JSON",
     "_dbPort": 6543
   },
   "srv": {
