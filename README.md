@@ -690,8 +690,9 @@ envSource :: EnvSource Opt
 envSource = EnvSource
 ```
 
-There's no need to actually define an option because there's no meaningful configuration for this.
-To use the `EnvSource` along with a json config, we use the following option:
+There's no need to actually define an option for the environment because there's no meaningful
+configuration for this. To use the `EnvSource` along with a json config, we use the following
+option:
 
 ``` haskell
 sourceOpt :: (EnvSource :* JSONSource) Opt
