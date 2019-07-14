@@ -710,6 +710,7 @@ sourceOpt
 # Roadmap
 
 - Better errors using `optparse-applicative`'s internals
+- Allow user to pass `optparse-applicative` preferences
 - ~~Be able to provide and get back the same type for multiple subcommands~~
 - ~~Integrate config files (e.g. JSON using aeson)~~
 
