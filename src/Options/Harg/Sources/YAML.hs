@@ -18,15 +18,19 @@ import           Options.Harg.Types
 import           Options.Harg.Util
 
 
-newtype YAMLSource f = YAMLSource (f FilePath)
+newtype YAMLSource f = YAMLSource (f ConfigFile)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
-newtype YAMLSourceVal = YAMLSourceVal BS.ByteString
+data YAMLSourceVal
+  = YAMLSourceVal BS.ByteString
+  | YAMLSourceNotRequired
 
 instance GetSource YAMLSource Identity where
   type SourceVal YAMLSource = YAMLSourceVal
-  getSource _ctx (YAMLSource (Identity path))
+  getSource _ctx (YAMLSource (Identity (ConfigFile path)))
     = YAMLSourceVal <$> readFileBS path
+  getSource _ctx (YAMLSource (Identity NoConfigFile))
+    = pure YAMLSourceNotRequired
 
 instance
     ( YAML.FromJSON (a Maybe)
@@ -34,6 +38,8 @@ instance
     ) => RunSource YAMLSourceVal a where
   runSource (YAMLSourceVal j) opt
     = [runYAMLSource j opt]
+  runSource YAMLSourceNotRequired _
+    = []
 
 runYAMLSource
   :: forall a f.

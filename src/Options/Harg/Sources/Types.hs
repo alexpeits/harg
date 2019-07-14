@@ -5,6 +5,7 @@ module Options.Harg.Sources.Types where
 
 import Data.Functor.Compose  (Compose (..))
 import Data.Kind             (Type)
+import           Data.String (IsString(..))
 
 import Options.Harg.Het.Prod
 import Options.Harg.Types
@@ -29,6 +30,13 @@ instance
   type SourceVal (l :* r) = (SourceVal l, SourceVal r)
   getSource ctx (l :* r)
     = (,) <$> getSource ctx l <*> getSource ctx r
+
+data ConfigFile
+  = ConfigFile FilePath
+  | NoConfigFile
+
+instance IsString ConfigFile where
+  fromString = ConfigFile
 
 class RunSource s a where
   runSource

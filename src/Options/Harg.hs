@@ -48,6 +48,7 @@ module Options.Harg
   , EnvSource (..)
   , JSONSource (..)
   , YAMLSource (..)
+  , ConfigFile (..)
   , noSources
   , defaultSources
 
@@ -89,6 +90,7 @@ import           Options.Harg.Sources
 import           Options.Harg.Sources.Env
 import           Options.Harg.Sources.JSON
 import           Options.Harg.Sources.NoSource
+import           Options.Harg.Sources.Types
 import           Options.Harg.Sources.YAML
 import           Options.Harg.Types
 

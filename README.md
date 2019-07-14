@@ -699,7 +699,7 @@ sourceOpt :: (EnvSource :* JSONSource) Opt
 sourceOpt
   = EnvSource :* JSONSource jsonOpt
   where
-    -- jsonOpt :: JSONSource Opt
+    jsonOpt :: Opt ConfigFile
     jsonOpt
       = toOpt ( option strParser
               & optLong "json"

@@ -15,15 +15,16 @@ import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 import           Options.Harg.Util
 
-
-newtype JSONSource f = JSONSource (f FilePath)
+newtype JSONSource f = JSONSource (f ConfigFile)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
-newtype JSONSourceVal = JSONSourceVal JSON.Value
+data JSONSourceVal
+  = JSONSourceVal JSON.Value
+  | JSONSourceNotRequired
 
 instance GetSource JSONSource Identity where
   type SourceVal JSONSource = JSONSourceVal
-  getSource _ctx (JSONSource (Identity path))
+  getSource _ctx (JSONSource (Identity (ConfigFile path)))
     = do
         contents <- readFileLBS path
         case JSON.eitherDecode contents of
@@ -32,6 +33,8 @@ instance GetSource JSONSource Identity where
           Left err
             -> printErrAndExit
                $ "Error decoding " <> path <> " to JSON: " <> err
+  getSource _ctx (JSONSource (Identity NoConfigFile))
+    = pure JSONSourceNotRequired
 
 instance
     ( JSON.FromJSON (a Maybe)
@@ -39,6 +42,8 @@ instance
     ) => RunSource JSONSourceVal a where
   runSource (JSONSourceVal j) opt
     = [runJSONSource j opt]
+  runSource JSONSourceNotRequired _
+    = []
 
 runJSONSource
   :: forall a f.

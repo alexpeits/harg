@@ -22,15 +22,16 @@ import qualified Data.ByteString.Lazy  as BS
 import           Options.Harg
 
 
-jsonOpt :: Opt FilePath
+jsonOpt :: Opt ConfigFile
 jsonOpt
   = toOpt
     $ option strParser
     & optLong "json-config"
     & optShort 'j'
     & optHelp "JSON config"
+    & optDefault NoConfigFile
 
-yamlOpt :: Opt FilePath
+yamlOpt :: Opt ConfigFile
 yamlOpt
   = toOpt
     $ option strParser
@@ -84,8 +85,8 @@ mainParser = do
 
 main :: IO ()
 main
-  = mainParser
-  -- = mainSubparser
+  -- = mainParser
+  = mainSubparser
 
 data AppC
   = AppC

@@ -286,4 +286,4 @@ boolParser s
   = case map toLower s of
       "true"  -> Right True
       "false" -> Right False
-      _       -> Left ("Unable to parse " <> s <> "to Bool")
+      _       -> Left ("Unable to parse " <> s <> " to Bool")
