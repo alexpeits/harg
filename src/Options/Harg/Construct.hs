@@ -2,36 +2,35 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE PolyKinds #-}
-
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Options.Harg.Construct where
 
 import Data.Char          (toLower)
-import Data.Kind          (Constraint, Type)
+import Data.Kind          (Constraint)
 import Data.String        (IsString(..))
 import GHC.TypeLits       (ErrorMessage(..), TypeError, Symbol)
 import Text.Read          (readMaybe)
 
 import Options.Harg.Types
 
+
 type QuoteSym (s :: Symbol)
   = 'Text "`" :<>: 'Text s :<>: 'Text "`"
 
-type family NotInOptAttrs
+type family NotInAttrs
     (x :: k)
     (xs :: [k])
     (l :: Symbol)
     (r :: Symbol)
     :: Constraint where
-  NotInOptAttrs _ '[]  _ _
+  NotInAttrs _ '[]  _ _
     = ()
-  NotInOptAttrs x (x ': _) l r
+  NotInAttrs x (x ': _) l r
     = TypeError
     (    QuoteSym l :<>: 'Text " and " :<>: QuoteSym r
     :<>: 'Text " cannot be mixed in an option definition."
     )
-  NotInOptAttrs x (y ': xs) l r
-    = NotInOptAttrs x xs l r
+  NotInAttrs x (y ': xs) l r
+    = NotInAttrs x xs l r
 
 -- long
 class HasLong o (attr :: [OptAttr]) where
@@ -92,7 +91,7 @@ instance HasEnvVar ArgumentOpt a where
 -- default
 class HasDefault o (attr :: [OptAttr]) where
   optDefault
-    :: NotInOptAttrs OptOptional attr "optDefault" "optOptional"
+    :: NotInAttrs OptOptional attr "optDefault" "optOptional"
     => a -> o attr a -> o (OptDefault ': attr) a
 
 instance HasDefault OptionOpt a where
@@ -104,7 +103,7 @@ instance HasDefault ArgumentOpt a where
 -- optional
 class HasOptional o (attr :: [OptAttr]) where
   optOptional
-    :: NotInOptAttrs OptDefault attr "optOptional" "optDefault"
+    :: NotInAttrs OptDefault attr "optOptional" "optDefault"
     => o attr a -> o (OptOptional ': attr) (Maybe a)
 
 instance HasOptional OptionOpt a where
@@ -117,6 +116,16 @@ instance HasOptional OptionOpt a where
         , _oEnvVar  = _oEnvVar
         , _oDefault = Nothing
         , _oReader  = fmap Just . _oReader
+        }
+
+instance HasOptional ArgumentOpt a where
+  optOptional ArgumentOpt{..}
+    = ArgumentOpt
+        { _aHelp    = _aHelp
+        , _aMetavar = _aMetavar
+        , _aEnvVar  = _aEnvVar
+        , _aDefault = Nothing
+        , _aReader  = fmap Just . _aReader
         }
 
 -- convert from intermediate type to Opt
