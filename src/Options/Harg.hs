@@ -17,6 +17,7 @@ module Options.Harg
   , optMetavar
   , optEnvVar
   , optDefault
+  , optOptional
 
   , option
   , optionWith

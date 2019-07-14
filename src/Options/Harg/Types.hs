@@ -25,8 +25,17 @@ data OptType a
   | ArgumentOptType
   deriving Functor
 
+data OptAttr
+  = OptDefault
+  | OptOptional
+
+data OptTag
+  = OptOption
+  | OptFlag
+  | OptArgument
+
 -- Option for flags with arguments
-data OptionOpt a
+data OptionOpt (attr :: [OptAttr]) a
   = OptionOpt
       { _oLong    :: Maybe String
       , _oShort   :: Maybe Char
@@ -39,7 +48,7 @@ data OptionOpt a
 
 -- Option for flags that act like switches between a default and an active
 -- value
-data FlagOpt a
+data FlagOpt (attr :: [OptAttr]) a
   = FlagOpt
       { _fLong    :: Maybe String
       , _fShort   :: Maybe Char
@@ -51,7 +60,7 @@ data FlagOpt a
       }
 
 -- Option for arguments (no long/short specifiers)
-data ArgumentOpt a
+data ArgumentOpt (attr :: [OptAttr]) a
   = ArgumentOpt
       { _aHelp    :: Maybe String
       , _aMetavar :: Maybe String
