@@ -91,14 +91,14 @@ data AppC
   = AppC
       { _acDbConfig      :: DBConfig
       , _acServiceConfig :: ServiceConfig
-      , _acSomething     :: Int
+      , _acSomething     :: Maybe Int
       }
   deriving Show
 
 type AppConfig
   =  Tagged "db" (Nested DBConfig)
   :* Tagged "srv" (Nested ServiceConfig)
-  :* Tagged "smth" (Single Int)
+  :* Tagged "smth" (Single (Maybe Int))
 
 appOpt :: AppConfig Opt
 appOpt
@@ -109,6 +109,8 @@ appOpt
     something
       = toOpt
         $ option readParser
+        & optOptional
+        -- & optDefault 123
         & optLong "smth"
         & optEnvVar "SOMETHING"
         & optHelp "Something?"

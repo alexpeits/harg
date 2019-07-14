@@ -1,84 +1,129 @@
+{-# LANGUAGE UndecidableSuperClasses #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE PolyKinds #-}
+
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Options.Harg.Construct where
 
 import Data.Char          (toLower)
-import Data.Kind          (Type)
+import Data.Kind          (Constraint, Type)
 import Data.String        (IsString(..))
+import GHC.TypeLits       (ErrorMessage(..), TypeError, Symbol)
 import Text.Read          (readMaybe)
 
 import Options.Harg.Types
 
+type QuoteSym (s :: Symbol)
+  = 'Text "`" :<>: 'Text s :<>: 'Text "`"
+
+type family NotInOptAttrs
+    (x :: k)
+    (xs :: [k])
+    (l :: Symbol)
+    (r :: Symbol)
+    :: Constraint where
+  NotInOptAttrs _ '[]  _ _
+    = ()
+  NotInOptAttrs x (x ': _) l r
+    = TypeError
+    (    QuoteSym l :<>: 'Text " and " :<>: QuoteSym r
+    :<>: 'Text " cannot be mixed in an option definition."
+    )
+  NotInOptAttrs x (y ': xs) l r
+    = NotInOptAttrs x xs l r
 
 -- long
-class HasLong (o :: Type -> Type) where
-  optLong :: String -> o a -> o a
+class HasLong o (attr :: [OptAttr]) where
+  optLong :: String -> o attr a -> o attr a
 
-instance HasLong OptionOpt where
+instance HasLong OptionOpt a where
   optLong s o = o { _oLong = Just s }
 
-instance HasLong FlagOpt where
+instance HasLong FlagOpt a where
   optLong s o = o { _fLong = Just s }
 
 -- short
-class HasShort (o :: Type -> Type) where
-  optShort :: Char -> o a -> o a
+class HasShort o (attr :: [OptAttr]) where
+  optShort :: Char -> o attr a -> o attr a
 
-instance HasShort OptionOpt where
+instance HasShort OptionOpt a where
   optShort c o = o { _oShort = Just c }
 
-instance HasShort FlagOpt where
+instance HasShort FlagOpt a where
   optShort c o = o { _fShort = Just c }
 
 -- help
-class HasHelp (o :: Type -> Type) where
-  optHelp :: String -> o a -> o a
+class HasHelp o (attr :: [OptAttr]) where
+  optHelp :: String -> o attr a -> o attr a
 
-instance HasHelp OptionOpt where
+instance HasHelp OptionOpt a where
   optHelp s o = o { _oHelp = Just s }
 
-instance HasHelp FlagOpt where
+instance HasHelp FlagOpt a where
   optHelp s o = o { _fHelp = Just s }
 
-instance HasHelp ArgumentOpt where
+instance HasHelp ArgumentOpt a where
   optHelp s o = o { _aHelp = Just s }
 
 -- metavar
-class HasMetavar (o :: Type -> Type) where
-  optMetavar :: String -> o a -> o a
+class HasMetavar o (attr :: [OptAttr]) where
+  optMetavar :: String -> o attr a -> o attr a
 
-instance HasMetavar OptionOpt where
+instance HasMetavar OptionOpt a where
   optMetavar s o = o { _oMetavar = Just s }
 
-instance HasMetavar ArgumentOpt where
+instance HasMetavar ArgumentOpt a where
   optMetavar s o = o { _aMetavar = Just s }
 
 -- env var
-class HasEnvVar (o :: Type -> Type) where
-  optEnvVar :: String -> o a -> o a
+class HasEnvVar o (attr :: [OptAttr]) where
+  optEnvVar :: String -> o attr a -> o attr a
 
-instance HasEnvVar OptionOpt where
+instance HasEnvVar OptionOpt a where
   optEnvVar s o = o { _oEnvVar = Just s }
 
-instance HasEnvVar FlagOpt where
+instance HasEnvVar FlagOpt a where
   optEnvVar s o = o { _fEnvVar = Just s }
 
-instance HasEnvVar ArgumentOpt where
+instance HasEnvVar ArgumentOpt a where
   optEnvVar s o = o { _aEnvVar = Just s }
 
 -- default
-class HasDefault (o :: Type -> Type) where
-  optDefault :: a -> o a -> o a
+class HasDefault o (attr :: [OptAttr]) where
+  optDefault
+    :: NotInOptAttrs OptOptional attr "optDefault" "optOptional"
+    => a -> o attr a -> o (OptDefault ': attr) a
 
-instance HasDefault OptionOpt where
+instance HasDefault OptionOpt a where
   optDefault a o = o { _oDefault = Just a }
 
-instance HasDefault ArgumentOpt where
+instance HasDefault ArgumentOpt a where
   optDefault a o = o { _aDefault = Just a }
 
--- convert from intermediate type to Opt
-class IsOpt (o :: Type -> Type) where
-  toOpt :: o a -> Opt a
+-- optional
+class HasOptional o (attr :: [OptAttr]) where
+  optOptional
+    :: NotInOptAttrs OptDefault attr "optOptional" "optDefault"
+    => o attr a -> o (OptOptional ': attr) (Maybe a)
 
-instance IsOpt OptionOpt where
+instance HasOptional OptionOpt a where
+  optOptional OptionOpt{..}
+    = OptionOpt
+        { _oLong    = _oLong
+        , _oShort   = _oShort
+        , _oHelp    = _oHelp
+        , _oMetavar = _oMetavar
+        , _oEnvVar  = _oEnvVar
+        , _oDefault = Nothing
+        , _oReader  = fmap Just . _oReader
+        }
+
+-- convert from intermediate type to Opt
+class IsOpt o (attr :: [OptAttr]) where
+  toOpt :: o attr a -> Opt a
+
+instance IsOpt OptionOpt attr where
   toOpt OptionOpt{..}
     = Opt
         { _optLong    = _oLong
@@ -91,7 +136,7 @@ instance IsOpt OptionOpt where
         , _optType    = OptionOptType
         }
 
-instance IsOpt FlagOpt where
+instance IsOpt FlagOpt attr where
   toOpt FlagOpt{..}
     = Opt
         { _optLong    = _fLong
@@ -104,7 +149,7 @@ instance IsOpt FlagOpt where
         , _optType    = FlagOptType _fActive
         }
 
-instance IsOpt ArgumentOpt where
+instance IsOpt ArgumentOpt attr where
   toOpt ArgumentOpt{..}
     = Opt
         { _optLong    = Nothing
@@ -120,7 +165,7 @@ instance IsOpt ArgumentOpt where
 -- option constructors
 option
   :: OptReader a
-  -> OptionOpt a
+  -> OptionOpt '[] a
 option p
   = OptionOpt
       { _oLong    = Nothing
@@ -134,7 +179,7 @@ option p
 
 optionWith
   :: OptReader a
-  -> (OptionOpt a -> OptionOpt a)
+  -> (OptionOpt '[] a -> OptionOpt attr a)
   -> Opt a
 optionWith p f
   = toOpt $ f (option p)
@@ -142,7 +187,7 @@ optionWith p f
 flag
   :: a
   -> a
-  -> FlagOpt a
+  -> FlagOpt attr a
 flag d active
   = FlagOpt
       { _fLong    = Nothing
@@ -157,38 +202,38 @@ flag d active
 flagWith
   :: a
   -> a
-  -> (FlagOpt a -> FlagOpt a)
+  -> (FlagOpt attr a -> FlagOpt attr a)
   -> Opt a
 flagWith d active f
   = toOpt $ f (flag d active)
 
-switch :: FlagOpt Bool
+switch :: FlagOpt attr Bool
 switch
   = fl { _fReader = boolParser }
   where
     fl = flag False True
 
 switchWith
-  :: (FlagOpt Bool -> FlagOpt Bool)
+  :: (FlagOpt attr Bool -> FlagOpt attr Bool)
   -> Opt Bool
 switchWith f
   = toOpt $ f switch
 
-switch' :: FlagOpt Bool
+switch' :: FlagOpt attr Bool
 switch'
   = fl { _fReader = boolParser }
   where
     fl = flag True False
 
 switchWith'
-  :: (FlagOpt Bool -> FlagOpt Bool)
+  :: (FlagOpt attr Bool -> FlagOpt attr Bool)
   -> Opt Bool
 switchWith' f
   = toOpt $ f switch'
 
 argument
   :: OptReader a
-  -> ArgumentOpt a
+  -> ArgumentOpt attr a
 argument p
   = ArgumentOpt
       { _aHelp    = Nothing
@@ -200,7 +245,7 @@ argument p
 
 argumentWith
   :: OptReader a
-  -> (ArgumentOpt a -> ArgumentOpt a)
+  -> (ArgumentOpt attr a -> ArgumentOpt attr a)
   -> Opt a
 argumentWith p f
   = toOpt $ f (argument p)
