@@ -1,98 +1,93 @@
 module Options.Harg.Cmdline where
 
-import           Control.Applicative        ((<|>))
-import           Data.Maybe                 (fromMaybe)
+import           Control.Applicative  ((<|>))
+import           Data.Functor.Compose (Compose (..))
+import           Data.List            (foldl')
+import           Data.Maybe           (fromMaybe)
 
-import qualified Options.Applicative        as Optparse
+import qualified Data.Barbie          as B
+import qualified Options.Applicative  as Optparse
 
-import           Options.Harg.Env
-import           Options.Harg.Help
+import           Options.Harg.Pretty
 import           Options.Harg.Types
 
 
-toParser :: Opt a -> IO (Parser a)
-toParser opt@Opt{..} = do
-  envVarRes <- tryParseEnvVar opt
+mkOptparseParser
+  :: forall f a.
+     ( Applicative f
+     , B.TraversableB a
+     , B.ProductB a
+     )
+  => [a (Compose Maybe f)]
+  -> a (Compose Opt f)
+  -> Optparse.Parser (a f)
+mkOptparseParser sources opts
+  = let
+      srcOpts
+        = foldl'
+            (B.bzipWith (<|>))
+            (B.bmap (const (Compose Nothing)) opts)
+            sources
+    in B.bsequence $ B.bzipWith mkParser srcOpts opts
 
-  let
-    envVar
-      = getEnvVar envVarRes
-    err
-      = case envVarRes of
-          EnvVarFoundNoParse detail -> [OptError (SomeOpt opt) detail]
-          _ -> []
-
-  case _optType of
-
-    OptionOptType      -> toOptionParser opt envVar err
-
-    FlagOptType active -> toFlagParser opt active envVar err
-
-    ArgumentOptType    -> toArgumentParser opt envVar err
+mkParser
+  :: Compose Maybe f a
+  -> Compose Opt f a
+  -> Compose Optparse.Parser f a
+mkParser srcs opt@(Compose Opt{..})
+  = case _optType of
+      OptionOptType      -> toOptionParser srcs opt
+      FlagOptType active -> toFlagParser srcs opt active
+      ArgumentOptType    -> toArgumentParser srcs opt
 
 toOptionParser
-  :: Opt a
-  -> Maybe a  -- env var
-  -> [OptError]
-  -> IO (Parser a)
-toOptionParser opt@Opt{..} envVar err
-  = do
-      let
-        optionOpt
-          = Optparse.option (Optparse.eitherReader _optReader)
-              ( foldMap (fromMaybe mempty)
-                  [ Optparse.long <$> _optLong
-                  , Optparse.short <$> _optShort
-                  , Optparse.help <$> mkHelp opt
-                  , Optparse.metavar <$> _optMetavar
-                  , Optparse.value <$> (envVar <|> _optDefault)
-                  ]
-              )
-      pure $ Parser optionOpt err
+  :: Compose Maybe f a
+  -> Compose Opt f a
+  -> Compose Optparse.Parser f a
+toOptionParser sources (Compose opt@Opt{..})
+  = Compose $ Optparse.option (Optparse.eitherReader _optReader)
+      ( foldMap (fromMaybe mempty)
+          [ Optparse.long <$> _optLong
+          , Optparse.short <$> _optShort
+          , Optparse.help <$> ppHelp opt
+          , Optparse.metavar <$> _optMetavar
+          , Optparse.value <$> (getCompose sources <|> _optDefault)
+          ]
+      )
 
 toFlagParser
-  :: Opt a
-  -> a -- active value
-  -> Maybe a  -- env var
-  -> [OptError]
-  -> IO (Parser a)
-toFlagParser opt@Opt{..} active envVar err
-  = do
-      let
-        mDef
-          = case envVar of
-              Nothing -> _optDefault
-              Just _  -> Just active
-        modifiers
-          = foldMap (fromMaybe mempty)
-              [ Optparse.long <$> _optLong
-              , Optparse.short <$> _optShort
-              , Optparse.help <$> mkHelp opt
-              ]
-        flagOpt
-          = case mDef of
-              Nothing ->
-                Optparse.flag' active modifiers
-              Just def ->
-                Optparse.flag def active modifiers
-
-      pure $ Parser flagOpt err
+  :: Compose Maybe f a
+  -> Compose Opt f a
+  -> f a
+  -> Compose Optparse.Parser f a
+toFlagParser sources (Compose opt@Opt{..}) active
+  =
+    let
+      mDef
+        = case getCompose sources of
+            Nothing -> _optDefault
+            Just x  -> Just x
+      modifiers
+        = foldMap (fromMaybe mempty)
+            [ Optparse.long <$> _optLong
+            , Optparse.short <$> _optShort
+            , Optparse.help <$> ppHelp opt
+            ]
+      in Compose $ case mDef of
+           Nothing ->
+             Optparse.flag' active modifiers
+           Just def ->
+             Optparse.flag def active modifiers
 
 toArgumentParser
-  :: Opt a
-  -> Maybe a  -- env var
-  -> [OptError]
-  -> IO (Parser a)
-toArgumentParser opt@Opt{..} envVar err
-  = do
-      let
-        argOpt
-          = Optparse.argument (Optparse.eitherReader _optReader)
-              ( foldMap (fromMaybe mempty)
-                  [ Optparse.help <$> mkHelp opt
-                  , Optparse.metavar <$> _optMetavar
-                  , Optparse.value <$> (envVar <|> _optDefault)
-                  ]
-              )
-
-      pure $ Parser argOpt err
+  :: Compose Maybe f a
+  -> Compose Opt f a
+  -> Compose Optparse.Parser f a
+toArgumentParser sources (Compose opt@Opt{..})
+  = Compose $ Optparse.argument (Optparse.eitherReader _optReader)
+      ( foldMap (fromMaybe mempty)
+          [ Optparse.help <$> ppHelp opt
+          , Optparse.metavar <$> _optMetavar
+          , Optparse.value <$> (getCompose sources <|> _optDefault)
+          ]
+      )

@@ -1,68 +1,87 @@
-{-# LANGUAGE BlockArguments   #-}
-{-# LANGUAGE DataKinds        #-}
-{-# LANGUAGE DeriveGeneric    #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeOperators    #-}
+{-# LANGUAGE BlockArguments     #-}
+{-# LANGUAGE DataKinds          #-}
+{-# LANGUAGE DeriveGeneric      #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE TypeApplications   #-}
+{-# LANGUAGE TypeOperators      #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Example where
 
-import Data.Function         ((&))
-import Data.Functor.Identity (Identity (..))
-import GHC.Generics          (Generic)
-import System.Environment    (setEnv)
+import           Data.Function         ((&))
+import           Data.Functor.Identity (Identity (..))
+import           Data.Kind             (Type)
+import           GHC.Generics          (Generic)
+import           System.Environment    (setEnv)
 
-import Options.Harg
+import qualified Data.Aeson            as JSON
+import qualified Data.Barbie           as B
+import qualified Data.ByteString.Lazy  as BS
+
+import           Options.Harg
+
+
+jsonOpt :: Opt ConfigFile
+jsonOpt
+  = toOpt
+    $ option strParser
+    & optLong "json-config"
+    & optShort 'j'
+    & optHelp "JSON config"
+    & optDefault NoConfigFile
+
+yamlOpt :: Opt ConfigFile
+yamlOpt
+  = toOpt
+    $ option strParser
+    & optLong "yaml-config"
+    & optShort 'y'
+    & optHelp "YAML config"
+
+type SourceOpt
+  =  EnvSource
+  :* JSONSource
+  :* YAMLSource
+
+srcOpt :: SourceOpt Opt
+srcOpt
+  =  EnvSource
+  :* JSONSource jsonOpt
+  :* YAMLSource yamlOpt
 
 mainSubparser :: IO ()
 mainSubparser = do
-  conf <- execOpt configOpt
-  foldF conf
+  conf <- execCommands srcOpt configOpt
+  fromVariantF conf
     (
-      \(db :* srv :* hh)
-        -> AppC <$> getNested db <*> getNested srv <*> getSingle hh
+      \(db :* srv :* smth)
+        -> AppC
+           <$> getNested (unTagged db)
+           <*> getNested (unTagged srv)
+           <*> getSingle (unTagged smth)
            & runIdentity
            & print
     )
     (
       \(db :* tst)
-         -> TestAppC <$> getNested db <*> getNested tst
+         -> TestAppC
+            <$> getNested (unTagged db)
+            <*> getNested (unTagged tst)
             & runIdentity
             & print
     )
 
-  -- or:
-
-  -- case conf of
-    -- HereF (db :* srv :* hh)
-      -- -> let ov
-               -- = AppC
-               -- <$> getNested db
-               -- <*> getNested srv
-               -- <*> getArg hh
-         -- in ov
-            -- & runIdentity
-            -- & print
-
-    -- ThereF (HereF (db :* tst))
-      -- -> let ov
-               -- = TestAppC
-               -- <$> getNested db
-               -- <*> getNested tst
-         -- in ov
-            -- & runIdentity
-            -- & print
-
 mainParser :: IO ()
 mainParser = do
-  db :* srv :* hh <- execOpt appOpt
-  let ov
-        = AppC
-        <$> getNested db
-        <*> getNested srv
-        <*> getSingle hh
-
-  print $ runIdentity ov
+  db :* srv :* smth <- execOpt srcOpt appOpt
+  let
+    res
+      = AppC
+      <$> getNested (unTagged db)
+      <*> getNested (unTagged srv)
+      <*> getSingle (unTagged smth)
+  print $ runIdentity res
 
 main :: IO ()
 main
@@ -73,39 +92,28 @@ data AppC
   = AppC
       { _acDbConfig      :: DBConfig
       , _acServiceConfig :: ServiceConfig
-      , _acSomething     :: Int
+      , _acSomething     :: Maybe Int
       }
   deriving Show
 
 type AppConfig
-  =  Nested DBConfig
-  :* Nested ServiceConfig
-  :* Single Int
+  =  Tagged "db" (Nested DBConfig)
+  :* Tagged "srv" (Nested ServiceConfig)
+  :* Tagged "smth" (Single (Maybe Int))
 
 appOpt :: AppConfig Opt
 appOpt
-  = dbConf :* srvConf :* single something
+  =  Tagged dbConf
+  :* Tagged srvConf
+  :* Tagged (single something)
   where
-    srvConf
-      = nested @ServiceConfig
-          ( toOpt
-            $ option readParser
-            & optLong "port"
-            & optHelp "Web service port"
-            & optDefault 5432
-          )
-          ( toOpt
-            $ switch
-            & optLong "log"
-            & optHelp "Whether to log"
-            & optEnvVar "LOG"
-          )
     something
-      = toOpt
-        $ option readParser
-        & optLong "smth"
-        & optEnvVar "SOMETHING"
-        & optHelp "Something?"
+      = optionWith readParser
+          ( optLong "smth"
+          . optEnvVar "SOMETHING"
+          . optHelp "Something?"
+          . optOptional
+          )
 
 data TestAppC
   = TestAppC
@@ -115,21 +123,22 @@ data TestAppC
   deriving Show
 
 type TestAppConfig
-  =  Nested DBConfig
-  :* Nested TestConfig
+  =  Tagged "db" (Nested DBConfig)
+  :* Tagged "tst" (Nested TestConfig)
 
 testAppOpt :: TestAppConfig Opt
 testAppOpt
-  = dbConf :* testConf
+  =  Tagged dbConf
+  :* Tagged testConf
   where
     testConf
       = nested @TestConfig
-          ( toOpt $ argument strParser
-            -- & optLong "dir"
-            -- & optShort 'd'
-            & optMetavar "TEST_DIR"
-            & optHelp "Some directory"
-            & optEnvVar "TEST_DIR"
+          ( argumentWith strParser
+              ( optMetavar "TEST_DIR"
+              . optHelp "Some directory"
+              . optEnvVar "TEST_DIR"
+              . optOptional
+              )
           )
           ( toOpt $ switch
             & optLong "mock"
@@ -153,21 +162,6 @@ data DBConfig
       }
   deriving (Show, Generic)
 
-data ServiceConfig
-  = ServiceConfig
-      { _srvPort :: Int
-      , _srvLog  :: Bool
-      }
-  deriving (Show, Generic)
-
-data TestConfig
-  = TestConfig
-      { _tDir  :: String
-      , _tMock :: Bool
-      }
-  deriving (Show, Generic)
-
-
 dbConf :: Nested DBConfig Opt
 dbConf
   = nested @DBConfig
@@ -186,3 +180,33 @@ dbConf
         & optEnvVar "DB_PORT"
         & optDefault 5432
       )
+
+data ServiceConfig
+  = ServiceConfig
+      { _srvPort :: Int
+      , _srvLog  :: Bool
+      }
+  deriving (Show, Generic)
+
+srvConf :: Nested ServiceConfig Opt
+srvConf
+  = nested @ServiceConfig
+      ( toOpt
+        $ option readParser
+        & optLong "port"
+        & optHelp "Web service port"
+        & optDefault 5432
+      )
+      ( toOpt
+        $ switch
+        & optLong "log"
+        & optHelp "Whether to log"
+        & optEnvVar "LOG"
+      )
+
+data TestConfig
+  = TestConfig
+      { _tDir  :: Maybe String
+      , _tMock :: Bool
+      }
+  deriving (Show, Generic)

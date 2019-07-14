@@ -1,0 +1,38 @@
+- arguments:
+  - -XBangPatterns
+  - -XConstraintKinds
+  - -XDataKinds
+  - -XDeriveDataTypeable
+  - -XDeriveFunctor
+  - -XDeriveFoldable
+  - -XDeriveGeneric
+  - -XDeriveTraversable
+  - -XFlexibleContexts
+  - -XFlexibleInstances
+  - -XFunctionalDependencies
+  - -XGADTs
+  - -XGeneralizedNewtypeDeriving
+  - -XInstanceSigs
+  - -XKindSignatures
+  - -XLambdaCase
+  - -XMagicHash
+  - -XMultiParamTypeClasses
+  - -XNamedFieldPuns
+  - -XOverloadedStrings
+  - -XPatternSynonyms
+  - -XPolyKinds
+  - -XQuasiQuotes
+  - -XRankNTypes
+  - -XRecordWildCards
+  - -XScopedTypeVariables
+  - -XStandaloneDeriving
+  - -XTupleSections
+  - -XTypeApplications
+  - -XTypeFamilies
+  - -XTypeOperators
+
+- ignore:
+    name: Use newtype instead of data
+
+- ignore:
+    name: Reduce duplication

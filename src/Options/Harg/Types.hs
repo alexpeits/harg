@@ -1,21 +1,7 @@
-{-# LANGUAGE AllowAmbiguousTypes        #-}
-{-# LANGUAGE DeriveFunctor              #-}
-{-# LANGUAGE DerivingVia                #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE StandaloneDeriving         #-}
-{-# LANGUAGE TypeFamilyDependencies     #-}
-{-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE DeriveFunctor #-}
 module Options.Harg.Types where
 
-import           Data.Coerce          (Coercible, coerce)
-import           Data.Kind            (Type)
-import           GHC.Generics         (Generic)
-import qualified Options.Applicative  as Optparse
-
-import qualified Data.Barbie          as B
-import qualified Data.Functor.Product as P
-import qualified Data.Generic.HKD     as HKD
-
+import System.Environment (getArgs, getEnvironment)
 
 type OptReader a = String -> Either String a
 
@@ -39,8 +25,17 @@ data OptType a
   | ArgumentOptType
   deriving Functor
 
+data OptAttr
+  = OptDefault
+  | OptOptional
+
+data OptTag
+  = OptOption
+  | OptFlag
+  | OptArgument
+
 -- Option for flags with arguments
-data OptionOpt a
+data OptionOpt (attr :: [OptAttr]) a
   = OptionOpt
       { _oLong    :: Maybe String
       , _oShort   :: Maybe Char
@@ -53,100 +48,69 @@ data OptionOpt a
 
 -- Option for flags that act like switches between a default and an active
 -- value
-data FlagOpt a
+data FlagOpt (attr :: [OptAttr]) a
   = FlagOpt
-      { _sLong    :: Maybe String
-      , _sShort   :: Maybe Char
-      , _sHelp    :: Maybe String
-      , _sEnvVar  :: Maybe String
-      , _sDefault :: a
-      , _sActive  :: a
-      , _sReader  :: OptReader a
+      { _fLong    :: Maybe String
+      , _fShort   :: Maybe Char
+      , _fHelp    :: Maybe String
+      , _fEnvVar  :: Maybe String
+      , _fDefault :: a
+      , _fReader  :: OptReader a
+      , _fActive  :: a
       }
 
-data ArgumentOpt a
+-- Option for arguments (no long/short specifiers)
+data ArgumentOpt (attr :: [OptAttr]) a
   = ArgumentOpt
-      { _aLong    :: Maybe String
-      , _aShort   :: Maybe Char
-      , _aHelp    :: Maybe String
+      { _aHelp    :: Maybe String
       , _aMetavar :: Maybe String
       , _aEnvVar  :: Maybe String
       , _aDefault :: Maybe a
       , _aReader  :: OptReader a
       }
 
--- Parser
-data Parser a
-  = Parser (Optparse.Parser a) [OptError]
-  deriving Functor
-
-instance Applicative Parser where
-  pure x = Parser (pure x) []
-
-  Parser f e <*> Parser x e' = Parser (f <*> x) (e <> e')
-
-data ParserInfo a
-  = ParserInfo (Optparse.ParserInfo a) [OptError]
-  deriving Functor
-
 data OptError
   = OptError
-      { _oeOpt  :: SomeOpt
-      , _oeDesc :: String
+      { _oeOpt    :: SomeOpt
+      , _oeSource :: Maybe String
+      , _oeDesc   :: String
       }
 
 data SomeOpt where
   SomeOpt :: Opt a -> SomeOpt
 
--- Single
-newtype Single (b :: Type) (f :: Type -> Type)
-  = Single
-      { getSingle :: f b
+type Environment
+  = [(String, String)]
+
+type Args
+  = [String]
+
+data HargCtx
+  = HargCtx
+      { _hcEnv  :: Environment
+      , _hcArgs :: Args
       }
 
-single :: f b -> Single b f
-single = Single
+getCtx :: IO HargCtx
+getCtx
+  = HargCtx <$> getEnvironment <*> getArgs
 
-deriving instance (Show b, Show (f b)) => Show (Single b f)
-deriving newtype instance Generic (f b) => Generic (Single b f)
+ctxFromArgs :: Args -> IO HargCtx
+ctxFromArgs args
+  = HargCtx <$> getEnvironment <*> pure args
 
-instance B.FunctorB (Single b) where
-  bmap nat (Single p) = Single (nat p)
+ctxFromEnv :: Environment -> IO HargCtx
+ctxFromEnv env
+  = HargCtx <$> pure env <*> getArgs
 
-instance B.ProductB (Single b) where
-  bprod (Single l) (Single r) = Single (P.Pair l r)
-  buniq = Single
+pureCtx :: Environment -> Args -> HargCtx
+pureCtx
+  = HargCtx
 
-instance B.TraversableB (Single b) where
-  btraverse nat (Single p) = Single <$> nat p
-
--- Nested
-newtype Nested (b :: Type) (f :: Type -> Type)
-  = Nested (HKD.HKD b f)
-
-type family Nest (a :: Type) (f :: Type -> Type) = (res :: Type) | res -> a where
-  Nest (a -> b)      f = a -> Nest b f
-  Nest (HKD.HKD a f) f = Nested a f
-
-nested
-  :: forall b f k.
-     ( HKD.Build b f k
-     , Coercible (HKD.HKD b f) (Nested b f)
-     , Coercible k (Nest k f)
-     )
-  => Nest k f
-nested = coerce @k @(Nest k f) hkd
-  where hkd = HKD.build @b @f @k
-
-getNested
-  :: HKD.Construct f b
-  => Nested b f
-  -> f b
-getNested (Nested hkd) = HKD.construct hkd
-
-deriving newtype instance Generic (HKD.HKD b f) => Generic (Nested b f)
-deriving newtype instance B.FunctorB (HKD.HKD b) => B.FunctorB (Nested b)
-deriving newtype instance B.ProductB (HKD.HKD b) => B.ProductB (Nested b)
-
-instance (B.TraversableB (HKD.HKD b)) => B.TraversableB (Nested b) where
-  btraverse nat (Nested hkd) = Nested <$> B.btraverse nat hkd
+toOptError
+  :: Opt a
+  -> Maybe String
+  -> String
+  -> OptError
+toOptError
+  = OptError . SomeOpt

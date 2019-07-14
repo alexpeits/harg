@@ -1,65 +1,199 @@
+{-# LANGUAGE ConstraintKinds      #-}
+{-# LANGUAGE InstanceSigs         #-}
+{-# LANGUAGE PolyKinds            #-}
+{-# LANGUAGE RankNTypes           #-}
+{-# LANGUAGE TypeFamilies         #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Operations where
 
-import           System.Environment  (getArgs)
+import           Data.Functor.Identity      (Identity(..))
 
-import qualified Options.Applicative as Optparse
+import qualified Data.Barbie                as B
+import qualified Options.Applicative        as Optparse
 
-import           Options.Harg.Parser
-import           Options.Harg.Pretty
-import           Options.Harg.Types
+import           Options.Harg.Cmdline       (mkOptparseParser)
+import           Options.Harg.Config        (mkConfigParser, getConfig)
+import           Options.Harg.Het.All       (All)
+import           Options.Harg.Het.HList     (AssocListF, MapAssocList(..))
+import           Options.Harg.Het.Variant   (VariantF)
+import           Options.Harg.Pretty        (ppWarning, ppError)
+import           Options.Harg.Sources       (accumSourceResults, defaultSources)
+import           Options.Harg.Sources.Env   (EnvSourceVal)
+import           Options.Harg.Sources.Types (GetSource(..), RunSource(..))
+import           Options.Harg.Subcommands   (Subcommands(..))
+import           Options.Harg.Types         (HargCtx(..), getCtx, Opt, OptError)
+import           Options.Harg.Util          (toDummyOpts, allToDummyOpts, compose)
 
 
-execParserDef
-  :: Parser a
-  -> IO a
-execParserDef p
-  = getArgs >>= execParserPureDef p
-
-execParserPureDef
-  :: Parser a
-  -> [String]
-  -> IO a
-execParserPureDef (Parser parser err) args
+execOptWithCtx
+  :: forall c a.
+     ( B.TraversableB a
+     , B.ProductB a
+     , B.TraversableB c
+     , B.ProductB c
+     , GetSource c Identity
+     , RunSource (SourceVal c) a
+     )
+  => HargCtx
+  -> c Opt
+  -> a Opt
+  -> IO (a Identity)
+execOptWithCtx ctx conf opts
   = do
       let
-        parserInfo
-          = Optparse.info (Optparse.helper <*> parser) mempty
-        res
-          = Optparse.execParserPure Optparse.defaultPrefs parserInfo args
-
-      case res of
-        Optparse.Success a
-          -> ppWarning err >> pure a
-        _
-          -> ppError err >> Optparse.handleParseResult res
-
-getOptparseParser
-  :: GetParser a
-  => a
-  -> IO (Optparse.Parser (OptResult a))
-getOptparseParser a
-  = fst <$> getOptparseParserAndErrors a
-
-getOptparseParserAndErrors
-  :: GetParser a
-  => a
-  -> IO (Optparse.Parser (OptResult a), [OptError])
-getOptparseParserAndErrors a
-  = do
-      Parser p err <- getParser a
-      pure (p, err)
+        configParser = mkConfigParser ctx (compose Identity conf)
+        dummyParser = mkOptparseParser [] (toDummyOpts @String opts)
+      config <- getConfig ctx configParser dummyParser
+      sourceVals <- getSource ctx config
+      let
+        (errs, sources)
+          = accumSourceResults
+          $ runSource sourceVals (compose Identity opts)
+        parser
+          = mkOptparseParser sources (compose Identity opts)
+      (res, _) <- execParser ctx ((,) <$> parser <*> configParser) errs
+      pure res
 
 execOpt
-  :: GetParser a
-  => a
-  -> IO (OptResult a)
-execOpt a
-  = getArgs >>= execOptPure a
+  :: forall c a.
+     ( B.TraversableB a
+     , B.ProductB a
+     , B.TraversableB c
+     , B.ProductB c
+     , GetSource c Identity
+     , RunSource (SourceVal c) a
+     )
+  => c Opt
+  -> a Opt
+  -> IO (a Identity)
+execOpt conf opts
+  = do
+      ctx <- getCtx
+      execOptWithCtx ctx conf opts
 
-execOptPure
-  :: GetParser a
-  => a
-  -> [String]
-  -> IO (OptResult a)
-execOptPure a args
-  = getParser a >>= flip execParserPureDef args
+execOptWithCtxDef
+  :: forall a.
+     ( B.TraversableB a
+     , B.ProductB a
+     )
+  => HargCtx
+  -> a Opt
+  -> IO (a Identity)
+execOptWithCtxDef ctx
+  = execOptWithCtx ctx defaultSources
+
+execOptDef
+  :: forall a.
+     ( B.TraversableB a
+     , B.ProductB a
+     )
+  => a Opt
+  -> IO (a Identity)
+execOptDef
+  = execOpt defaultSources
+
+execCommandsWithCtx
+  :: forall c ts xs.
+     ( B.TraversableB (VariantF xs)
+     , B.TraversableB c
+     , B.ProductB c
+     , Subcommands ts xs
+     , GetSource c Identity
+     , All (RunSource (SourceVal c)) xs
+     , All (RunSource ()) xs
+     , MapAssocList xs
+     )
+  => HargCtx
+  -> c Opt
+  -> AssocListF ts xs Opt
+  -> IO (VariantF xs Identity)
+execCommandsWithCtx ctx conf opts
+  = do
+      let
+        configParser = mkConfigParser ctx (compose Identity conf)
+        (_, dummyCommands)
+          = mapSubcommand () (allToDummyOpts @String opts)
+        dummyParser
+          = Optparse.subparser (mconcat dummyCommands)
+
+      config <- getConfig ctx configParser dummyParser
+      sourceVals <- getSource ctx config
+
+      let
+        (errs, commands)
+          = mapSubcommand sourceVals (mapAssocList (compose Identity) opts)
+        parser
+          = Optparse.subparser (mconcat commands)
+      (res, _) <- execParser ctx ((,) <$> parser <*> configParser) errs
+      pure res
+
+execCommands
+  :: forall c ts xs.
+     ( B.TraversableB (VariantF xs)
+     , B.TraversableB c
+     , B.ProductB c
+     , Subcommands ts xs
+     , GetSource c Identity
+     , All (RunSource (SourceVal c)) xs
+     , All (RunSource ()) xs
+     , MapAssocList xs
+     )
+  => c Opt
+  -> AssocListF ts xs Opt
+  -> IO (VariantF xs Identity)
+execCommands conf opts
+  = do
+      ctx <- getCtx
+      execCommandsWithCtx ctx conf opts
+
+execCommandsWithCtxDef
+  :: forall ts xs.
+     ( B.TraversableB (VariantF xs)
+     , Subcommands ts xs
+     , All (RunSource EnvSourceVal) xs
+     , All (RunSource ()) xs
+     , MapAssocList xs
+     )
+  => HargCtx
+  -> AssocListF ts xs Opt
+  -> IO (VariantF xs Identity)
+execCommandsWithCtxDef ctx
+  = execCommandsWithCtx ctx defaultSources
+
+execCommandsDef
+  :: forall ts xs.
+     ( B.TraversableB (VariantF xs)
+     , Subcommands ts xs
+     , All (RunSource EnvSourceVal) xs
+     , All (RunSource ()) xs
+     , MapAssocList xs
+     )
+  => AssocListF ts xs Opt
+  -> IO (VariantF xs Identity)
+execCommandsDef
+  = execCommands defaultSources
+
+execParser
+  :: HargCtx
+  -> Optparse.Parser a
+  -> [OptError]
+  -> IO a
+execParser HargCtx{..} parser errs
+  = do
+      let
+        res = execParserPure _hcArgs parser
+      case res of
+        Optparse.Success a
+          -> ppWarning errs >> pure a
+        _
+          -> ppError errs >> Optparse.handleParseResult res
+
+execParserPure
+  :: [String]
+  -> Optparse.Parser a
+  -> Optparse.ParserResult a
+execParserPure args parser
+  = let
+      parserInfo
+        = Optparse.info (Optparse.helper <*> parser) Optparse.forwardOptions
+    in Optparse.execParserPure Optparse.defaultPrefs parserInfo args

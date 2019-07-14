@@ -1,5 +1,19 @@
-{ mkDerivation, barbies, base, higgledy, lib, markdown-unlit,
-  optparse-applicative, stdenv
+{ mkDerivation,
+  stdenv,
+
+  lib,
+  markdown-unlit,
+
+  base,
+
+  aeson,
+  barbies,
+  bytestring,
+  directory,
+  higgledy,
+  optparse-applicative,
+  text,
+  yaml
 }:
 mkDerivation {
   pname = "harg";
@@ -14,15 +28,24 @@ mkDerivation {
     "LICENSE"
   ];
   isLibrary = true;
-  isExecutable = true;
   libraryHaskellDepends = [
-    barbies base higgledy optparse-applicative
-  ];
-  executableHaskellDepends = [
-    barbies base higgledy optparse-applicative
+    base
+
+    aeson
+    barbies
+    bytestring
+    directory
+    higgledy
+    optparse-applicative
+    text
+    yaml
   ];
   testHaskellDepends = [
-    barbies base higgledy optparse-applicative
+    base
+
+    barbies
+    higgledy
+    optparse-applicative
   ];
   testToolDepends = [ markdown-unlit ];
   homepage = "https://github.com/alexpeits/harg#readme";

@@ -1,0 +1,10 @@
+{
+  "db": {
+    "_dbUser": "DB USER_JSON",
+    "_dbPort": 6543
+  },
+  "srv": {
+    "_srvPort": 25000,
+    "_srvLog": true
+  }
+}

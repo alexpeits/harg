@@ -1,0 +1,6 @@
+db:
+  _dbUser: "DB_USER_YAML"
+  _dbPort: 7654
+srv:
+  _srvPort: 26000
+  _srvLog: true

@@ -18,7 +18,9 @@ type family (xs :: [k]) ++ (ts :: [k]) = (res :: [k]) where
 -- same as `gcastWith` but for heterogeneous propositional equality
 hgcastWith
   :: forall (a :: k) (b :: k') (r :: Type).
-     (a :~~: b) -> (a ~~ b => r) -> r
+     (a :~~: b)
+  -> (a ~~ b => r)
+  -> r
 hgcastWith HRefl x = x
 
 class ProofNil xs where
@@ -48,3 +50,6 @@ instance Proof xs y (z ': zs) => Proof (x ': xs) y (z ': zs) where
     ::   x ': (xs ++ (y ': z ': zs))
     :~~: x ': ((xs ++ '[y]) ++ (z ': zs))
   proof = hgcastWith (proof @xs @y @(z ': zs)) HRefl
+
+instance Proof '[] y '[] where
+  proof = HRefl

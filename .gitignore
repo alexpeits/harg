@@ -1,6 +1,6 @@
 .stack-work/
 package.yaml
-cabal.project.local
+cabal.project.local*
 *~
 
 dist/
