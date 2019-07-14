@@ -1,7 +1,7 @@
+{-# LANGUAGE PolyKinds               #-}
+{-# LANGUAGE TypeFamilies            #-}
+{-# LANGUAGE UndecidableInstances    #-}
 {-# LANGUAGE UndecidableSuperClasses #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE PolyKinds #-}
 module Options.Harg.Construct where
 
 import Data.Char          (toLower)
