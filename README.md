@@ -33,7 +33,6 @@ imports:
 {-# LANGUAGE TypeApplications   #-}
 {-# LANGUAGE TypeOperators      #-}
 
-{-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 import           Data.Function         ((&))
 import           Data.Functor.Identity (Identity (..))
 import           Data.Kind             (Type)

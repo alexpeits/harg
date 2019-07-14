@@ -8,6 +8,7 @@ homepage:       https://github.com/alexpeits/harg
 bug-reports:    https://github.com/alexpeits/harg/issues
 author:         Alex Peitsinis
 maintainer:     alexpeitsinis@gmail.com
+stability:      Experimental
 copyright:      Copyright (c) 2019 Alex Peitsinis
 license:        BSD-3-Clause
 license-file:   LICENSE
@@ -90,10 +91,11 @@ test-suite readme-test
                       -Wno-unticked-promoted-constructors
                       -threaded
                       -Wall
-                      -fno-warn-name-shadowing
+                      -fno-warn-incomplete-patterns
                       -fno-warn-missing-signatures
-                      -fno-warn-unused-top-binds
+                      -fno-warn-name-shadowing
                       -fno-warn-type-defaults
+                      -fno-warn-unused-top-binds
                       -pgmL markdown-unlit
   build-depends:      base
                     , aeson
