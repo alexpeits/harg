@@ -114,7 +114,7 @@ instance HasOptional OptionOpt a where
         , _oHelp    = _oHelp
         , _oMetavar = _oMetavar
         , _oEnvVar  = _oEnvVar
-        , _oDefault = Nothing
+        , _oDefault = Just Nothing
         , _oReader  = fmap Just . _oReader
         }
 
@@ -124,7 +124,7 @@ instance HasOptional ArgumentOpt a where
         { _aHelp    = _aHelp
         , _aMetavar = _aMetavar
         , _aEnvVar  = _aEnvVar
-        , _aDefault = Nothing
+        , _aDefault = Just Nothing
         , _aReader  = fmap Just . _aReader
         }
 
@@ -188,15 +188,15 @@ option p
 
 optionWith
   :: OptReader a
-  -> (OptionOpt '[] a -> OptionOpt attr a)
-  -> Opt a
+  -> (OptionOpt '[] a -> OptionOpt attr b)
+  -> Opt b
 optionWith p f
   = toOpt $ f (option p)
 
 flag
   :: a
   -> a
-  -> FlagOpt attr a
+  -> FlagOpt '[] a
 flag d active
   = FlagOpt
       { _fLong    = Nothing
@@ -211,38 +211,38 @@ flag d active
 flagWith
   :: a
   -> a
-  -> (FlagOpt attr a -> FlagOpt attr a)
-  -> Opt a
+  -> (FlagOpt '[] a -> FlagOpt attr b)
+  -> Opt b
 flagWith d active f
   = toOpt $ f (flag d active)
 
-switch :: FlagOpt attr Bool
+switch :: FlagOpt '[] Bool
 switch
   = fl { _fReader = boolParser }
   where
     fl = flag False True
 
 switchWith
-  :: (FlagOpt attr Bool -> FlagOpt attr Bool)
+  :: (FlagOpt '[] Bool -> FlagOpt attr Bool)
   -> Opt Bool
 switchWith f
   = toOpt $ f switch
 
-switch' :: FlagOpt attr Bool
+switch' :: FlagOpt '[] Bool
 switch'
   = fl { _fReader = boolParser }
   where
     fl = flag True False
 
 switchWith'
-  :: (FlagOpt attr Bool -> FlagOpt attr Bool)
+  :: (FlagOpt '[] Bool -> FlagOpt attr Bool)
   -> Opt Bool
 switchWith' f
   = toOpt $ f switch'
 
 argument
   :: OptReader a
-  -> ArgumentOpt attr a
+  -> ArgumentOpt '[] a
 argument p
   = ArgumentOpt
       { _aHelp    = Nothing
@@ -254,8 +254,8 @@ argument p
 
 argumentWith
   :: OptReader a
-  -> (ArgumentOpt attr a -> ArgumentOpt attr a)
-  -> Opt a
+  -> (ArgumentOpt '[] a -> ArgumentOpt attr b)
+  -> Opt b
 argumentWith p f
   = toOpt $ f (argument p)
 

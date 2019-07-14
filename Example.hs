@@ -107,13 +107,12 @@ appOpt
   :* Tagged (single something)
   where
     something
-      = toOpt
-        $ option readParser
-        & optOptional
-        -- & optDefault 123
-        & optLong "smth"
-        & optEnvVar "SOMETHING"
-        & optHelp "Something?"
+      = optionWith readParser
+          ( optLong "smth"
+          . optEnvVar "SOMETHING"
+          . optHelp "Something?"
+          . optOptional
+          )
 
 data TestAppC
   = TestAppC
@@ -133,12 +132,12 @@ testAppOpt
   where
     testConf
       = nested @TestConfig
-          ( toOpt $ argument strParser
-            -- & optLong "dir"
-            -- & optShort 'd'
-            & optMetavar "TEST_DIR"
-            & optHelp "Some directory"
-            & optEnvVar "TEST_DIR"
+          ( argumentWith strParser
+              ( optMetavar "TEST_DIR"
+              . optHelp "Some directory"
+              . optEnvVar "TEST_DIR"
+              . optOptional
+              )
           )
           ( toOpt $ switch
             & optLong "mock"
@@ -206,7 +205,7 @@ srvConf
 
 data TestConfig
   = TestConfig
-      { _tDir  :: String
+      { _tDir  :: Maybe String
       , _tMock :: Bool
       }
   deriving (Show, Generic)
