@@ -5,15 +5,13 @@
 {-# LANGUAGE UndecidableInstances       #-}
 module Options.Harg.Single where
 
-import qualified Data.Functor.Product  as P
-import           Data.Kind             (Type)
-import           GHC.Generics          (Generic)
+import qualified Data.Functor.Product as P
+import           Data.Kind            (Type)
+import           GHC.Generics         (Generic)
 
-import qualified Data.Aeson            as JSON
+import qualified Data.Aeson           as JSON
 
-import qualified Data.Barbie           as B
-
-import           Options.Harg.Het.Prod
+import qualified Data.Barbie          as B
 
 
 newtype Single (a :: Type) (f :: Type -> Type)
@@ -37,24 +35,3 @@ instance B.TraversableB (Single a) where
 instance B.ProductB (Single a) where
   bprod (Single l) (Single r) = Single (P.Pair l r)
   buniq = Single
-
-newtype TSingle
-    (t :: k)
-    (a :: Type)
-    (f :: Type -> Type)
-  = TSingle (Tagged t (Single a) f)
-
-tsingle :: f a -> TSingle t a f
-tsingle = TSingle . Tagged . Single
-
-getTSingle :: TSingle t a f -> f a
-getTSingle (TSingle s) = getSingle $ unTagged s
-
-deriving newtype instance Generic (TSingle t a f)
-deriving newtype instance JSON.FromJSON (f a) => JSON.FromJSON (TSingle t a f)
-
-deriving newtype instance B.FunctorB (TSingle t a)
-deriving newtype instance B.ProductB (TSingle t a)
-
-instance B.TraversableB (TSingle t a) where
-  btraverse nat (TSingle x) = TSingle <$> B.btraverse nat x

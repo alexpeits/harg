@@ -4,16 +4,10 @@ module Options.Harg
 
   , Single (..)
   , single
-  , TSingle (..)
-  , tsingle
-  , getTSingle
 
   , Nested (..)
   , nested
   , getNested
-  , TNested (..)
-  , tnested
-  , getTNested
 
   , toOpt
 
