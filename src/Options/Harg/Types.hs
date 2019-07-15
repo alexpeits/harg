@@ -29,11 +29,6 @@ data OptAttr
   = OptDefault
   | OptOptional
 
-data OptTag
-  = OptOption
-  | OptFlag
-  | OptArgument
-
 -- Option for flags with arguments
 data OptionOpt (attr :: [OptAttr]) a
   = OptionOpt
