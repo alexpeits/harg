@@ -25,6 +25,8 @@ import           Options.Harg.Types         (HargCtx(..), getCtx, Opt, OptError)
 import           Options.Harg.Util          (toDummyOpts, allToDummyOpts, compose)
 
 
+-- | Run the option parser and combine with values from the specified sources,
+-- passing the context explicitly.
 execOptWithCtx
   :: forall c a.
      ( B.TraversableB a
@@ -34,9 +36,9 @@ execOptWithCtx
      , GetSource c Identity
      , RunSource (SourceVal c) a
      )
-  => HargCtx
-  -> c Opt
-  -> a Opt
+  => HargCtx  -- ^ Context containing the environment and the cmdline args
+  -> c Opt    -- ^ Source options
+  -> a Opt    -- ^ Target configuration options
   -> IO (a Identity)
 execOptWithCtx ctx conf opts
   = do
@@ -54,6 +56,7 @@ execOptWithCtx ctx conf opts
       (res, _) <- execParser ctx ((,) <$> parser <*> configParser) errs
       pure res
 
+-- | Run the option parser and combine with values from the specified sources
 execOpt
   :: forall c a.
      ( B.TraversableB a
@@ -63,35 +66,40 @@ execOpt
      , GetSource c Identity
      , RunSource (SourceVal c) a
      )
-  => c Opt
-  -> a Opt
+  => c Opt  -- ^ Source options
+  -> a Opt  -- ^ Target configuration options
   -> IO (a Identity)
 execOpt conf opts
   = do
       ctx <- getCtx
       execOptWithCtx ctx conf opts
 
+-- | Run the option parser only with default sources (environment variables),
+-- passing the context explicitly.
 execOptWithCtxDef
   :: forall a.
      ( B.TraversableB a
      , B.ProductB a
      )
-  => HargCtx
-  -> a Opt
+  => HargCtx  -- ^ Context containing the environment and the cmdline args
+  -> a Opt    -- ^ Target configuration options
   -> IO (a Identity)
 execOptWithCtxDef ctx
   = execOptWithCtx ctx defaultSources
 
+-- | Run the option parser only with default sources (environment variables)
 execOptDef
   :: forall a.
      ( B.TraversableB a
      , B.ProductB a
      )
-  => a Opt
+  => a Opt -- ^ Target configuration options
   -> IO (a Identity)
 execOptDef
   = execOpt defaultSources
 
+-- | Run the subcommand parser and combine with values from the specified
+-- sources, passing the context explicitly.
 execCommandsWithCtx
   :: forall c ts xs.
      ( B.TraversableB (VariantF xs)
@@ -103,9 +111,9 @@ execCommandsWithCtx
      , All (RunSource ()) xs
      , MapAssocList xs
      )
-  => HargCtx
-  -> c Opt
-  -> AssocListF ts xs Opt
+  => HargCtx  -- ^ Context containing the environment and the cmdline args
+  -> c Opt    -- ^ Source options
+  -> AssocListF ts xs Opt  -- ^ Target options associated with subcommands
   -> IO (VariantF xs Identity)
 execCommandsWithCtx ctx conf opts
   = do
@@ -127,6 +135,8 @@ execCommandsWithCtx ctx conf opts
       (res, _) <- execParser ctx ((,) <$> parser <*> configParser) errs
       pure res
 
+-- | Run the subcommand parser and combine with values from the specified
+-- sources
 execCommands
   :: forall c ts xs.
      ( B.TraversableB (VariantF xs)
@@ -138,14 +148,16 @@ execCommands
      , All (RunSource ()) xs
      , MapAssocList xs
      )
-  => c Opt
-  -> AssocListF ts xs Opt
+  => c Opt  -- ^ Source options
+  -> AssocListF ts xs Opt  -- ^ Target options associated with subcommands
   -> IO (VariantF xs Identity)
 execCommands conf opts
   = do
       ctx <- getCtx
       execCommandsWithCtx ctx conf opts
 
+-- | Run the subcommand parser only with default sources (environment
+-- variables), passing the context explicitly.
 execCommandsWithCtxDef
   :: forall ts xs.
      ( B.TraversableB (VariantF xs)
@@ -154,12 +166,14 @@ execCommandsWithCtxDef
      , All (RunSource ()) xs
      , MapAssocList xs
      )
-  => HargCtx
-  -> AssocListF ts xs Opt
+  => HargCtx  -- ^ Context containing the environment and the cmdline args
+  -> AssocListF ts xs Opt  -- ^ Target options associated with subcommands
   -> IO (VariantF xs Identity)
 execCommandsWithCtxDef ctx
   = execCommandsWithCtx ctx defaultSources
 
+-- | Run the subcommand parser only with default sources (environment
+-- variables)
 execCommandsDef
   :: forall ts xs.
      ( B.TraversableB (VariantF xs)
@@ -168,11 +182,13 @@ execCommandsDef
      , All (RunSource ()) xs
      , MapAssocList xs
      )
-  => AssocListF ts xs Opt
+  => AssocListF ts xs Opt  -- ^ Target options associated with subcommands
   -> IO (VariantF xs Identity)
 execCommandsDef
   = execCommands defaultSources
 
+-- | Run the optparse-applicative parser, printing accumulated errors. Errors
+-- are printed as warnings if the parser succeeds.
 execParser
   :: HargCtx
   -> Optparse.Parser a
@@ -188,6 +204,8 @@ execParser HargCtx{..} parser errs
         _
           -> ppError errs >> Optparse.handleParseResult res
 
+-- | Run the optparse-applicative parser and return the
+-- 'Options.Applicative.ParserResult'
 execParserPure
   :: [String]
   -> Optparse.Parser a

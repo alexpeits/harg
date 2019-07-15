@@ -1,25 +1,6 @@
 {-# LANGUAGE PatternSynonyms #-}
 module Options.Harg
-  ( Opt
-
-  , Single (..)
-  , single
-
-  , Nested (..)
-  , nested
-  , getNested
-
-  , toOpt
-
-  , optLong
-  , optShort
-  , optHelp
-  , optMetavar
-  , optEnvVar
-  , optDefault
-  , optOptional
-
-  , option
+  ( option
   , optionWith
   , flag
   , flagWith
@@ -30,20 +11,38 @@ module Options.Harg
   , argument
   , argumentWith
 
+  , optLong
+  , optShort
+  , optHelp
+  , optMetavar
+  , optEnvVar
+  , optDefault
+  , optOptional
+
   , parseWith
   , readParser
   , strParser
   , boolParser
 
-  , getCtx
-  , ctxFromArgs
-  , ctxFromEnv
-  , pureCtx
+  , toOpt
+  , Opt
 
   , execOpt
   , execOptDef
   , execCommands
   , execCommandsDef
+
+  , Single (..)
+  , single
+
+  , Nested (..)
+  , nested
+  , getNested
+
+  , getCtx
+  , ctxFromArgs
+  , ctxFromEnv
+  , pureCtx
 
   , EnvSource (..)
   , JSONSource (..)
@@ -56,13 +55,12 @@ module Options.Harg
   , Tagged (..)
 
   , VariantF (..)
+  , fromVariantF
   , pattern In1
   , pattern In2
   , pattern In3
   , pattern In4
   , pattern In5
-
-  , fromVariantF
 
   , AssocListF (..)
   , (:+)
