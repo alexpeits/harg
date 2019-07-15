@@ -13,6 +13,8 @@ import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 
 
+-- | Create a 'Optparse.Parser' for the configuration option parser, using
+-- 'EnvSource' as the only source.
 mkConfigParser
   :: forall f c.
      ( Applicative f
@@ -29,6 +31,9 @@ mkConfigParser HargCtx{..} conf
         $ runSource (EnvSourceVal _hcEnv) conf
     in mkOptparseParser envC conf
 
+-- | Execute the configuration option parser along with the target option
+-- parser whose options have been converted to dummy options using
+-- @Const String@. Return only the parse result for the config options.
 getConfig
   :: HargCtx
   -> Optparse.Parser (c (f :: Type -> Type))

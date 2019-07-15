@@ -13,9 +13,12 @@ import Text.Read          (readMaybe)
 import Options.Harg.Types
 
 
+-- | Wrap a symbol in quotes, for pretty printing in type errors.
 type QuoteSym (s :: Symbol)
   = 'Text "`" :<>: 'Text s :<>: 'Text "`"
 
+-- | Check if `x` is not an element of the type-level list `xs`. If it is
+-- print the appropriate error message using `l` and `r` for clarity.
 type family NotInAttrs
     (x :: k)
     (xs :: [k])
@@ -33,6 +36,7 @@ type family NotInAttrs
     = NotInAttrs x xs l r
 
 -- long
+-- | Class for options that can have a 'Options.Applicative.long' modifier.
 class HasLong o (attr :: [OptAttr]) where
   optLong :: String -> o attr a -> o attr a
 
@@ -43,6 +47,7 @@ instance HasLong FlagOpt a where
   optLong s o = o { _fLong = Just s }
 
 -- short
+-- | Class for options that can have a 'Options.Applicative.short' modifier.
 class HasShort o (attr :: [OptAttr]) where
   optShort :: Char -> o attr a -> o attr a
 
@@ -53,6 +58,7 @@ instance HasShort FlagOpt a where
   optShort c o = o { _fShort = Just c }
 
 -- help
+-- | Class for options that can have a 'Options.Applicative.help' modifier.
 class HasHelp o (attr :: [OptAttr]) where
   optHelp :: String -> o attr a -> o attr a
 
@@ -66,6 +72,7 @@ instance HasHelp ArgumentOpt a where
   optHelp s o = o { _aHelp = Just s }
 
 -- metavar
+-- | Class for options that can have a 'Options.Applicative.metavar' modifier.
 class HasMetavar o (attr :: [OptAttr]) where
   optMetavar :: String -> o attr a -> o attr a
 
@@ -76,6 +83,7 @@ instance HasMetavar ArgumentOpt a where
   optMetavar s o = o { _aMetavar = Just s }
 
 -- env var
+-- | Class for options that can be configured using an environment variable.
 class HasEnvVar o (attr :: [OptAttr]) where
   optEnvVar :: String -> o attr a -> o attr a
 
@@ -89,6 +97,8 @@ instance HasEnvVar ArgumentOpt a where
   optEnvVar s o = o { _aEnvVar = Just s }
 
 -- default
+-- | Class for options that can have a default value. Cannot be used in
+-- conjunction with 'HasOptional'.
 class HasDefault o (attr :: [OptAttr]) where
   optDefault
     :: NotInAttrs OptOptional attr "optDefault" "optOptional"
@@ -101,6 +111,18 @@ instance HasDefault ArgumentOpt a where
   optDefault a o = o { _aDefault = Just a }
 
 -- optional
+-- | Class for options that can be optional. Cannot be used in
+-- conjunction with 'HasDefault'. Note that this will turn a parser for @a@
+-- into a parser for @Maybe a@, modifying the reader function appropriately.
+-- For example:
+-- @
+--   someOpt :: Opt (Maybe Int)
+--   someOpt
+--     = optionWith readParser
+--         ( optLong "someopt"
+--         , optOptional
+--         )
+-- @
 class HasOptional o (attr :: [OptAttr]) where
   optOptional
     :: NotInAttrs OptDefault attr "optOptional" "optDefault"
@@ -128,7 +150,8 @@ instance HasOptional ArgumentOpt a where
         , _aReader  = fmap Just . _aReader
         }
 
--- convert from intermediate type to Opt
+-- | Class to convert an intermediate option type into 'Opt'. Instances
+-- should set the appropriate '_optType'.
 class IsOpt o (attr :: [OptAttr]) where
   toOpt :: o attr a -> Opt a
 
@@ -171,7 +194,18 @@ instance IsOpt ArgumentOpt attr where
         , _optType    = ArgumentOptType
         }
 
--- option constructors
+-- | Create an option parser, equivalent to 'Options.Applicative.option'. The
+-- result can then be used with 'toOpt' to convert into the global 'Opt' type.
+--
+-- @
+--   someOption :: Opt Int
+--   someOption
+--     = toOpt ( option readParser
+--             & optLong "someopt"
+--             & optHelp "Some option"
+--             & optDefault 256
+--             )
+-- @
 option
   :: OptReader a
   -> OptionOpt '[] a
@@ -186,6 +220,18 @@ option p
       , _oReader  = p
       }
 
+-- | Similar to 'option', but accepts a modifier function and returns an 'Opt'
+-- directly.
+--
+-- @
+--   someOption :: Opt Int
+--   someOption
+--     = optionWith readParser
+--         ( optLong "someopt"
+--         . optHelp "Some option"
+--         . optDefault 256
+--         )
+-- @
 optionWith
   :: OptReader a
   -> (OptionOpt '[] a -> OptionOpt attr b)
@@ -193,9 +239,23 @@ optionWith
 optionWith p f
   = toOpt $ f (option p)
 
+-- | Create a flag parser, equivalent to 'Options.Applicative.option'. The
+-- first argument is the default value (returned when the flag modifier is
+-- absent), and the second is the active value (returned when the flag
+-- modifier is present). The result can then be used with 'toOpt' to convert
+-- into the global 'Opt' type.
+--
+-- @
+--   someFlag :: Opt Int
+--   someFlag
+--     = toOpt ( flag 0 1
+--             & optLong "someflag"
+--             & optHelp "Some flag"
+--             )
+-- @
 flag
-  :: a
-  -> a
+  :: a  -- ^ Default value
+  -> a  -- ^ Active value
   -> FlagOpt '[] a
 flag d active
   = FlagOpt
@@ -208,38 +268,89 @@ flag d active
       , _fReader  = const (pure d)  -- TODO
       }
 
+-- | Similar to 'flag', but accepts a modifier function and returns an 'Opt'
+-- directly.
+--
+-- @
+--   someFlag :: Opt Int
+--   someFlag
+--     = flagWith 0 1
+--         ( optLong "someflag"
+--         . optHelp "Some flag"
+--         )
+-- @
 flagWith
-  :: a
-  -> a
+  :: a  -- ^ Default value
+  -> a  -- ^ Active value
   -> (FlagOpt '[] a -> FlagOpt attr b)
   -> Opt b
 flagWith d active f
   = toOpt $ f (flag d active)
 
+-- | A 'flag' parser, specialized to 'Bool'. The parser (e.g. when parsing
+-- an environment variable) will accept @true@ and @false@, but case
+-- insensitive, rather than using the 'Read' instance for 'Bool'. The
+-- default value is 'False', and the active value is 'True'.
+--
+-- @
+--   someSwitch :: Opt Bool
+--   someSwitch
+--     = toOpt ( switch
+--             & optLong "someswitch"
+--             & optHelp "Some switch"
+--             )
+-- @
 switch :: FlagOpt '[] Bool
 switch
   = fl { _fReader = boolParser }
   where
     fl = flag False True
 
+-- | Similar to 'switch', but accepts a modifier function and returns an 'Opt'
+-- directly.
+--
+-- @
+--   someSwitch :: Opt Bool
+--   someSwitch
+--     = switchWith
+--         ( optLong "someswitch"
+--         . optHelp "Some switch"
+--         )
+-- @
 switchWith
   :: (FlagOpt '[] Bool -> FlagOpt attr Bool)
   -> Opt Bool
 switchWith f
   = toOpt $ f switch
 
+-- | Similar to 'switch', but the default value is 'True' and the active is
+-- 'False'.
 switch' :: FlagOpt '[] Bool
 switch'
   = fl { _fReader = boolParser }
   where
     fl = flag True False
 
+-- | Similar to 'switch'', but accepts a modifier function and returns an 'Opt'
+-- directly.
 switchWith'
   :: (FlagOpt '[] Bool -> FlagOpt attr Bool)
   -> Opt Bool
 switchWith' f
   = toOpt $ f switch'
 
+-- | Create an argument parser, equivalent to 'Options.Applicative.argument'.
+-- The result can then be used with 'toOpt' to convert into the global 'Opt'
+-- type.
+--
+-- @
+--   someArgument :: Opt String
+--   someArgument
+--     = toOpt ( argument strParser
+--             & optHelp "Some argument"
+--             & optDefault "this is the default"
+--             )
+-- @
 argument
   :: OptReader a
   -> ArgumentOpt '[] a
@@ -252,6 +363,17 @@ argument p
       , _aReader  = p
       }
 
+-- | Similar to 'argument', but accepts a modifier function and returns an
+-- 'Opt' directly.
+--
+-- @
+--   someArgument :: Opt Int
+--   someArgument
+--     = argumentWith
+--         ( optHelp "Some argument"
+--         . optDefault "this is the default"
+--         )
+-- @
 argumentWith
   :: OptReader a
   -> (ArgumentOpt '[] a -> ArgumentOpt attr b)
@@ -259,10 +381,11 @@ argumentWith
 argumentWith p f
   = toOpt $ f (argument p)
 
--- option parsers
+-- | Convert a parser that returns 'Maybe' to a parser that returns 'Either',
+-- with the default 'Left' value @unable to parse: <input>@.
 parseWith
-  :: (String -> Maybe a)
-  -> String
+  :: (String -> Maybe a)  -- ^ Original parser
+  -> String  -- ^ Input
   -> Either String a
 parseWith parser s
   = maybe (Left err) Right (parser s)
@@ -270,10 +393,13 @@ parseWith parser s
     err
       = "Unable to parse: " <> s
 
+-- | A parser that uses the 'Read' instance to parse into a type.
 readParser :: Read a => OptReader a
 readParser
   = parseWith readMaybe
 
+-- | A parser that returns a string. Any type that has an instance of
+-- 'IsString' will work, and this parser always succeeds.
 strParser
   :: IsString s
   => String
@@ -281,6 +407,8 @@ strParser
 strParser
   = pure . fromString
 
+-- | A parser that returns a 'Bool'. This will succeed for the strings
+-- @true@ and @false@ in a case-insensitive manner.
 boolParser :: String -> Either String Bool
 boolParser s
   = case map toLower s of

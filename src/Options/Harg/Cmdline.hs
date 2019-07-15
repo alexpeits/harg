@@ -12,14 +12,17 @@ import           Options.Harg.Pretty
 import           Options.Harg.Types
 
 
+-- | Create a 'Optparse.Parser' from a list of source results and an option
+-- parser. The source results are folded using '<|>' and then used as a single
+-- result.
 mkOptparseParser
   :: forall f a.
      ( Applicative f
      , B.TraversableB a
      , B.ProductB a
      )
-  => [a (Compose Maybe f)]
-  -> a (Compose Opt f)
+  => [a (Compose Maybe f)]  -- ^ Source results
+  -> a (Compose Opt f)      -- ^ Target configuration options
   -> Optparse.Parser (a f)
 mkOptparseParser sources opts
   = let
@@ -30,9 +33,11 @@ mkOptparseParser sources opts
             sources
     in B.bsequence $ B.bzipWith mkParser srcOpts opts
 
+-- | Create a 'Optparse.Parser' for a single option, using the accumulated
+-- source results
 mkParser
-  :: Compose Maybe f a
-  -> Compose Opt f a
+  :: Compose Maybe f a   -- ^ Accumulated source results
+  -> Compose Opt f a     -- ^ Target option
   -> Compose Optparse.Parser f a
 mkParser srcs opt@(Compose Opt{..})
   = case _optType of
@@ -40,6 +45,8 @@ mkParser srcs opt@(Compose Opt{..})
       FlagOptType active -> toFlagParser srcs opt active
       ArgumentOptType    -> toArgumentParser srcs opt
 
+-- | Create a 'Optparse.Parser' for an 'OptionOpt', which results in an
+-- @optparse-applicative@ 'Optparse.option'.
 toOptionParser
   :: Compose Maybe f a
   -> Compose Opt f a
@@ -55,6 +62,8 @@ toOptionParser sources (Compose opt@Opt{..})
           ]
       )
 
+-- | Create a 'Optparse.Parser' for a 'FlagOpt', which results in an
+-- @optparse-applicative@ 'Optparse.flag'.
 toFlagParser
   :: Compose Maybe f a
   -> Compose Opt f a
@@ -79,6 +88,8 @@ toFlagParser sources (Compose opt@Opt{..}) active
            Just def ->
              Optparse.flag def active modifiers
 
+-- | Create a 'Optparse.Parser' for a 'ArgumentOpt', which results in an
+-- @optparse-applicative@ 'Optparse.argument'.
 toArgumentParser
   :: Compose Maybe f a
   -> Compose Opt f a

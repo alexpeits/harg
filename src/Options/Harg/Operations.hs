@@ -205,7 +205,7 @@ execParser HargCtx{..} parser errs
           -> ppError errs >> Optparse.handleParseResult res
 
 -- | Run the optparse-applicative parser and return the
--- 'Options.Applicative.ParserResult'
+-- 'Optparse.ParserResult'
 execParserPure
   :: [String]
   -> Optparse.Parser a
