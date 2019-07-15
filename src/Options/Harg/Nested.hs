@@ -24,6 +24,7 @@ instance JSON.GFromJSON JSON.Zero (HKD.HKD_ f structure)
     = fmap HKD.HKD
     . JSON.gParseJSON JSON.defaultOptions JSON.NoFromArgs
 
+-- | Synonym for 'HKD.HKD'
 newtype Nested (b :: Type) (f :: Type -> Type)
   = Nested (HKD.HKD b f)
 
@@ -34,6 +35,16 @@ type family Nest
   Nest (a -> b)      f = a -> Nest b f
   Nest (HKD.HKD a f) f = Nested a f
 
+-- | See documentation for 'HKD.build'
+--
+-- @
+--   data User = User { name :: String, age :: Int }
+--     deriving Generic
+--
+--   someNestedValue :: Nested User Maybe
+--   someNestedValue
+--     = nested @User (Just "Joe") (Just 30)
+-- @
 nested
   :: forall b f k.
      ( HKD.Build b f k
@@ -44,6 +55,20 @@ nested
 nested = coerce @k @(Nest k f) hkd
   where hkd = HKD.build @b @f @k
 
+-- | See documentation for 'HKD.construct'
+--
+-- @
+--   data User = User { name :: String, age :: Int }
+--     deriving Generic
+--
+--   getUserBack :: Maybe User
+--   getUserBack
+--     = getNested hkdUser
+--     where
+--       hkdUser :: Nested User Maybe
+--       hkdUser
+--         = nested @User (Just "Joe") (Just 30)
+-- @
 getNested
   :: HKD.Construct f b
   => Nested b f

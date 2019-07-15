@@ -14,6 +14,8 @@ import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 
 
+-- | Accumulate all the successful source results and return them,
+-- along with a list of errors.
 accumSourceResults
   :: forall a f.
      B.TraversableB a
@@ -38,6 +40,7 @@ accumSourceResults
           OptParsed a       -> ([], Compose (Just a))
           _                 -> ([], Compose Nothing)
 
+-- | Default sources, equivalent to 'EnvSource'
 defaultSources :: EnvSource f
 defaultSources
   = EnvSource

@@ -20,6 +20,37 @@ import           Options.Harg.Sources
 import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 
+-- | This class can be used with an 'AssocList'. It returns the appropriate
+-- list of 'Optparse.CommandFields' in order to create a subcommand parser.
+-- Given the sources to use and the association list between the command string
+-- and the command type, it returns the list of command field modifiers and a
+-- list of errors.
+--
+-- The result can be used as follows:
+--
+-- @
+--   ...
+--   (errs, commands) = 'mapSubcommand' sources opts
+--   parser = 'Optparse.subparser' ('mconcat' commands)
+--   ...
+-- @
+--
+-- In order to be able to create a subcommand parser for a heterogeneous list
+-- of options (rather than a sum with different constructors), the return type
+-- should also be heterogeneous. Here, we return a Variant, which is a more
+-- generic version of 'Either'. In order to do that, 'mapSubcommand' traverses
+-- the association list and creates an injection into the Variant, according to
+-- the current position. So an 'AssocList' like this:
+--
+-- @
+--   opts :: AssocList '["run", "test"] '[RunConfig, TestConfig] Opt
+--   opts = ...
+-- @
+--
+-- Should return @VariantF '[RunConfig, TestConfig] Identity@. In order to do
+-- that, it will inject @RunConfig@ based on its position (0) using @HereF@,
+-- and @TestConfig@ using @ThereF . HereF@ because its position is 1.
+--
 class Subcommands
     (ts :: [Symbol])
     (xs :: [(Type -> Type) -> Type]) where

@@ -5,23 +5,25 @@ import System.Environment (getArgs, getEnvironment)
 
 type OptReader a = String -> Either String a
 
--- Option
+-- | The basic option type
 data Opt a
   = Opt
-      { _optLong    :: Maybe String
-      , _optShort   :: Maybe Char
-      , _optHelp    :: Maybe String
-      , _optMetavar :: Maybe String
-      , _optEnvVar  :: Maybe String
-      , _optDefault :: Maybe a
-      , _optReader  :: OptReader a
-      , _optType    :: OptType a
+      { _optLong    :: Maybe String -- ^ Modifier for long options (e.g. @--user@)
+      , _optShort   :: Maybe Char   -- ^ Modifier for short options (e.g. @-u@)
+      , _optHelp    :: Maybe String -- ^ Option help to be shown when invoked
+                                    --   with @--help/-h@ or in case of error
+      , _optMetavar :: Maybe String -- ^ Metavar to be shown in the help description
+      , _optEnvVar  :: Maybe String -- ^ Environment variable for use with 'EnvSource'
+      , _optDefault :: Maybe a      -- ^ Default value
+      , _optReader  :: OptReader a  -- ^ Option parser
+      , _optType    :: OptType a    -- ^ Option type
       }
   deriving Functor
 
+-- | Option types
 data OptType a
   = OptionOptType
-  | FlagOptType a  -- active value
+  | FlagOptType a
   | ArgumentOptType
   deriving Functor
 
@@ -29,7 +31,7 @@ data OptAttr
   = OptDefault
   | OptOptional
 
--- Option for flags with arguments
+-- | Option for flags with arguments. Corresponds to 'Options.Applicative.option'.
 data OptionOpt (attr :: [OptAttr]) a
   = OptionOpt
       { _oLong    :: Maybe String
@@ -41,8 +43,8 @@ data OptionOpt (attr :: [OptAttr]) a
       , _oReader  :: OptReader a
       }
 
--- Option for flags that act like switches between a default and an active
--- value
+-- | Option for flags that act like switches between a default and an active
+-- value. Corresponds to 'Options.Applicative.flag'.
 data FlagOpt (attr :: [OptAttr]) a
   = FlagOpt
       { _fLong    :: Maybe String
@@ -54,7 +56,8 @@ data FlagOpt (attr :: [OptAttr]) a
       , _fActive  :: a
       }
 
--- Option for arguments (no long/short specifiers)
+-- | Option for arguments (no long/short specifiers). Corresponds to
+-- 'Options.Applicative.argument'.
 data ArgumentOpt (attr :: [OptAttr]) a
   = ArgumentOpt
       { _aHelp    :: Maybe String
@@ -71,15 +74,21 @@ data OptError
       , _oeDesc   :: String
       }
 
+-- | Existential wrapper for 'Opt', so that many options can be carried in
+-- a list.
 data SomeOpt where
   SomeOpt :: Opt a -> SomeOpt
 
+-- | Environment variable pairs, can be retrieved with 'getEnvironment'.
 type Environment
   = [(String, String)]
 
+-- | Command line arguments, can be retrieved with 'getArgs'.
 type Args
   = [String]
 
+-- | Context to carry around, that contains environment variables and
+-- command line arguments.
 data HargCtx
   = HargCtx
       { _hcEnv  :: Environment

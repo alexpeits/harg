@@ -26,16 +26,11 @@ compose
 compose to
   = B.bmap (Compose . fmap to)
 
-allToDummyOpts
-  :: forall m ts xs.
-     ( Monoid m
-     , MapAssocList xs
-     )
-  => AssocListF ts xs Opt
-  -> AssocListF ts xs (Compose Opt (Const m))
-allToDummyOpts
-  = mapAssocList toDummyOpts
-
+-- | Convert an option parser into a dummy one. A dummy option parser always
+-- succeeds because options always have a default value (since they are
+-- Monoids). This is useful because we want to run the parser together with the
+-- configuration parser once in order to gather JSON file paths etc., which
+-- means that we still need @--help@ to work.
 toDummyOpts
   :: forall m a.
      ( B.FunctorB a
@@ -58,6 +53,17 @@ toDummyOpts
                     FlagOptType _   -> FlagOptType mempty
                     ArgumentOptType -> ArgumentOptType
             }
+
+-- | Convert an association list of options in to dummy ones.
+allToDummyOpts
+  :: forall m ts xs.
+     ( Monoid m
+     , MapAssocList xs
+     )
+  => AssocListF ts xs Opt
+  -> AssocListF ts xs (Compose Opt (Const m))
+allToDummyOpts
+  = mapAssocList toDummyOpts
 
 printErrAndExit
   :: forall a.

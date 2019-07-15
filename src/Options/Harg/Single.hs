@@ -14,11 +14,31 @@ import qualified Data.Aeson           as JSON
 import qualified Data.Barbie          as B
 
 
+-- | @Single a f@ is a newtype around @f a@, which allows mixing non-nested
+-- with nested values when creating configuration parsers, using
+-- 'Options.Harg.Het.Prod.:*'.
+--
+-- @
+--   data User = User { name :: String, age :: Int }
+--     deriving Generic
+--
+--   type MyConfig
+--     =  Nested User
+--     :* Single Int
+--
+--   myConfig :: MyConfig Opt
+--   myConfig
+--     =  nested @User nameOpt ageOpt
+--     :* single intOpt
+--     where
+--       ...
+-- @
 newtype Single (a :: Type) (f :: Type -> Type)
   = Single
       { getSingle :: f a
       }
 
+-- | Wrap a value into a 'Single'.
 single :: f a -> Single a f
 single = Single
 
