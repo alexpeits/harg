@@ -13,9 +13,8 @@ import Text.Read          (readMaybe)
 import Options.Harg.Types
 
 
--- long
--- | Class for options that can have a 'Options.Applicative.long' modifier.
 class HasLong o (attr :: [OptAttr]) where
+  -- | Add a 'Options.Applicative.long' modifier to an option
   optLong :: String -> o attr a -> o attr a
 
 instance HasLong OptionOpt a where
@@ -24,9 +23,8 @@ instance HasLong OptionOpt a where
 instance HasLong FlagOpt a where
   optLong s o = o { _fLong = Just s }
 
--- short
--- | Class for options that can have a 'Options.Applicative.short' modifier.
 class HasShort o (attr :: [OptAttr]) where
+  -- | Add a 'Options.Applicative.short' modifier to an option
   optShort :: Char -> o attr a -> o attr a
 
 instance HasShort OptionOpt a where
@@ -35,9 +33,8 @@ instance HasShort OptionOpt a where
 instance HasShort FlagOpt a where
   optShort c o = o { _fShort = Just c }
 
--- help
--- | Class for options that can have a 'Options.Applicative.help' modifier.
 class HasHelp o (attr :: [OptAttr]) where
+  -- | Add 'Options.Applicative.help' to an option
   optHelp :: String -> o attr a -> o attr a
 
 instance HasHelp OptionOpt a where
@@ -49,9 +46,9 @@ instance HasHelp FlagOpt a where
 instance HasHelp ArgumentOpt a where
   optHelp s o = o { _aHelp = Just s }
 
--- metavar
--- | Class for options that can have a 'Options.Applicative.metavar' modifier.
 class HasMetavar o (attr :: [OptAttr]) where
+  -- | Add a 'Options.Applicative.metavar' metavar to an option, to be
+  -- displayed as the meta-parameter next to long/short modifiers
   optMetavar :: String -> o attr a -> o attr a
 
 instance HasMetavar OptionOpt a where
@@ -60,9 +57,8 @@ instance HasMetavar OptionOpt a where
 instance HasMetavar ArgumentOpt a where
   optMetavar s o = o { _aMetavar = Just s }
 
--- env var
--- | Class for options that can be configured using an environment variable.
 class HasEnvVar o (attr :: [OptAttr]) where
+  -- | Specify an environment variable to lookup for an option
   optEnvVar :: String -> o attr a -> o attr a
 
 instance HasEnvVar OptionOpt a where
@@ -74,10 +70,9 @@ instance HasEnvVar FlagOpt a where
 instance HasEnvVar ArgumentOpt a where
   optEnvVar s o = o { _aEnvVar = Just s }
 
--- default
--- | Class for options that can have a default value. Cannot be used in
--- conjunction with 'HasOptional'.
 class HasDefault o (attr :: [OptAttr]) where
+  -- | Add a default value to an option. Cannot be used in conjuction with
+  -- 'optOptional'.
   optDefault
     :: NotInAttrs OptOptional attr "optDefault" "optOptional"
     => a -> o attr a -> o (OptDefault ': attr) a
@@ -103,6 +98,8 @@ instance HasDefault ArgumentOpt a where
 --         )
 -- @
 class HasOptional o (attr :: [OptAttr]) where
+  -- | Specify that an option is optional. This will convert an @Opt a@ to an
+  -- @Opt (Maybe a)@
   optOptional
     :: NotInAttrs OptDefault attr "optOptional" "optDefault"
     => o attr a -> o (OptOptional ': attr) (Maybe a)
@@ -132,6 +129,7 @@ instance HasOptional ArgumentOpt a where
 -- | Class to convert an intermediate option type into 'Opt'. Instances
 -- should set the appropriate '_optType'.
 class IsOpt o (attr :: [OptAttr]) where
+  -- | Convert an intermediate option to an 'Opt'
   toOpt :: o attr a -> Opt a
 
 instance IsOpt OptionOpt attr where
