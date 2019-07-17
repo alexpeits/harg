@@ -34,7 +34,7 @@ mkOptparseParser sources opts
     in B.bsequence $ B.bzipWith mkParser srcOpts opts
 
 -- | Create a 'Optparse.Parser' for a single option, using the accumulated
--- source results
+-- source results.
 mkParser
   :: Compose Maybe f a   -- ^ Accumulated source results
   -> Compose Opt f a     -- ^ Target option

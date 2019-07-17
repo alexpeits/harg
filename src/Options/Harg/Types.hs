@@ -23,13 +23,15 @@ data Opt a
 -- | Option types
 data OptType a
   = OptionOptType
-  | FlagOptType a
+  | FlagOptType a  -- ^ @a@ is the active value for the flag parser
   | ArgumentOptType
   deriving Functor
 
 data OptAttr
   = OptDefault
   | OptOptional
+
+-- * Intermediate option types
 
 -- | Option for flags with arguments. Corresponds to 'Options.Applicative.option'.
 data OptionOpt (attr :: [OptAttr]) a
@@ -67,11 +69,15 @@ data ArgumentOpt (attr :: [OptAttr]) a
       , _aReader  :: OptReader a
       }
 
+-- | Datatype that holds errors that arise when running the sources.
+-- The reason why this is the only place where errors occur is that,
+-- if something goes wrong when running the parser, it will be handled
+-- by @optparse-applicative@.
 data OptError
   = OptError
-      { _oeOpt    :: SomeOpt
-      , _oeSource :: Maybe String
-      , _oeDesc   :: String
+      { _oeOpt    :: SomeOpt       -- ^ Existentially quantified 'Opt'
+      , _oeSource :: Maybe String  -- ^ Source name
+      , _oeDesc   :: String        -- ^ Error description
       }
 
 -- | Existential wrapper for 'Opt', so that many options can be carried in

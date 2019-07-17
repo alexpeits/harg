@@ -19,6 +19,34 @@ import qualified Data.Barbie           as B
 import qualified Data.Text             as Tx
 
 
+-- | Infix version of 'Data.Functor.Product'. Allows to combine
+-- higher-kinded types, and keep them partially applied until needed:
+--
+-- @
+--   data User = User { name :: String, age :: Int }
+--     deriving Generic
+--
+--   type Config = Nested User :* Single Int
+--
+--   configOpt :: Config Opt
+--   configOpt = ...
+-- @
+--
+data
+    ((a :: (Type -> Type) -> Type) :* (b :: (Type -> Type) -> Type))
+    (f :: Type -> Type)
+  = a f :* b f
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+
+infixr 4 :*
+
+deriving instance
+  ( Show (a Identity)
+  , Show (b Identity)
+  ) => Show ((a :* b) Identity)
+
+-- | This type adds a type-level phantom tag to a higher-kinded type.
+-- Its JSON instance allows using ':*' with 'Options.Harg.Sources.JSON.JSONSource'.
 newtype Tagged
     (t :: k)
     (a :: (Type -> Type) -> Type)
@@ -39,20 +67,6 @@ instance B.TraversableB a => B.TraversableB (Tagged t a) where
 instance B.ProductB a => B.ProductB (Tagged t a) where
   bprod (Tagged l) (Tagged r) = Tagged (B.bprod l r)
   buniq f = Tagged (B.buniq f)
-
--- Infix version of Data.Functor.Product
-data
-    ((a :: (Type -> Type) -> Type) :* (b :: (Type -> Type) -> Type))
-    (f :: Type -> Type)
-  = a f :* b f
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
-
-infixr 4 :*
-
-deriving instance
-  ( Show (a Identity)
-  , Show (b Identity)
-  ) => Show ((a :* b) Identity)
 
 -- The following JSON instances need to work if and only if all elements in
 -- the product are `Tagged`, hence the weird pattern matches

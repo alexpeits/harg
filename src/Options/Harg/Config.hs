@@ -31,9 +31,11 @@ mkConfigParser HargCtx{..} conf
         $ runSource (EnvSourceVal _hcEnv) conf
     in mkOptparseParser envC conf
 
--- | Execute the configuration option parser along with the target option
--- parser whose options have been converted to dummy options using
--- @Const String@. Return only the parse result for the config options.
+-- | Run two option parsers in parallel and return the result of the
+-- first one. This is used with the configuration parser being the first
+-- argument, and the target option parser that has been converted to
+-- the dummy parser using 'Options.Harg.Util.toDummyOpts' as the second
+-- one.
 getConfig
   :: HargCtx
   -> Optparse.Parser (c (f :: Type -> Type))

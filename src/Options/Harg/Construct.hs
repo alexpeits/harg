@@ -13,28 +13,6 @@ import Text.Read          (readMaybe)
 import Options.Harg.Types
 
 
--- | Wrap a symbol in quotes, for pretty printing in type errors.
-type QuoteSym (s :: Symbol)
-  = 'Text "`" :<>: 'Text s :<>: 'Text "`"
-
--- | Check if `x` is not an element of the type-level list `xs`. If it is
--- print the appropriate error message using `l` and `r` for clarity.
-type family NotInAttrs
-    (x :: k)
-    (xs :: [k])
-    (l :: Symbol)
-    (r :: Symbol)
-    :: Constraint where
-  NotInAttrs _ '[]  _ _
-    = ()
-  NotInAttrs x (x ': _) l r
-    = TypeError
-    (    QuoteSym l :<>: 'Text " and " :<>: QuoteSym r
-    :<>: 'Text " cannot be mixed in an option definition."
-    )
-  NotInAttrs x (y ': xs) l r
-    = NotInAttrs x xs l r
-
 -- long
 -- | Class for options that can have a 'Options.Applicative.long' modifier.
 class HasLong o (attr :: [OptAttr]) where
@@ -115,12 +93,13 @@ instance HasDefault ArgumentOpt a where
 -- conjunction with 'HasDefault'. Note that this will turn a parser for @a@
 -- into a parser for @Maybe a@, modifying the reader function appropriately.
 -- For example:
+--
 -- @
 --   someOpt :: Opt (Maybe Int)
 --   someOpt
 --     = optionWith readParser
 --         ( optLong "someopt"
---         , optOptional
+--         . optOptional
 --         )
 -- @
 class HasOptional o (attr :: [OptAttr]) where
@@ -382,7 +361,7 @@ argumentWith p f
   = toOpt $ f (argument p)
 
 -- | Convert a parser that returns 'Maybe' to a parser that returns 'Either',
--- with the default 'Left' value @unable to parse: <input>@.
+-- with the default 'Left' value @unable to parse: \<input\>@.
 parseWith
   :: (String -> Maybe a)  -- ^ Original parser
   -> String  -- ^ Input
@@ -415,3 +394,26 @@ boolParser s
       "true"  -> Right True
       "false" -> Right False
       _       -> Left ("Unable to parse " <> s <> " to Bool")
+
+
+-- | Wrap a symbol in quotes, for pretty printing in type errors.
+type QuoteSym (s :: Symbol)
+  = 'Text "`" :<>: 'Text s :<>: 'Text "`"
+
+-- | Check if `x` is not an element of the type-level list `xs`. If it is
+-- print the appropriate error message using `l` and `r` for clarity.
+type family NotInAttrs
+    (x :: k)
+    (xs :: [k])
+    (l :: Symbol)
+    (r :: Symbol)
+    :: Constraint where
+  NotInAttrs _ '[]  _ _
+    = ()
+  NotInAttrs x (x ': _) l r
+    = TypeError
+    (    QuoteSym l :<>: 'Text " and " :<>: QuoteSym r
+    :<>: 'Text " cannot be mixed in an option definition."
+    )
+  NotInAttrs x (y ': xs) l r
+    = NotInAttrs x xs l r

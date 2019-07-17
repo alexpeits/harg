@@ -66,6 +66,7 @@ instance ExplSubcommands Z ts xs '[] => Subcommands ts xs where
   mapSubcommand = explMapSubcommand @Z @ts @xs @'[] SZ
 
 
+-- | More general version of 'Subcommands'.
 class ExplSubcommands
     (n :: Nat)
     (ts :: [Symbol])

@@ -22,11 +22,7 @@ import qualified Data.Barbie          as B
 --   data User = User { name :: String, age :: Int }
 --     deriving Generic
 --
---   type MyConfig
---     =  Nested User
---     :* Single Int
---
---   myConfig :: MyConfig Opt
+--   myConfig :: (Nested User :* Single Int) Opt
 --   myConfig
 --     =  nested @User nameOpt ageOpt
 --     :* single intOpt

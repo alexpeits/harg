@@ -15,9 +15,13 @@ import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 import           Options.Harg.Util
 
+-- | Source that enables a parser to read options from a JSON file.
 newtype JSONSource f = JSONSource (f ConfigFile)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
+-- | The result of reading a JSON file. @JSONSourceNotRequired@ is used when
+-- the user has specified @optDefault NoConfigFile@. It holds the contents of
+-- the JSON file as a 'JSON.Value'.
 data JSONSourceVal
   = JSONSourceVal JSON.Value
   | JSONSourceNotRequired

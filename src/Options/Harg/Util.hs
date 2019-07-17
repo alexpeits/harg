@@ -26,9 +26,9 @@ compose
 compose to
   = B.bmap (Compose . fmap to)
 
--- | Convert an option parser into a dummy one. A dummy option parser always
--- succeeds because options always have a default value (since they are
--- Monoids). This is useful because we want to run the parser together with the
+-- | Convert an option parser into a dummy parser. A dummy option parser always
+-- succeeds because options always have a default value (a monoid is used
+-- here). This is useful because we want to run the parser together with the
 -- configuration parser once in order to gather JSON file paths etc., which
 -- means that we still need @--help@ to work.
 toDummyOpts

@@ -14,9 +14,12 @@ import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 
 
+-- | Source that enables a parser to read options from environment variables.
 data EnvSource (f :: Type -> Type) = EnvSource
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
+-- | Value of 'EnvSource', which is an association list between environment
+-- variable names and values (strings).
 newtype EnvSourceVal = EnvSourceVal Environment
 
 instance GetSource EnvSource f where
@@ -29,6 +32,7 @@ instance
   runSource (EnvSourceVal e) opt
     = [runEnvVarSource e opt]
 
+-- | Try to get a value from the environment variable association list.
 lookupEnv
   :: Environment
   -> String

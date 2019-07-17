@@ -24,7 +24,7 @@ instance JSON.GFromJSON JSON.Zero (HKD.HKD_ f structure)
     = fmap HKD.HKD
     . JSON.gParseJSON JSON.defaultOptions JSON.NoFromArgs
 
--- | Synonym for 'HKD.HKD'
+-- | Newtype wrapper around 'HKD.HKD'.
 newtype Nested (b :: Type) (f :: Type -> Type)
   = Nested (HKD.HKD b f)
 

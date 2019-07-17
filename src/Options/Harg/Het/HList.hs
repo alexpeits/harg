@@ -10,6 +10,9 @@ import           GHC.TypeLits (ErrorMessage(..), TypeError, Symbol)
 import qualified Data.Barbie  as B
 
 
+-- | A heterogeneous list that holds higher-kinded types and the associated
+-- type constructor, along with a type level list of 'Symbol's that act
+-- as tags for each type.
 data AssocListF
     (ts :: [Symbol])
     (xs :: [(Type -> Type) -> Type])
@@ -17,6 +20,18 @@ data AssocListF
   ANil  :: AssocListF '[] '[] f
   ACons :: x f -> AssocListF ts xs f -> AssocListF (t ': ts) (x ': xs) f
 
+-- | Helper type-level function to construct an 'AssocList' which is not
+-- yet applied to the type constructor that needs to be fully applied.
+--
+-- @
+--   type Config
+--     =  "run" :-> RunConfig
+--     :+ "test" :-> TestConfig
+-- @
+--
+-- @Config@ above has type @(Type -> Type) -> Type@, and requires a type
+-- like 'Opt' to be fully applied.
+--
 type family l :+ r = (res :: (Type -> Type) -> Type) where
   (tl :-> vl) :+ (tr :-> vr) = AssocListF '[tl, tr] '[vl, vr]
   (tl :-> vl) :+ AssocListF ts vs = AssocListF (tl ': ts) (vl ': vs)
@@ -38,6 +53,7 @@ data (t :: Symbol) :-> (v :: (Type -> Type) -> Type) :: (Type -> Type) -> Type
 infixr 5 :->
 
 class MapAssocList (as :: [(Type -> Type) -> Type]) where
+  -- | Apply a function to all higher-kinded types in an 'AssocList'.
   mapAssocList
     :: (forall a. B.FunctorB a => a f -> a g)
     -> AssocListF ts as f
