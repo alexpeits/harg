@@ -11,6 +11,18 @@ import qualified Data.Barbie          as B
 import           Options.Harg.Het.Nat
 
 
+-- | A Variant is similar to nested 'Either's. For example, @Variant '[Int,
+-- Bool, Char]@ is isomorphic to @Either Int (Either Bool Char)@. 'VariantF'
+-- is a variant for higher-kinded types, which means that the type-level list
+-- holds types of kind @(Type -> Type) -> Type@, and the second parameter is
+-- the type constructor @f :: Type -> Type@. To pattern match on a variant,
+-- @HereF@ and @ThereF@ can be used:
+--
+-- @
+--   getFromVariant :: Variant '[Int, Bool, String] -> Bool
+--   getFromVariant (ThereF (HereF b)) = b
+-- @
+--
 data VariantF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where
   HereF  :: x f           -> VariantF (x ': xs) f
   ThereF :: VariantF xs f -> VariantF (y ': xs) f
@@ -35,7 +47,7 @@ instance
 instance B.TraversableB (VariantF '[]) where
   btraverse _ _ = error "Impossible: empty variant"
 
--- u mad?
+-- | * Helpers for pattern-matching on variants
 pattern In1 :: x1 f -> VariantF (x1 ': xs) f
 pattern In1 x = HereF x
 
@@ -51,7 +63,7 @@ pattern In4 x = ThereF (In3 x)
 pattern In5 :: x5 f -> VariantF (x1 ': x2 ': x3 ': x4 ': x5 ': xs) f
 pattern In5 x = ThereF (In4 x)
 
--- Fold
+-- | TODO: document
 type family FoldSignatureF (xs :: [(Type -> Type) -> Type]) r f where
   FoldSignatureF (x ': xs) r f = (x f -> r) -> FoldSignatureF xs r f
   FoldSignatureF '[] r f = r
@@ -80,7 +92,7 @@ instance IgnoreF '[] result f where
 instance IgnoreF xs result f => IgnoreF (x ': xs) result f where
   ignoreF result _ = ignoreF @xs @_ @f result
 
--- Inject into variant based on position
+-- | TODO: document
 class InjectPosF
     (n :: Nat)
     (x :: (Type -> Type) -> Type)
