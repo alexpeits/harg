@@ -1,7 +1,7 @@
 cabal-version: 2.2
 
 name:           harg
-version:        0.1.0.0
+version:        0.1.0.1
 synopsis:       Haskell program configuration from multiple sources
 description:    Please see the README on GitHub at <https://github.com/alexpeits/harg#readme>
 homepage:       https://github.com/alexpeits/harg
@@ -24,7 +24,7 @@ source-repository head
 
 library
   exposed-modules:    Options.Harg
-  other-modules:      Options.Harg.Cmdline
+                      Options.Harg.Cmdline
                       Options.Harg.Config
                       Options.Harg.Construct
                       Options.Harg.Het.All
