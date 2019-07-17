@@ -47,7 +47,7 @@ instance
 instance B.TraversableB (VariantF '[]) where
   btraverse _ _ = error "Impossible: empty variant"
 
--- | * Helpers for pattern-matching on variants
+-- * Helpers for pattern-matching on variants
 pattern In1 :: x1 f -> VariantF (x1 ': xs) f
 pattern In1 x = HereF x
 
