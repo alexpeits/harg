@@ -1,3 +1,5 @@
+-- | This module provides type-level functions that need proofs to work
+-- properly.
 {-# LANGUAGE AllowAmbiguousTypes  #-}
 {-# LANGUAGE InstanceSigs         #-}
 {-# LANGUAGE PolyKinds            #-}
@@ -10,12 +12,8 @@ import Data.Kind          (Type)
 import Data.Type.Equality
 
 
--- proofs
-type family (xs :: [k]) ++ (ts :: [k]) = (res :: [k]) where
-  '[]       ++ ys = ys
-  (x ': xs) ++ ys = x ': (xs ++ ys)
-
--- same as `gcastWith` but for heterogeneous propositional equality
+-- | Same as 'Data.Type.Equality.gcastWith' but for heterogeneous propositional
+-- equality
 hgcastWith
   :: forall (a :: k) (b :: k') (r :: Type).
      (a :~~: b)
@@ -23,6 +21,20 @@ hgcastWith
   -> r
 hgcastWith HRefl x = x
 
+-- * Concatenation of type-level lists
+
+-- | Append two type-level lists
+--
+-- @
+-- > :kind! '[Int, Bool] ++ '[Char, Maybe Int]
+-- '[Int, Bool, Char, Maybe Int]
+-- @
+--
+type family (xs :: [k]) ++ (ts :: [k]) = (res :: [k]) where
+  '[]       ++ ys = ys
+  (x ': xs) ++ ys = x ': (xs ++ ys)
+
+-- | Proof that appending an empty list to any list has no effect on the latter.
 class ProofNil xs where
   proofNil :: xs ++ '[] :~~: xs
 
@@ -32,10 +44,9 @@ instance ProofNil '[] where
 instance ProofNil xs => ProofNil (x ': xs) where
   proofNil = hgcastWith (proofNil @xs) HRefl
 
-class Proof
-    (xs :: [(Type -> Type) -> Type])
-    (y :: (Type -> Type) -> Type)
-    (zs :: [(Type -> Type) -> Type]) where
+-- | Proof that appending two lists is the same as appending the first element
+-- of the second list to the first one, and then appending the rest.
+class Proof xs y zs where
   proof :: xs ++ (y ': zs) :~~: (xs ++ '[y]) ++ zs
 
 instance ProofNil (xs ++ '[y]) => Proof (x ': xs) y '[] where
@@ -44,8 +55,8 @@ instance ProofNil (xs ++ '[y]) => Proof (x ': xs) y '[] where
 instance Proof '[] y zs where
   proof = HRefl
 
+-- | Induction on the tail of the list
 instance Proof xs y (z ': zs) => Proof (x ': xs) y (z ': zs) where
-  -- Induction on the cdr of the list (everything after the `x`)
   proof
     ::   x ': (xs ++ (y ': z ': zs))
     :~~: x ': ((xs ++ '[y]) ++ (z ': zs))
