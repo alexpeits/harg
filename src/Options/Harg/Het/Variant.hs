@@ -1,7 +1,8 @@
-{-# LANGUAGE AllowAmbiguousTypes  #-}
-{-# LANGUAGE PatternSynonyms      #-}
-{-# LANGUAGE TypeFamilies         #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE PatternSynonyms        #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE UndecidableInstances   #-}
 module Options.Harg.Het.Variant where
 
 import           Data.Kind            (Type)
@@ -63,7 +64,16 @@ pattern In4 x = ThereF (In3 x)
 pattern In5 :: x5 f -> VariantF (x1 ': x2 ': x3 ': x4 ': x5 ': xs) f
 pattern In5 x = ThereF (In4 x)
 
--- | TODO: document
+-- https://github.com/i-am-tom/learn-me-a-haskell/blob/master/src/OneOf/Fold.hs
+-- | Create the signature needed for 'FromVariantF' to work. This constructs a
+-- function that takes as arguments functions that can act upon each item in
+-- the list that the 'VariantF' holds. For example, @VariantF [a, b, c]
+-- f@ will result to the signature:
+--
+-- @
+--   VariantF [a, b, c] f -> (a f -> r) -> (b f -> r) -> (c f -> r) -> r
+-- @
+--
 type family FoldSignatureF (xs :: [(Type -> Type) -> Type]) r f where
   FoldSignatureF (x ': xs) r f = (x f -> r) -> FoldSignatureF xs r f
   FoldSignatureF '[] r f = r
@@ -92,11 +102,17 @@ instance IgnoreF '[] result f where
 instance IgnoreF xs result f => IgnoreF (x ': xs) result f where
   ignoreF result _ = ignoreF @xs @_ @f result
 
--- | TODO: document
+-- | Given a type-level natural that designates a position of injection into
+-- a 'VariantF', return a function that performs this injection. For example,
+-- @S Z@ which corresponds to 1 or the second position in the type-level list
+-- the variant holds, can give the injection @b f -> VariantF [a, b, c] f@.
+-- The injection can as well be constructed without providing the position, but
+-- it helps in case @x@ is not unique in @xs@.
 class InjectPosF
     (n :: Nat)
     (x :: (Type -> Type) -> Type)
-    (xs :: [(Type -> Type) -> Type]) where
+    (xs :: [(Type -> Type) -> Type])
+    | n xs -> x where
   injectPosF :: SNat n -> (x f -> VariantF xs f)
 
 instance InjectPosF Z x (x ': xs) where
