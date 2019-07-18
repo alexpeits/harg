@@ -153,6 +153,24 @@ Of course, any user-defined function works as well. In addition, to use a functi
 -> Maybe a` use `parseWith`, which runs the parser and in case of failure uses a default error
 message. For example, `readParser` is defined as `parseWith readMaybe`.
 
+Finally, an optional option with type `a` can be specified by setting its type to `Maybe a`. The
+declaration is exactly the same as it would be for `a`, and adding `optOptional` to the modifiers
+turns turns the parser from `String -> Either String a` to `String -> Either String (Maybe a)` but
+without using the `Read` instance for `Maybe`:
+
+``` haskell ignore
+someOpt :: Opt (Maybe Int)
+someOpt
+  = toOpt ( option readParser
+          & optLong "something"
+          & optOptional
+          )
+```
+
+Note that `optOptional` can't be used with `optDefault`. Using them together raises a type error at
+compile time, to ensure there's no ambiguous behaviour (e.g. the order of declaration of modifiers
+should not influence the resulting option).
+
 There are 3 ways to configure this datatype.
 
 ### 1. Using a `barbie` type
