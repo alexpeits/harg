@@ -1,7 +1,8 @@
 <!-- -*- tab-width: 2; -*- -->
 # `harg` :nut_and_bolt:
 
-[![Build Status](https://travis-ci.org/alexpeits/harg.svg?branch=master)](https://travis-ci.org/alexpeits/harg) [![Hackage](https://img.shields.io/hackage/v/harg.svg)](https://hackage.haskell.org/package/harg)
+[![Build Status](https://travis-ci.org/alexpeits/harg.svg?branch=master)](https://travis-ci.org/alexpeits/harg)
+[![Hackage](https://img.shields.io/hackage/v/harg.svg)](https://hackage.haskell.org/package/harg)
 
 `harg` is a library for configuring programs by scanning command line arguments, environment
 variables and default values. Under the hood, it uses a subset of
