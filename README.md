@@ -1,3 +1,4 @@
+<!-- -*- tab-width: 2; -*- -->
 # `harg` :nut_and_bolt:
 
 [![Build Status](https://travis-ci.org/alexpeits/harg.svg?branch=master)](https://travis-ci.org/alexpeits/harg) [![Hackage](https://img.shields.io/hackage/v/harg.svg)](https://hackage.haskell.org/package/harg)
@@ -706,6 +707,34 @@ sourceOpt
               & optHelp "JSON config filepath"
               )
 ```
+
+Here, the type of the option for the JSON source is `ConfigFile`. This type is a wrapper around
+`FilePath`, which looks like this:
+
+``` haskell ignore
+data ConfigFile
+  = ConfigFile FilePath
+  | NoConfigFile
+```
+
+This has the advantage that, if the user wants to specify an optional configuration file, they can
+simply say:
+
+``` haskell
+jsonOpt :: Opt ConfigFile
+jsonOpt
+  = toOpt ( option strParser
+          & optLong "json"
+          & optDefault NoConfigFile
+          )
+```
+
+Also, because `ConfigFile` has an `IsString` instance, there's no need to say
+`optLong (ConfigFile "json")` (if `OverloadedStrings` is enabled).
+
+There's a bit of a disconnect between `ConfigFile` and the ability to make optional options using
+`Maybe` and `optOptional`. The reason for it is that the type that `JSONSource` wraps is not
+polymorphic, since it needs to be a filepath specifically.
 
 # Roadmap
 
