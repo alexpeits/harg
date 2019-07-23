@@ -1,8 +1,8 @@
 cabal-version: 2.2
 
 name:           harg
-version:        0.1.0.1
-synopsis:       Haskell program configuration from multiple sources
+version:        0.1.0.2
+synopsis:       Haskell program configuration using higher kinded data
 description:    Please see the README on GitHub at <https://github.com/alexpeits/harg#readme>
 homepage:       https://github.com/alexpeits/harg
 bug-reports:    https://github.com/alexpeits/harg/issues
@@ -13,7 +13,7 @@ copyright:      Copyright (c) 2019 Alex Peitsinis
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
-category:       System, CLI, Options, Parsing
+category:       System, CLI, Options, Parsing, HKD
 extra-source-files:
     README.md
     CHANGELOG.md

@@ -5,7 +5,7 @@
 [![Hackage](https://img.shields.io/hackage/v/harg.svg)](https://hackage.haskell.org/package/harg)
 
 `harg` is a library for configuring programs by scanning command line arguments, environment
-variables and default values. Under the hood, it uses a subset of
+variables, default values and more. Under the hood, it uses a subset of
 [`optparse-applicative`](https://hackage.haskell.org/package/optparse-applicative) to expose regular
 arguments, switch arguments and subcommands. The library relies heavily on the use of higher kinded
 data (HKD) thanks to the [`barbies`](https://hackage.haskell.org/package/barbies) library. Using
@@ -18,8 +18,6 @@ The main goal while developing `harg` was to not have to go through the usual pa
 # Usage
 
 tl;dr: Take a look at the [example](Example.hs).
-
-(WIP)
 
 Here are some different usage scenarios. Let's first enable some language extensions and add some
 imports:
