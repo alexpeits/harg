@@ -4,5 +4,5 @@ packages:
 - .
 
 extra-deps:
-- higgledy-0.2.0.1@sha256:b36296a2c4e7ee6847361575316dad35c698988633dfbd9ef12abc7c64ddf569
-- dhall-1.22.0
+- higgledy-0.3.0.0@sha256:d1127f5f4b37c894d0bed093b642949d839840dbe1c289ce3f336e6273105c4b,1472
+
