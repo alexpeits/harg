@@ -8,15 +8,16 @@ type OptReader a = String -> Either String a
 -- | The basic option type
 data Opt a
   = Opt
-      { _optLong    :: Maybe String -- ^ Modifier for long options (e.g. @--user@)
-      , _optShort   :: Maybe Char   -- ^ Modifier for short options (e.g. @-u@)
-      , _optHelp    :: Maybe String -- ^ Option help to be shown when invoked
-                                    --   with @--help/-h@ or in case of error
-      , _optMetavar :: Maybe String -- ^ Metavar to be shown in the help description
-      , _optEnvVar  :: Maybe String -- ^ Environment variable for use with 'EnvSource'
-      , _optDefault :: Maybe a      -- ^ Default value
-      , _optReader  :: OptReader a  -- ^ Option parser
-      , _optType    :: OptType a    -- ^ Option type
+      { _optLong       :: Maybe String -- ^ Modifier for long options (e.g. @--user@)
+      , _optShort      :: Maybe Char   -- ^ Modifier for short options (e.g. @-u@)
+      , _optHelp       :: Maybe String -- ^ Option help to be shown when invoked
+                                       --   with @--help/-h@ or in case of error
+      , _optMetavar    :: Maybe String -- ^ Metavar to be shown in the help description
+      , _optEnvVar     :: Maybe String -- ^ Environment variable for use with 'EnvSource'
+      , _optDefault    :: Maybe a      -- ^ Default value
+      , _optDefaultStr :: Maybe String -- ^ Default value as string (unparsed)
+      , _optReader     :: OptReader a  -- ^ Option parser
+      , _optType       :: OptType a    -- ^ Option type
       }
   deriving Functor
 
@@ -29,6 +30,7 @@ data OptType a
 
 data OptAttr
   = OptDefault
+  | OptDefaultStr
   | OptOptional
 
 -- * Intermediate option types
@@ -36,13 +38,14 @@ data OptAttr
 -- | Option for flags with arguments. Corresponds to 'Options.Applicative.option'.
 data OptionOpt (attr :: [OptAttr]) a
   = OptionOpt
-      { _oLong    :: Maybe String
-      , _oShort   :: Maybe Char
-      , _oHelp    :: Maybe String
-      , _oMetavar :: Maybe String
-      , _oEnvVar  :: Maybe String
-      , _oDefault :: Maybe a
-      , _oReader  :: OptReader a
+      { _oLong       :: Maybe String
+      , _oShort      :: Maybe Char
+      , _oHelp       :: Maybe String
+      , _oMetavar    :: Maybe String
+      , _oEnvVar     :: Maybe String
+      , _oDefault    :: Maybe a
+      , _oDefaultStr :: Maybe String
+      , _oReader     :: OptReader a
       }
 
 -- | Option for flags that act like switches between a default and an active
@@ -62,11 +65,12 @@ data FlagOpt (attr :: [OptAttr]) a
 -- 'Options.Applicative.argument'.
 data ArgumentOpt (attr :: [OptAttr]) a
   = ArgumentOpt
-      { _aHelp    :: Maybe String
-      , _aMetavar :: Maybe String
-      , _aEnvVar  :: Maybe String
-      , _aDefault :: Maybe a
-      , _aReader  :: OptReader a
+      { _aHelp       :: Maybe String
+      , _aMetavar    :: Maybe String
+      , _aEnvVar     :: Maybe String
+      , _aDefault    :: Maybe a
+      , _aDefaultStr :: Maybe String
+      , _aReader     :: OptReader a
       }
 
 -- | Datatype that holds errors that arise when running the sources.

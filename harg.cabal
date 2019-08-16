@@ -38,6 +38,7 @@ library
                       Options.Harg.Pretty
                       Options.Harg.Single
                       Options.Harg.Sources
+                      Options.Harg.Sources.DefaultStr
                       Options.Harg.Sources.Env
                       Options.Harg.Sources.JSON
                       Options.Harg.Sources.NoSource
