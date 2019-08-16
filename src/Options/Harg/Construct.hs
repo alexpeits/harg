@@ -72,9 +72,11 @@ instance HasEnvVar ArgumentOpt a where
 
 class HasDefault o (attr :: [OptAttr]) where
   -- | Add a default value to an option. Cannot be used in conjuction with
-  -- 'optOptional'.
+  -- 'optOptional' or 'optDefaultStr'.
   optDefault
-    :: NotInAttrs OptOptional attr "optDefault" "optOptional"
+    :: ( NotInAttrs OptOptional attr "optDefault" "optOptional"
+       , NotInAttrs OptDefaultStr attr "optDefault" "optDefaultStr"
+       )
     => a -> o attr a -> o (OptDefault ': attr) a
 
 instance HasDefault OptionOpt a where
@@ -83,9 +85,23 @@ instance HasDefault OptionOpt a where
 instance HasDefault ArgumentOpt a where
   optDefault a o = o { _aDefault = Just a }
 
--- optional
--- | Class for options that can be optional. Cannot be used in
--- conjunction with 'HasDefault'. Note that this will turn a parser for @a@
+class HasDefaultStr o (attr :: [OptAttr]) where
+  -- | Add a default unparsed value to an option. Cannot be used in conjuction
+  -- with 'optDefault' or 'optOptional'.
+  optDefaultStr
+    :: ( NotInAttrs OptOptional attr "optDefaultStr" "optOptional"
+       , NotInAttrs OptDefault attr "optDefaultStr" "optDefault"
+       )
+    => String -> o attr a -> o (OptDefaultStr ': attr) a
+
+instance HasDefaultStr OptionOpt a where
+  optDefaultStr s o = o { _oDefaultStr = Just s }
+
+instance HasDefaultStr ArgumentOpt a where
+  optDefaultStr s o = o { _aDefaultStr = Just s }
+
+-- | Class for options that can be optional. Cannot be used in conjunction with
+-- 'HasDefault' or 'HasDefaultStr'. Note that this will turn a parser for @a@
 -- into a parser for @Maybe a@, modifying the reader function appropriately.
 -- For example:
 --
@@ -101,29 +117,33 @@ class HasOptional o (attr :: [OptAttr]) where
   -- | Specify that an option is optional. This will convert an @Opt a@ to an
   -- @Opt (Maybe a)@
   optOptional
-    :: NotInAttrs OptDefault attr "optOptional" "optDefault"
+    :: ( NotInAttrs OptDefault attr "optOptional" "optDefault"
+       , NotInAttrs OptDefaultStr attr "optOptional" "optDefaultStr"
+       )
     => o attr a -> o (OptOptional ': attr) (Maybe a)
 
 instance HasOptional OptionOpt a where
   optOptional OptionOpt{..}
     = OptionOpt
-        { _oLong    = _oLong
-        , _oShort   = _oShort
-        , _oHelp    = _oHelp
-        , _oMetavar = _oMetavar
-        , _oEnvVar  = _oEnvVar
-        , _oDefault = Just Nothing
-        , _oReader  = fmap Just . _oReader
+        { _oLong       = _oLong
+        , _oShort      = _oShort
+        , _oHelp       = _oHelp
+        , _oMetavar    = _oMetavar
+        , _oEnvVar     = _oEnvVar
+        , _oDefault    = Just Nothing
+        , _oDefaultStr = Nothing
+        , _oReader     = fmap Just . _oReader
         }
 
 instance HasOptional ArgumentOpt a where
   optOptional ArgumentOpt{..}
     = ArgumentOpt
-        { _aHelp    = _aHelp
-        , _aMetavar = _aMetavar
-        , _aEnvVar  = _aEnvVar
-        , _aDefault = Just Nothing
-        , _aReader  = fmap Just . _aReader
+        { _aHelp       = _aHelp
+        , _aMetavar    = _aMetavar
+        , _aEnvVar     = _aEnvVar
+        , _aDefault    = Just Nothing
+        , _aDefaultStr = Nothing
+        , _aReader     = fmap Just . _aReader
         }
 
 -- | Class to convert an intermediate option type into 'Opt'. Instances
@@ -135,40 +155,43 @@ class IsOpt o (attr :: [OptAttr]) where
 instance IsOpt OptionOpt attr where
   toOpt OptionOpt{..}
     = Opt
-        { _optLong    = _oLong
-        , _optShort   = _oShort
-        , _optHelp    = _oHelp
-        , _optMetavar = _oMetavar
-        , _optEnvVar  = _oEnvVar
-        , _optDefault = _oDefault
-        , _optReader  = _oReader
-        , _optType    = OptionOptType
+        { _optLong       = _oLong
+        , _optShort      = _oShort
+        , _optHelp       = _oHelp
+        , _optMetavar    = _oMetavar
+        , _optEnvVar     = _oEnvVar
+        , _optDefault    = _oDefault
+        , _optDefaultStr = _oDefaultStr
+        , _optReader     = _oReader
+        , _optType       = OptionOptType
         }
 
 instance IsOpt FlagOpt attr where
   toOpt FlagOpt{..}
     = Opt
-        { _optLong    = _fLong
-        , _optShort   = _fShort
-        , _optHelp    = _fHelp
-        , _optMetavar = Nothing
-        , _optEnvVar  = _fEnvVar
-        , _optDefault = Just _fDefault
-        , _optReader  = _fReader
-        , _optType    = FlagOptType _fActive
+        { _optLong       = _fLong
+        , _optShort      = _fShort
+        , _optHelp       = _fHelp
+        , _optMetavar    = Nothing
+        , _optEnvVar     = _fEnvVar
+        , _optDefault    = Just _fDefault
+        , _optDefaultStr = Nothing
+        , _optReader     = _fReader
+        , _optType       = FlagOptType _fActive
         }
 
 instance IsOpt ArgumentOpt attr where
   toOpt ArgumentOpt{..}
     = Opt
-        { _optLong    = Nothing
-        , _optShort   = Nothing
-        , _optHelp    = _aHelp
-        , _optMetavar = _aMetavar
-        , _optEnvVar  = _aEnvVar
-        , _optDefault = _aDefault
-        , _optReader  = _aReader
-        , _optType    = ArgumentOptType
+        { _optLong       = Nothing
+        , _optShort      = Nothing
+        , _optHelp       = _aHelp
+        , _optMetavar    = _aMetavar
+        , _optEnvVar     = _aEnvVar
+        , _optDefault    = _aDefault
+        , _optDefaultStr = _aDefaultStr
+        , _optReader     = _aReader
+        , _optType       = ArgumentOptType
         }
 
 -- | Create an option parser, equivalent to 'Options.Applicative.option'. The
@@ -188,13 +211,14 @@ option
   -> OptionOpt '[] a
 option p
   = OptionOpt
-      { _oLong    = Nothing
-      , _oShort   = Nothing
-      , _oHelp    = Nothing
-      , _oMetavar = Nothing
-      , _oEnvVar  = Nothing
-      , _oDefault = Nothing
-      , _oReader  = p
+      { _oLong       = Nothing
+      , _oShort      = Nothing
+      , _oHelp       = Nothing
+      , _oMetavar    = Nothing
+      , _oEnvVar     = Nothing
+      , _oDefault    = Nothing
+      , _oDefaultStr = Nothing
+      , _oReader     = p
       }
 
 -- | Similar to 'option', but accepts a modifier function and returns an 'Opt'
@@ -333,11 +357,12 @@ argument
   -> ArgumentOpt '[] a
 argument p
   = ArgumentOpt
-      { _aHelp    = Nothing
-      , _aMetavar = Nothing
-      , _aEnvVar  = Nothing
-      , _aDefault = Nothing
-      , _aReader  = p
+      { _aHelp       = Nothing
+      , _aMetavar    = Nothing
+      , _aEnvVar     = Nothing
+      , _aDefault    = Nothing
+      , _aDefaultStr = Nothing
+      , _aReader     = p
       }
 
 -- | Similar to 'argument', but accepts a modifier function and returns an

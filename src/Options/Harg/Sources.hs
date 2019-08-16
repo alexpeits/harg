@@ -9,6 +9,7 @@ import           Data.Functor.Compose       (Compose (..))
 
 import qualified Data.Barbie                as B
 
+import           Options.Harg.Sources.DefaultStr
 import           Options.Harg.Sources.Env
 import           Options.Harg.Sources.Types
 import           Options.Harg.Types
@@ -40,7 +41,16 @@ accumSourceResults
           OptParsed a       -> ([], Compose (Just a))
           _                 -> ([], Compose Nothing)
 
+type HiddenSources = DefaultStrSource
+
+-- | Sources hidden from user that are always enabled
+hiddenSources :: HiddenSources f
+hiddenSources
+  = DefaultStrSource
+
+type DefaultSources = EnvSource
+
 -- | Default sources, equivalent to 'EnvSource'
-defaultSources :: EnvSource f
+defaultSources :: DefaultSources f
 defaultSources
   = EnvSource

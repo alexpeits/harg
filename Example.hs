@@ -195,7 +195,7 @@ srvConf
         $ option readParser
         & optLong "port"
         & optHelp "Web service port"
-        & optDefault 5432
+        & optDefaultStr "25000"
       )
       ( toOpt
         $ switch

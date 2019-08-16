@@ -6,23 +6,26 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Operations where
 
-import           Data.Functor.Identity      (Identity(..))
+import           Data.Functor.Identity           (Identity(..))
 
-import qualified Data.Barbie                as B
-import qualified Options.Applicative        as Optparse
+import qualified Data.Barbie                     as B
+import qualified Options.Applicative             as Optparse
 
-import           Options.Harg.Cmdline       (mkOptparseParser)
-import           Options.Harg.Config        (mkConfigParser, getConfig)
-import           Options.Harg.Het.All       (All)
-import           Options.Harg.Het.HList     (AssocListF, MapAssocList(..))
-import           Options.Harg.Het.Variant   (VariantF)
-import           Options.Harg.Pretty        (ppWarning, ppError)
-import           Options.Harg.Sources       (accumSourceResults, defaultSources)
-import           Options.Harg.Sources.Env   (EnvSourceVal)
-import           Options.Harg.Sources.Types (GetSource(..), RunSource(..))
-import           Options.Harg.Subcommands   (Subcommands(..))
-import           Options.Harg.Types         (HargCtx(..), getCtx, Opt, OptError)
-import           Options.Harg.Util          (toDummyOpts, allToDummyOpts, compose)
+import           Options.Harg.Cmdline            (mkOptparseParser)
+import           Options.Harg.Config             (mkConfigParser, getConfig)
+import           Options.Harg.Het.All            (All)
+import           Options.Harg.Het.HList          (AssocListF, MapAssocList(..))
+import           Options.Harg.Het.Prod           ((:*)(..))
+import           Options.Harg.Het.Variant        (VariantF)
+import           Options.Harg.Pretty             (ppWarning, ppError)
+import           Options.Harg.Sources            ( accumSourceResults
+                                                 , DefaultSources, defaultSources
+                                                 , HiddenSources, hiddenSources
+                                                 )
+import           Options.Harg.Sources.Types      (GetSource(..), RunSource(..))
+import           Options.Harg.Subcommands        (Subcommands(..))
+import           Options.Harg.Types              (HargCtx(..), getCtx, Opt, OptError)
+import           Options.Harg.Util               (toDummyOpts, allToDummyOpts, compose)
 
 
 -- | Run the option parser and combine with values from the specified sources,
@@ -43,7 +46,7 @@ execOptWithCtx
 execOptWithCtx ctx conf opts
   = do
       let
-        configParser = mkConfigParser ctx (compose Identity conf)
+        configParser = mkConfigParser ctx $ compose Identity (conf :* hiddenSources)
         dummyParser = mkOptparseParser [] (toDummyOpts @String opts)
       config <- getConfig ctx configParser dummyParser
       sourceVals <- getSource ctx config
@@ -107,7 +110,7 @@ execCommandsWithCtx
      , B.ProductB c
      , Subcommands ts xs
      , GetSource c Identity
-     , All (RunSource (SourceVal c)) xs
+     , All (RunSource (SourceVal (c :* HiddenSources))) xs
      , All (RunSource ()) xs
      , MapAssocList xs
      )
@@ -118,7 +121,7 @@ execCommandsWithCtx
 execCommandsWithCtx ctx conf opts
   = do
       let
-        configParser = mkConfigParser ctx (compose Identity conf)
+        configParser = mkConfigParser ctx $ compose Identity (conf :* hiddenSources)
         (_, dummyCommands)
           = mapSubcommand () (allToDummyOpts @String opts)
         dummyParser
@@ -144,7 +147,7 @@ execCommands
      , B.ProductB c
      , Subcommands ts xs
      , GetSource c Identity
-     , All (RunSource (SourceVal c)) xs
+     , All (RunSource (SourceVal (c :* HiddenSources))) xs
      , All (RunSource ()) xs
      , MapAssocList xs
      )
@@ -162,7 +165,7 @@ execCommandsWithCtxDef
   :: forall ts xs.
      ( B.TraversableB (VariantF xs)
      , Subcommands ts xs
-     , All (RunSource EnvSourceVal) xs
+     , All (RunSource (SourceVal (DefaultSources :* HiddenSources))) xs
      , All (RunSource ()) xs
      , MapAssocList xs
      )
@@ -178,7 +181,7 @@ execCommandsDef
   :: forall ts xs.
      ( B.TraversableB (VariantF xs)
      , Subcommands ts xs
-     , All (RunSource EnvSourceVal) xs
+     , All (RunSource (SourceVal (DefaultSources :* HiddenSources))) xs
      , All (RunSource ()) xs
      , MapAssocList xs
      )
