@@ -38,6 +38,7 @@ module Options.Harg
   , optEnvVar
   , optDefault
   , optDefaultStr
+  , optRequired
   , optOptional
   , toOpt
   , Opt
