@@ -456,7 +456,8 @@ type family NotInAttrs
 
 type family CommaSep (xs :: [Symbol]) :: Symbol where
   CommaSep '[] = ""
-  CommaSep (x ': xs) = CommaSep' x xs
+  CommaSep '[x] = " or " `AppendSymbol` x
+  CommaSep (x ': xs) = " or one of " `AppendSymbol` CommaSep' x xs
 
 type family CommaSep' (s :: Symbol) (xs :: [Symbol]) :: Symbol where
   CommaSep' s '[]       = s
@@ -468,7 +469,6 @@ type DuplicateAttrErr attr
 
 type DuplicateAttrMultipleErr attr rest
   =    QuoteSym attr
-  :<>: 'Text " or one of "
   :<>: 'Text (CommaSep rest)
   :<>: 'Text " has already been specified."
 
