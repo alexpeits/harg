@@ -30,7 +30,6 @@ data OptType a
 
 data OptAttr
   = OptDefault
-  | OptDefaultStr
   | OptOptional
 
 -- * Intermediate option types

@@ -7,7 +7,7 @@ module Options.Harg.Construct where
 import Data.Char          (toLower)
 import Data.Kind          (Constraint)
 import Data.String        (IsString(..))
-import GHC.TypeLits       (ErrorMessage(..), TypeError, Symbol)
+import GHC.TypeLits       (ErrorMessage(..), TypeError, Symbol, AppendSymbol)
 import Text.Read          (readMaybe)
 
 import Options.Harg.Types
@@ -72,10 +72,10 @@ instance HasEnvVar ArgumentOpt a where
 
 class HasDefault o (attr :: [OptAttr]) where
   -- | Add a default value to an option. Cannot be used in conjuction with
-  -- 'optOptional' or 'optDefaultStr'.
+  -- with 'optRequired', 'optDefaultStr' or 'optOptional'.
   optDefault
-    :: ( NotInAttrs OptOptional attr "optDefault" "optOptional"
-       , NotInAttrs OptDefaultStr attr "optDefault" "optDefaultStr"
+    :: ( NotInAttrs OptDefault attr (DuplicateAttrMultipleErr "optDefault" '["optDefaultStr", "optRequired"])
+       , NotInAttrs OptOptional attr (IncompatibleAttrsErr "optDefault" "optOptional")
        )
     => a -> o attr a -> o (OptDefault ': attr) a
 
@@ -87,12 +87,12 @@ instance HasDefault ArgumentOpt a where
 
 class HasDefaultStr o (attr :: [OptAttr]) where
   -- | Add a default unparsed value to an option. Cannot be used in conjuction
-  -- with 'optDefault' or 'optOptional'.
+  -- with 'optDefault', 'optRequired' or 'optOptional'.
   optDefaultStr
-    :: ( NotInAttrs OptOptional attr "optDefaultStr" "optOptional"
-       , NotInAttrs OptDefault attr "optDefaultStr" "optDefault"
+    :: ( NotInAttrs OptDefault attr (DuplicateAttrMultipleErr "optDefaultStr" '["optDefault", "optRequired"])
+       , NotInAttrs OptOptional attr (IncompatibleAttrsErr "optDefaultStr" "optOptional")
        )
-    => String -> o attr a -> o (OptDefaultStr ': attr) a
+    => String -> o attr a -> o (OptDefault ': attr) a
 
 instance HasDefaultStr OptionOpt a where
   optDefaultStr s o = o { _oDefaultStr = Just s }
@@ -100,9 +100,25 @@ instance HasDefaultStr OptionOpt a where
 instance HasDefaultStr ArgumentOpt a where
   optDefaultStr s o = o { _aDefaultStr = Just s }
 
+class HasRequired o (attr :: [OptAttr]) where
+  -- | Mark an option as required. Cannot be used in conjunction with
+  -- 'optOptional', 'optDefault' or 'optRequiredStr'.
+  optRequired
+    :: ( NotInAttrs OptDefault attr (DuplicateAttrMultipleErr "optRequired" '["optDefault", "optDefaultStr"])
+       , NotInAttrs OptOptional attr (IncompatibleAttrsErr "optRequired" "optOptional")
+       )
+    => o attr a -> o (OptDefault ': attr) a
+
+instance HasRequired OptionOpt a where
+  optRequired o = o { _oDefault = Nothing }
+
+instance HasRequired ArgumentOpt a where
+  optRequired o = o { _aDefault = Nothing }
+
 -- | Class for options that can be optional. Cannot be used in conjunction with
--- 'HasDefault' or 'HasDefaultStr'. Note that this will turn a parser for @a@
--- into a parser for @Maybe a@, modifying the reader function appropriately.
+-- 'HasDefault', 'HasDefaultStr' or 'HasRequired'. Note that this will turn a
+-- parser for @a@ into a parser for @Maybe a@, modifying the reader function
+-- appropriately.
 -- For example:
 --
 -- @
@@ -115,10 +131,11 @@ instance HasDefaultStr ArgumentOpt a where
 -- @
 class HasOptional o (attr :: [OptAttr]) where
   -- | Specify that an option is optional. This will convert an @Opt a@ to an
-  -- @Opt (Maybe a)@
+  -- @Opt (Maybe a)@. Cannot be used in conjunction with 'optDefault', 'optDefaultStr'
+  -- or 'optRequired'.
   optOptional
-    :: ( NotInAttrs OptDefault attr "optOptional" "optDefault"
-       , NotInAttrs OptDefaultStr attr "optOptional" "optDefaultStr"
+    :: ( NotInAttrs OptOptional attr (DuplicateAttrErr "optOptional")
+       , NotInAttrs OptDefault attr (IncompatibleAttrsErr "optOptional" "optDefault")
        )
     => o attr a -> o (OptOptional ': attr) (Maybe a)
 
@@ -428,15 +445,35 @@ type QuoteSym (s :: Symbol)
 type family NotInAttrs
     (x :: k)
     (xs :: [k])
-    (l :: Symbol)
-    (r :: Symbol)
+    (err :: ErrorMessage)
     :: Constraint where
-  NotInAttrs _ '[]  _ _
+  NotInAttrs _ '[]  _
     = ()
-  NotInAttrs x (x ': _) l r
-    = TypeError
-    (    QuoteSym l :<>: 'Text " and " :<>: QuoteSym r
-    :<>: 'Text " cannot be mixed in an option definition."
-    )
-  NotInAttrs x (y ': xs) l r
-    = NotInAttrs x xs l r
+  NotInAttrs x (x ': _) err
+    = TypeError err
+  NotInAttrs x (y ': xs) err
+    = NotInAttrs x xs err
+
+type family CommaSep (xs :: [Symbol]) :: Symbol where
+  CommaSep '[] = ""
+  CommaSep (x ': xs) = CommaSep' x xs
+
+type family CommaSep' (s :: Symbol) (xs :: [Symbol]) :: Symbol where
+  CommaSep' s '[]       = s
+  CommaSep' s (x ': xs) = CommaSep' (s `AppendSymbol` ", " `AppendSymbol` x) xs
+
+type DuplicateAttrErr attr
+  =    QuoteSym attr
+  :<>: 'Text " is already specified."
+
+type DuplicateAttrMultipleErr attr rest
+  =    QuoteSym attr
+  :<>: 'Text " or one of "
+  :<>: 'Text (CommaSep rest)
+  :<>: 'Text " has already been specified."
+
+type IncompatibleAttrsErr l r
+  =    QuoteSym l
+  :<>: 'Text " and "
+  :<>: QuoteSym r
+  :<>: 'Text " cannot be mixed in an option definition."
