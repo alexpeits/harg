@@ -55,11 +55,12 @@ mainSubparser = do
   conf <- execCommands srcOpt configOpt
   fromVariantF conf
     (
-      \(db :* srv :* smth)
+      \(db :* srv :* smth :* manyStuff)
         -> AppC
            <$> getNested (unTagged db)
            <*> getNested (unTagged srv)
            <*> getSingle (unTagged smth)
+           <*> getSingle (unTagged manyStuff)
            & runIdentity
            & print
     )
@@ -74,25 +75,27 @@ mainSubparser = do
 
 mainParser :: IO ()
 mainParser = do
-  db :* srv :* smth <- execOpt srcOpt appOpt
+  db :* srv :* smth :* manyStuff <- execOpt srcOpt appOpt
   let
     res
       = AppC
       <$> getNested (unTagged db)
       <*> getNested (unTagged srv)
       <*> getSingle (unTagged smth)
+      <*> getSingle (unTagged manyStuff)
   print $ runIdentity res
 
 main :: IO ()
 main
-  -- = mainParser
-  = mainSubparser
+  = mainParser
+  -- = mainSubparser
 
 data AppC
   = AppC
       { _acDbConfig      :: DBConfig
       , _acServiceConfig :: ServiceConfig
       , _acSomething     :: Maybe Int
+      , _acManyStuff     :: [String]
       }
   deriving Show
 
@@ -100,12 +103,14 @@ type AppConfig
   =  Tagged "db" (Nested DBConfig)
   :* Tagged "srv" (Nested ServiceConfig)
   :* Tagged "smth" (Single (Maybe Int))
+  :* Tagged "manyStuff" (Single [String])
 
 appOpt :: AppConfig Opt
 appOpt
   =  Tagged dbConf
   :* Tagged srvConf
   :* Tagged (single something)
+  :* Tagged (single manyStuff)
   where
     something
       = optionWith readParser
@@ -113,6 +118,12 @@ appOpt
           . optEnvVar "SOMETHING"
           . optHelp "Something?"
           . optOptional
+          )
+    manyStuff
+      = optionWith (manyParser "," strParser)
+          ( optLong "many"
+          . optEnvVar "MANY"
+          . optHelp "Many stuff"
           )
 
 data TestAppC

@@ -12,12 +12,13 @@
   directory,
   higgledy,
   optparse-applicative,
+  split,
   text,
   yaml
 }:
 mkDerivation {
   pname = "harg";
-  version = "0.1.2.0";
+  version = "0.1.3.0";
   src = lib.sourceByRegex ./. [
     "src(.*)?"
     "test(.*)?"
@@ -38,6 +39,7 @@ mkDerivation {
     higgledy
     optparse-applicative
     text
+    split
     yaml
   ];
   testHaskellDepends = [

@@ -48,6 +48,7 @@ module Options.Harg
   , readParser
   , strParser
   , boolParser
+  , manyParser
 
   -- ** Executing options
   , execOpt

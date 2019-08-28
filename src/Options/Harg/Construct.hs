@@ -10,6 +10,8 @@ import Data.String        (IsString(..))
 import GHC.TypeLits       (ErrorMessage(..), TypeError, Symbol, AppendSymbol)
 import Text.Read          (readMaybe)
 
+import Data.List.Split    (splitOn)
+
 import Options.Harg.Types
 
 
@@ -435,6 +437,13 @@ boolParser s
       "false" -> Right False
       _       -> Left ("Unable to parse " <> s <> " to Bool")
 
+-- | A parser that can parse many items, returning a list.
+manyParser
+  :: String  -- ^ Separator
+  -> OptReader a  -- ^ Parser for each string
+  -> OptReader [a]
+manyParser sep parser
+  = traverse parser . splitOn sep
 
 -- | Wrap a symbol in quotes, for pretty printing in type errors.
 type QuoteSym (s :: Symbol)
