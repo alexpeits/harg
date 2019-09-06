@@ -27,7 +27,6 @@ import           Options.Harg.Subcommands        (Subcommands(..))
 import           Options.Harg.Types              (HargCtx(..), getCtx, Opt, OptError)
 import           Options.Harg.Util               (toDummyOpts, allToDummyOpts, compose)
 
-
 -- | Run the option parser and combine with values from the specified sources,
 -- passing the context explicitly.
 execOptWithCtx
@@ -78,10 +77,9 @@ execOpt
   => c Opt  -- ^ Source options
   -> a Opt  -- ^ Target configuration options
   -> IO (a Identity)
-execOpt conf opts
-  = do
-      ctx <- getCtx
-      execOptWithCtx ctx conf opts
+execOpt conf opts = do
+  ctx <- getCtx
+  execOptWithCtx ctx conf opts
 
 -- | Run the option parser only with default sources (environment variables),
 -- passing the context explicitly.
@@ -165,10 +163,9 @@ execCommands
   => c Opt  -- ^ Source options
   -> AssocListF ts xs Opt  -- ^ Target options associated with subcommands
   -> IO (VariantF xs Identity)
-execCommands conf opts
-  = do
-      ctx <- getCtx
-      execCommandsWithCtx ctx conf opts
+execCommands conf opts = do
+  ctx <- getCtx
+  execCommandsWithCtx ctx conf opts
 
 -- | Run the subcommand parser only with default sources (environment
 -- variables), passing the context explicitly.

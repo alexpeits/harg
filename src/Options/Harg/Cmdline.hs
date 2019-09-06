@@ -25,13 +25,13 @@ mkOptparseParser
   -> a (Compose Opt f)      -- ^ Target configuration options
   -> Optparse.Parser (a f)
 mkOptparseParser sources opts
-  = let
-      srcOpts
-        = foldl'
-            (B.bzipWith (<|>))
-            (B.bmap (const (Compose Nothing)) opts)
-            sources
-    in B.bsequence $ B.bzipWith mkParser srcOpts opts
+  = B.bsequence $ B.bzipWith mkParser srcOpts opts
+  where
+    srcOpts
+      = foldl'
+          (B.bzipWith (<|>))
+          (B.bmap (const (Compose Nothing)) opts)
+          sources
 
 -- | Create a 'Optparse.Parser' for a single option, using the accumulated
 -- source results.
@@ -70,23 +70,23 @@ toFlagParser
   -> f a
   -> Compose Optparse.Parser f a
 toFlagParser sources (Compose opt@Opt{..}) active
-  =
-    let
-      mDef
-        = case getCompose sources of
-            Nothing -> _optDefault
-            Just x  -> Just x
-      modifiers
-        = foldMap (fromMaybe mempty)
-            [ Optparse.long <$> _optLong
-            , Optparse.short <$> _optShort
-            , Optparse.help <$> ppHelp opt
-            ]
-      in Compose $ case mDef of
-           Nothing ->
-             Optparse.flag' active modifiers
-           Just def ->
-             Optparse.flag def active modifiers
+  = Compose
+    $ case mDef of
+        Nothing ->
+          Optparse.flag' active modifiers
+        Just def ->
+          Optparse.flag def active modifiers
+  where
+    mDef
+      = case getCompose sources of
+          Nothing -> _optDefault
+          Just x  -> Just x
+    modifiers
+      = foldMap (fromMaybe mempty)
+          [ Optparse.long <$> _optLong
+          , Optparse.short <$> _optShort
+          , Optparse.help <$> ppHelp opt
+          ]
 
 -- | Create a 'Optparse.Parser' for a 'ArgumentOpt', which results in an
 -- @optparse-applicative@ 'Optparse.argument'.

@@ -28,15 +28,14 @@ data JSONSourceVal
 
 instance GetSource JSONSource Identity where
   type SourceVal JSONSource = JSONSourceVal
-  getSource _ctx (JSONSource (Identity (ConfigFile path)))
-    = do
-        contents <- readFileLBS path
-        case JSON.eitherDecode contents of
-          Right json
-            -> pure $ JSONSourceVal json
-          Left err
-            -> printErrAndExit
-               $ "Error decoding " <> path <> " to JSON: " <> err
+  getSource _ctx (JSONSource (Identity (ConfigFile path))) = do
+    contents <- readFileLBS path
+    case JSON.eitherDecode contents of
+      Right json
+        -> pure $ JSONSourceVal json
+      Left err
+        -> printErrAndExit
+            $ "Error decoding " <> path <> " to JSON: " <> err
   getSource _ctx (JSONSource (Identity NoConfigFile))
     = pure JSONSourceNotRequired
 
@@ -59,16 +58,16 @@ runJSONSource
   -> a (Compose Opt f)
   -> a (Compose SourceRunResult f)
 runJSONSource json opt
-  = let
-      res :: JSON.Result (a Maybe)
-      res
-        = JSON.fromJSON json
-      toSuccess :: Maybe x -> Compose SourceRunResult f x
-      toSuccess mx
-        = Compose $ pure <$> maybe OptNotFound OptParsed mx
-      toFailure :: Compose Opt f x -> Compose SourceRunResult f x
-      toFailure _
-        = Compose $ pure <$> OptNotFound
-    in case res of
-         JSON.Success v -> B.bmap toSuccess v
-         JSON.Error _e  -> B.bmap toFailure opt
+  = case res of
+      JSON.Success v -> B.bmap toSuccess v
+      JSON.Error _e  -> B.bmap toFailure opt
+  where
+    res :: JSON.Result (a Maybe)
+    res
+      = JSON.fromJSON json
+    toSuccess :: Maybe x -> Compose SourceRunResult f x
+    toSuccess mx
+      = Compose $ pure <$> maybe OptNotFound OptParsed mx
+    toFailure :: Compose Opt f x -> Compose SourceRunResult f x
+    toFailure _
+      = Compose $ pure <$> OptNotFound

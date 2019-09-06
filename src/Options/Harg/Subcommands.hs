@@ -98,21 +98,17 @@ instance
     ) => ExplSubcommands n (t ': ts) (x ': xs) as where
 
   explMapSubcommand n srcs (ACons opt opts)
-    = let
-        (errs, sc)
-          = subcommand
-        (errs', rest)
-          = hgcastWith (proof @as @x @xs)
+    = (thisErr ++ restErr, sc : rest)
+    where
+      (thisErr, sc)
+        = subcommand
+      (restErr, rest)
+        = hgcastWith (proof @as @x @xs)
           $ explMapSubcommand
               @(S n) @ts @xs @(as ++ '[x])
               (SS n) srcs opts
-
-      in (errs ++ errs', sc : rest)
-
-    where
       subcommand
         = let
-            -- TODO: accumulate errors
             (errs, src)
               = accumSourceResults $ runSource srcs opt
             parser
@@ -121,6 +117,6 @@ instance
               = symbolVal (Proxy :: Proxy t)
             cmd
               = Optparse.command tag
-              $ injectPosF n
-              <$> Optparse.info (Optparse.helper <*> parser) mempty
+                $ injectPosF n
+                  <$> Optparse.info (Optparse.helper <*> parser) mempty
           in (errs, cmd)

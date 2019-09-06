@@ -55,20 +55,20 @@ runYAMLSource
   -> a (Compose Opt f)
   -> a (Compose SourceRunResult f)
 runYAMLSource yaml opt
-  = let
-      res :: Either YAML.ParseException (a Maybe)
-      res
-        = YAML.decodeEither' yaml
-      toSuccess :: Maybe x -> Compose SourceRunResult f x
-      toSuccess mx
-        = Compose $ pure <$> maybe OptNotFound OptParsed mx
-      toFailure
-        :: YAML.ParseException
-        -> Compose Opt f x
-        -> Compose SourceRunResult f x
-      toFailure exc (Compose o)
-        = Compose
+  = case res of
+      Right v  -> B.bmap toSuccess v
+      Left exc -> B.bmap (toFailure exc) opt
+  where
+    res :: Either YAML.ParseException (a Maybe)
+    res
+      = YAML.decodeEither' yaml
+    toSuccess :: Maybe x -> Compose SourceRunResult f x
+    toSuccess mx
+      = Compose $ pure <$> maybe OptNotFound OptParsed mx
+    toFailure
+      :: YAML.ParseException
+      -> Compose Opt f x
+      -> Compose SourceRunResult f x
+    toFailure exc (Compose o)
+      = Compose
         $ OptFoundNoParse (toOptError o (Just "YAMLSource") (displayException exc))
-    in case res of
-         Right v  -> B.bmap toSuccess v
-         Left exc -> B.bmap (toFailure exc) opt
