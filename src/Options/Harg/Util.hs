@@ -76,12 +76,11 @@ readFileWith
   :: (FilePath -> IO a)
   -> FilePath
   -> IO a
-readFileWith f path
-  = do
-      exists <- doesFileExist path
-      if exists
-        then readFile_
-        else printErrAndExit ("File not found: " <> path)
+readFileWith f path = do
+  exists <- doesFileExist path
+  if exists
+    then readFile_
+    else printErrAndExit ("File not found: " <> path)
   where
     readFile_
       = f path

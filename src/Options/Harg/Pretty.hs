@@ -12,32 +12,11 @@ ppHelp
 ppHelp Opt{..}
   = (<> ppEnvVar _optEnvVar) <$> _optHelp
 
-ppWarning
-  :: [OptError]
-  -> IO ()
-ppWarning []
-  = pure ()
-ppWarning err
-  =  putStrLn "Parser succeeded with warnings:"
-  >> ppOptErrors err
-  >> putStrLn ""
-
-ppError
-  :: [OptError]
-  -> IO ()
-ppError []
-  = pure ()
-ppError err
-  =  putStrLn "Parser errors:"
-  >> ppOptErrors err
-  >> putStrLn ""
-
 ppOptErrors
   :: [OptError]
-  -> IO ()
+  -> String
 ppOptErrors
-  = putStrLn
-  . intercalate "\n"
+  = intercalate "\n\n"
   . map ppOptError
   . nubBy cmpOptErr
   where
@@ -45,10 +24,11 @@ ppOptErrors
       =  _optLong l == _optLong r && sl == sr && dl == dr
     ppOptError :: OptError -> String
     ppOptError (OptError (SomeOpt opt) src desc)
-      =  "\t"
+      =  "option "
       <> fromMaybe "<no opt name>" (_optLong opt)
-      <> "\t\t"
+      <> ": "
       <> desc
+      <> "\n\t"
       <> ppSource src
       <> ppEnvVar (_optEnvVar opt)
 

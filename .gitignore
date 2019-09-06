@@ -8,3 +8,5 @@ dist-newstyle/
 result/
 result
 .ghc.environment*
+
+TAGS

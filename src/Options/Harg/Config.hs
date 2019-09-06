@@ -25,11 +25,11 @@ mkConfigParser
   -> c (Compose Opt f)
   -> Optparse.Parser (c f)
 mkConfigParser HargCtx{..} conf
-  = let
-      (_, envC)
-        = accumSourceResults
+  = mkOptparseParser envC conf
+  where
+    (_, envC)
+      = accumSourceResults
         $ runSource (EnvSourceVal _hcEnv) conf
-    in mkOptparseParser envC conf
 
 -- | Run two option parsers in parallel and return the result of the
 -- first one. This is used with the configuration parser being the first
@@ -41,13 +41,12 @@ getConfig
   -> Optparse.Parser (c (f :: Type -> Type))
   -> Optparse.Parser (a (g :: Type -> Type))
   -> IO (c f)
-getConfig HargCtx{..} confParser optParser
-  = do
-      let
-        parser
-          = (,) <$> confParser <*> optParser
-        parserInfo
-          = Optparse.info (Optparse.helper <*> parser) mempty
-        res
-          = Optparse.execParserPure Optparse.defaultPrefs parserInfo _hcArgs
-      fst <$> Optparse.handleParseResult res
+getConfig HargCtx{..} confParser optParser = do
+  let
+    parser
+      = (,) <$> confParser <*> optParser
+    parserInfo
+      = Optparse.info (Optparse.helper <*> parser) mempty
+    res
+      = Optparse.execParserPure Optparse.defaultPrefs parserInfo _hcArgs
+  fst <$> Optparse.handleParseResult res
