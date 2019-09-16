@@ -23,7 +23,7 @@ newtype YAMLSource f = YAMLSource (f ConfigFile)
   deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
 
 -- | The result of reading a YAML file. @YAMLSourceNotRequired@ is used when
--- the user has specified @optDefault NoConfigFile@. It holds the contents of
+-- the user has specified @defaultVal NoConfigFile@. It holds the contents of
 -- the YAML file as a 'BS.ByteString'.
 data YAMLSourceVal
   = YAMLSourceVal BS.ByteString

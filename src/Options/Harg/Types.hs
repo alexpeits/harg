@@ -14,7 +14,7 @@ data Opt a
                                        --   with @--help/-h@ or in case of error
       , _optMetavar    :: Maybe String -- ^ Metavar to be shown in the help description
       , _optEnvVar     :: Maybe String -- ^ Environment variable for use with 'EnvSource'
-      , _optDefault    :: Maybe a      -- ^ Default value
+      , _optDefaultVal :: Maybe a      -- ^ Default value
       , _optDefaultStr :: Maybe String -- ^ Default value as string (unparsed)
       , _optReader     :: OptReader a  -- ^ Option parser
       , _optType       :: OptType a    -- ^ Option type
@@ -42,7 +42,7 @@ data OptionOpt (attr :: [OptAttr]) a
       , _oHelp       :: Maybe String
       , _oMetavar    :: Maybe String
       , _oEnvVar     :: Maybe String
-      , _oDefault    :: Maybe a
+      , _oDefaultVal :: Maybe a
       , _oDefaultStr :: Maybe String
       , _oReader     :: OptReader a
       }
@@ -51,13 +51,13 @@ data OptionOpt (attr :: [OptAttr]) a
 -- value. Corresponds to 'Options.Applicative.flag'.
 data FlagOpt (attr :: [OptAttr]) a
   = FlagOpt
-      { _fLong    :: Maybe String
-      , _fShort   :: Maybe Char
-      , _fHelp    :: Maybe String
-      , _fEnvVar  :: Maybe String
-      , _fDefault :: a
-      , _fReader  :: OptReader a
-      , _fActive  :: a
+      { _fLong       :: Maybe String
+      , _fShort      :: Maybe Char
+      , _fHelp       :: Maybe String
+      , _fEnvVar     :: Maybe String
+      , _fDefaultVal :: a
+      , _fReader     :: OptReader a
+      , _fActive     :: a
       }
 
 -- | Option for arguments (no long/short specifiers). Corresponds to
@@ -67,7 +67,7 @@ data ArgumentOpt (attr :: [OptAttr]) a
       { _aHelp       :: Maybe String
       , _aMetavar    :: Maybe String
       , _aEnvVar     :: Maybe String
-      , _aDefault    :: Maybe a
+      , _aDefaultVal :: Maybe a
       , _aDefaultStr :: Maybe String
       , _aReader     :: OptReader a
       }

@@ -45,8 +45,10 @@ toDummyOpts
       = Compose
       $ Const
       <$> opt
-            { _optDefault = Just mempty
-            , _optReader  = pure . const mempty
+            { _optDefaultVal
+                = Just mempty
+            , _optReader
+                = pure . const mempty
             , _optType
                 = case _optType opt of
                     OptionOptType   -> OptionOptType

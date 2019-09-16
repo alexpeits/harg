@@ -5,15 +5,10 @@ module Options.Harg
 
     -- ** Option declaration
     option
-  , optionWith
   , flag
-  , flagWith
   , switch
-  , switchWith
   , switch'
-  , switchWith'
   , argument
-  , argumentWith
 
   , Single (..)
   , single
@@ -31,15 +26,15 @@ module Options.Harg
   , Tagged (..)
 
   -- ** Option modifiers
-  , optLong
-  , optShort
-  , optHelp
-  , optMetavar
-  , optEnvVar
-  , optDefault
-  , optDefaultStr
-  , optRequired
-  , optOptional
+  , long
+  , short
+  , help
+  , metavar
+  , envVar
+  , defaultVal
+  , defaultStr
+  , required
+  , optional
   , toOpt
   , Opt
 
@@ -80,10 +75,12 @@ module Options.Harg
   , pattern In5
 
   -- ** Re-exports
+  -- *** barbies
   , B.FunctorB
   , B.TraversableB
   , B.ProductB
 
+  -- *** higgledy
   , HKD.HKD
   , HKD.build
   , HKD.construct
@@ -132,28 +129,28 @@ import qualified Data.Generic.HKD              as HKD
 --     where
 --       hostOpt
 --         = optionWith strParser
---             ( optLong \"host\"
---             . optShort \'h\'
---             . optHelp \"Hostname\"
---             . optEnvVar \"HOST_NAME\"
+--             ( long \"host\"
+--             . short \'h\'
+--             . help \"Hostname\"
+--             . envVar \"HOST_NAME\"
 --             )
 --       portOpt
 --         = optionWith readParser
---             ( optLong \"port\"
---             . optShort \'p\'
---             . optHelp \"Port number\"
---             . optDefault 5432
+--             ( long \"port\"
+--             . short \'p\'
+--             . help \"Port number\"
+--             . defaultVal 5432
 --             )
 --       logOpt
 --         = switchWith
---             ( optLong \"log\"
---             . optHelp \"Whether to log or not\"
+--             ( long \"log\"
+--             . help \"Whether to log or not\"
 --             )
 --       dirOpt
 --         = argumentWith strParser
---             ( optHelp \"Some directory\"
---             . optEnvVar \"SOME_DIR\"
---             . optOptional
+--             ( help \"Some directory\"
+--             . envVar \"SOME_DIR\"
+--             . optional
 --             )
 --
 --   main :: IO Config
