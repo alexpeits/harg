@@ -5,13 +5,14 @@
 {-# LANGUAGE UndecidableInstances       #-}
 module Options.Harg.Single where
 
-import qualified Data.Functor.Product as P
-import           Data.Kind            (Type)
-import           GHC.Generics         (Generic)
+import           Data.Functor.Identity (Identity(..))
+import qualified Data.Functor.Product  as P
+import           Data.Kind             (Type)
+import           GHC.Generics          (Generic)
 
-import qualified Data.Aeson           as JSON
+import qualified Data.Aeson            as JSON
 
-import qualified Data.Barbie          as B
+import qualified Data.Barbie           as B
 
 
 -- | @Single a f@ is a newtype around @f a@, which allows mixing non-nested
@@ -37,6 +38,10 @@ newtype Single (a :: Type) (f :: Type -> Type)
 -- | Wrap a value into a 'Single'.
 single :: f a -> Single a f
 single = Single
+
+-- | Helper for when f ~ Identity
+fromSingle :: Single a Identity -> a
+fromSingle = runIdentity . getSingle
 
 deriving instance (Show a, Show (f a)) => Show (Single a f)
 deriving newtype instance Generic (f a) => Generic (Single a f)

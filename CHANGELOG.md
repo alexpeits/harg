@@ -3,6 +3,7 @@
 ## 0.4.0.0 [2019.09.16]
 
 - Fix wrong name in previous release (`HasDefaultValStr` -> `HasDefaultStr`)
+- Expose `fromSingle` and `fromNested` for when f ~ Identity
 - Expose classes `Build` and `Construct` from `higgledy`
 
 ## 0.3.0.0 [2019.09.16]

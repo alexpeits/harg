@@ -9,13 +9,14 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Options.Harg.Nested where
 
-import           Data.Coerce      (Coercible, coerce)
-import           Data.Kind        (Type)
-import           GHC.Generics     (Generic)
+import           Data.Coerce           (Coercible, coerce)
+import           Data.Functor.Identity (Identity(..))
+import           Data.Kind             (Type)
+import           GHC.Generics          (Generic)
 
-import qualified Data.Aeson       as JSON
-import qualified Data.Barbie      as B
-import qualified Data.Generic.HKD as HKD
+import qualified Data.Aeson            as JSON
+import qualified Data.Barbie           as B
+import qualified Data.Generic.HKD      as HKD
 
 -- Orphan HKD FromJSON instance
 instance JSON.GFromJSON JSON.Zero (HKD.HKD_ f structure)
@@ -74,6 +75,14 @@ getNested
   => Nested b f
   -> f b
 getNested (Nested hkd) = HKD.construct hkd
+
+-- | Helper for when f ~ Identity
+fromNested
+  :: HKD.Construct Identity b
+  => Nested b Identity
+  -> b
+fromNested
+  = runIdentity . getNested
 
 deriving newtype instance Generic (HKD.HKD b f) => Generic (Nested b f)
 deriving newtype instance JSON.FromJSON (HKD.HKD b f) => JSON.FromJSON (Nested b f)

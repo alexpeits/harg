@@ -10,12 +10,14 @@ module Options.Harg
   , switch'
   , argument
 
-  , Single (..)
+  , Single (getSingle)
   , single
+  , fromSingle
 
   , Nested (..)
   , nested
   , getNested
+  , fromNested
 
   , AssocListF (..)
   , (:+)
