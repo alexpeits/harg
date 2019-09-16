@@ -75,10 +75,12 @@ module Options.Harg
   , pattern In5
 
   -- ** Re-exports
+  -- *** barbies
   , B.FunctorB
   , B.TraversableB
   , B.ProductB
 
+  -- *** higgledy
   , HKD.HKD
   , HKD.build
   , HKD.construct
