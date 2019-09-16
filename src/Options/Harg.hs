@@ -82,7 +82,9 @@ module Options.Harg
 
   -- *** higgledy
   , HKD.HKD
+  , HKD.Build
   , HKD.build
+  , HKD.Construct
   , HKD.construct
   ) where
 
