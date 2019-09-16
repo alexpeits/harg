@@ -10,7 +10,7 @@ module Options.Harg
   , switch'
   , argument
 
-  , Single (getSingle)
+  , Single (..)
   , single
   , fromSingle
 
