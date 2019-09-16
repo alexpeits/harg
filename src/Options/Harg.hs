@@ -5,15 +5,10 @@ module Options.Harg
 
     -- ** Option declaration
     option
-  , optionWith
   , flag
-  , flagWith
   , switch
-  , switchWith
   , switch'
-  , switchWith'
   , argument
-  , argumentWith
 
   , Single (..)
   , single
@@ -31,15 +26,15 @@ module Options.Harg
   , Tagged (..)
 
   -- ** Option modifiers
-  , optLong
-  , optShort
-  , optHelp
-  , optMetavar
-  , optEnvVar
-  , optDefault
-  , optDefaultStr
-  , optRequired
-  , optOptional
+  , long
+  , short
+  , help
+  , metavar
+  , envVar
+  , defaultVal
+  , defaultStr
+  , required
+  , optional
   , toOpt
   , Opt
 

@@ -58,7 +58,7 @@ toOptionParser sources (Compose opt@Opt{..})
           , Optparse.short <$> _optShort
           , Optparse.help <$> ppHelp opt
           , Optparse.metavar <$> _optMetavar
-          , Optparse.value <$> (getCompose sources <|> _optDefault)
+          , Optparse.value <$> (getCompose sources <|> _optDefaultVal)
           ]
       )
 
@@ -79,7 +79,7 @@ toFlagParser sources (Compose opt@Opt{..}) active
   where
     mDef
       = case getCompose sources of
-          Nothing -> _optDefault
+          Nothing -> _optDefaultVal
           Just x  -> Just x
     modifiers
       = foldMap (fromMaybe mempty)
@@ -99,6 +99,6 @@ toArgumentParser sources (Compose opt@Opt{..})
       ( foldMap (fromMaybe mempty)
           [ Optparse.help <$> ppHelp opt
           , Optparse.metavar <$> _optMetavar
-          , Optparse.value <$> (getCompose sources <|> _optDefault)
+          , Optparse.value <$> (getCompose sources <|> _optDefaultVal)
           ]
       )

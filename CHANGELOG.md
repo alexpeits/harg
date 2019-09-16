@@ -1,5 +1,12 @@
 # Changelog for harg
 
+## 0.3.0.0 [2019.09.16]
+
+- Remove `*With` variants of option constructors and make the `*With` variant behaviour the default
+  (meaning now options are constructed using function composition and not `toOpt`)
+- Remove `opt` prefix from modifiers. Because `default` is a reserved keyword, this is now named
+  `defaultVal` (to mirror `defaultStr`)
+
 ## 0.2.0.0 [2019.09.06]
 
 - Trigger a parser failure when any option in the sources fails to parse

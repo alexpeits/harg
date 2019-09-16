@@ -24,20 +24,20 @@ import           Options.Harg
 
 jsonOpt :: Opt ConfigFile
 jsonOpt
-  = toOpt
-    $ option strParser
-    & optLong "json-config"
-    & optShort 'j'
-    & optHelp "JSON config"
-    & optDefault NoConfigFile
+  = option strParser
+      ( long "json-config"
+      . short 'j'
+      . help "JSON config"
+      . defaultVal NoConfigFile
+      )
 
 yamlOpt :: Opt ConfigFile
 yamlOpt
-  = toOpt
-    $ option strParser
-    & optLong "yaml-config"
-    & optShort 'y'
-    & optHelp "YAML config"
+  = option strParser
+      ( long "yaml-config"
+      . short 'y'
+      . help "YAML config"
+      )
 
 type SourceOpt
   =  EnvSource
@@ -113,17 +113,17 @@ appOpt
   :* Tagged (single manyStuff)
   where
     something
-      = optionWith readParser
-          ( optLong "smth"
-          . optEnvVar "SOMETHING"
-          . optHelp "Something?"
-          . optOptional
+      = option readParser
+          ( long "smth"
+          . envVar "SOMETHING"
+          . help "Something?"
+          . optional
           )
     manyStuff
-      = optionWith (manyParser "," strParser)
-          ( optLong "many"
-          . optEnvVar "MANY"
-          . optHelp "Many stuff"
+      = option (manyParser "," strParser)
+          ( long "many"
+          . envVar "MANY"
+          . help "Many stuff"
           )
 
 data TestAppC
@@ -144,18 +144,19 @@ testAppOpt
   where
     testConf
       = nested @TestConfig
-          ( argumentWith strParser
-              ( optMetavar "TEST_DIR"
-              . optHelp "Some directory"
-              . optEnvVar "TEST_DIR"
-              . optOptional
+          ( argument strParser
+              ( metavar "TEST_DIR"
+              . help "Some directory"
+              . envVar "TEST_DIR"
+              . optional
               )
           )
-          ( toOpt $ switch
-            & optLong "mock"
-            & optShort 'm'
-            & optHelp "Whether to mock"
-            & optEnvVar "MOCK"
+          ( switch
+              ( long "mock"
+              . short 'm'
+              . help "Whether to mock"
+              . envVar "MOCK"
+              )
           )
 
 type Config
@@ -176,20 +177,20 @@ data DBConfig
 dbConf :: Nested DBConfig Opt
 dbConf
   = nested @DBConfig
-      ( toOpt
-        $ option strParser
-        & optLong "db-user"
-        & optShort 'u'
-        & optHelp "Database user"
-        & optEnvVar "DB_USER"
+      ( option strParser
+          ( long "db-user"
+          . short 'u'
+          . help "Database user"
+          . envVar "DB_USER"
+          )
       )
-      ( toOpt
-        $ option readParser
-        & optLong "db-port"
-        & optShort 'p'
-        & optHelp "Database port"
-        & optEnvVar "DB_PORT"
-        & optDefault 5432
+      ( option readParser
+          ( long "db-port"
+          . short 'p'
+          . help "Database port"
+          . envVar "DB_PORT"
+          . defaultVal 5432
+          )
       )
 
 data ServiceConfig
@@ -202,17 +203,17 @@ data ServiceConfig
 srvConf :: Nested ServiceConfig Opt
 srvConf
   = nested @ServiceConfig
-      ( toOpt
-        $ option readParser
-        & optLong "port"
-        & optHelp "Web service port"
-        & optDefaultStr "25000"
+      ( option readParser
+          ( long "port"
+          . help "Web service port"
+          . defaultStr "25000"
+          )
       )
-      ( toOpt
-        $ switch
-        & optLong "log"
-        & optHelp "Whether to log"
-        & optEnvVar "LOG"
+      ( switch
+          ( long "log"
+          . help "Whether to log"
+          . envVar "LOG"
+          )
       )
 
 data TestConfig
