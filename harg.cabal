@@ -1,7 +1,7 @@
 cabal-version: 2.2
 
 name:           harg
-version:        0.3.0.0
+version:        0.4.0.0
 synopsis:       Haskell program configuration using higher kinded data
 description:    Please see the README on GitHub at <https://github.com/alexpeits/harg#readme>
 homepage:       https://github.com/alexpeits/harg

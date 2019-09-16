@@ -1,5 +1,9 @@
 # Changelog for harg
 
+## 0.4.0.0 [2019.09.16]
+
+- Fix wrong name in previous release (`HasDefaultValStr` -> `HasDefaultStr`)
+
 ## 0.3.0.0 [2019.09.16]
 
 - Remove `*With` variants of option constructors and make the `*With` variant behaviour the default

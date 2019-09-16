@@ -87,7 +87,7 @@ instance HasDefaultVal OptionOpt a where
 instance HasDefaultVal ArgumentOpt a where
   defaultVal a o = o { _aDefaultVal = Just a }
 
-class HasDefaultValStr o (attr :: [OptAttr]) where
+class HasDefaultStr o (attr :: [OptAttr]) where
   -- | Add a default unparsed value to an option. Cannot be used in conjuction
   -- with 'defaultVal', 'required' or 'optional'.
   defaultStr
@@ -96,10 +96,10 @@ class HasDefaultValStr o (attr :: [OptAttr]) where
        )
     => String -> o attr a -> o (OptDefault ': attr) a
 
-instance HasDefaultValStr OptionOpt a where
+instance HasDefaultStr OptionOpt a where
   defaultStr s o = o { _oDefaultStr = Just s }
 
-instance HasDefaultValStr ArgumentOpt a where
+instance HasDefaultStr ArgumentOpt a where
   defaultStr s o = o { _aDefaultStr = Just s }
 
 class HasRequired o (attr :: [OptAttr]) where
@@ -118,7 +118,7 @@ instance HasRequired ArgumentOpt a where
   required o = o { _aDefaultVal = Nothing }
 
 -- | Class for options that can be optional. Cannot be used in conjunction with
--- 'HasDefaultVal', 'HasDefaultValStr' or 'HasRequired'. Note that this will turn a
+-- 'HasDefaultVal', 'HasDefaultStr' or 'HasRequired'. Note that this will turn a
 -- parser for @a@ into a parser for @Maybe a@, modifying the reader function
 -- appropriately.
 -- For example:
