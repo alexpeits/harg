@@ -71,8 +71,8 @@ instance RunSource () a where
 --     where
 --       jsonOpt
 --         = optionWith strParser
---             ( optLong "json-config"
---             . optDefault (ConfigFile "~/config.json")
+--             ( long "json-config"
+--             . defaultVal (ConfigFile "~/config.json")
 --             )
 -- @
 --
@@ -84,8 +84,8 @@ instance RunSource () a where
 --     where
 --       jsonOpt
 --         = optionWith strParser
---             ( optLong "json-config"
---             . optDefault NoConfigFile
+--             ( long "json-config"
+--             . defaultVal NoConfigFile
 --             )
 -- @
 --

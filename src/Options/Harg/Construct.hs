@@ -221,8 +221,8 @@ instance IsOpt ArgumentOpt attr where
 --   someOption :: Opt Int
 --   someOption
 --     = option readParser
---         ( optLong "someopt"
---         . optHelp "Some option"
+--         ( long "someopt"
+--         . help "Some option"
 --         . defaultVal 256
 --         )
 -- @
@@ -255,8 +255,8 @@ option p f
 --   someFlag :: Opt Int
 --   someFlag
 --     = flag 0 1
---         ( optLong "someflag"
---         . optHelp "Some flag"
+--         ( long "someflag"
+--         . help "Some flag"
 --         )
 -- @
 flag
@@ -287,8 +287,8 @@ flag d active f
 --   someSwitch :: Opt Bool
 --   someSwitch
 --     = switch
---         ( optLong "someswitch"
---         . optHelp "Some switch"
+--         ( long "someswitch"
+--         . help "Some switch"
 --         )
 -- @
 switch
@@ -319,7 +319,7 @@ switch' f
 --   someArgument :: Opt Int
 --   someArgument
 --     = argument
---         ( optHelp "Some argument"
+--         ( help "Some argument"
 --         . defaultVal "this is the default"
 --         )
 -- @
