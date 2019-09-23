@@ -32,7 +32,8 @@ let
   shell = nixpkgs.mkShell {
     inputsFrom = [ harg.env ];
     shellHook = ''
-      alias ghcid="ghcid --command='cabal new-repl'"
+      alias ghcid-orig="$(which ghcid)"
+      alias ghcid="ghcid -a --command='cabal new-repl'"
     '';
     buildInputs = [
       haskellPackages.cabal-install
