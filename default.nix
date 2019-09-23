@@ -33,7 +33,7 @@ let
     inputsFrom = [ harg.env ];
     shellHook = ''
       alias ghcid-orig="$(which ghcid)"
-      alias ghcid="ghcid -a --command='cabal new-repl'"
+      alias ghcid="ghcid -a --command='cabal new-repl' --restart=harg.cabal"
     '';
     buildInputs = [
       haskellPackages.cabal-install
