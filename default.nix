@@ -1,10 +1,7 @@
 { pkgs ? import <nixpkgs> {}
 , compiler ? "ghc865"
-, inNixShell ? pkgs.lib.inNixShell
 }:
-
 let
-
   nixpkgs-pinned = pkgs.fetchgit {
     url = "https://github.com/NixOS/nixpkgs.git";
     rev = "f5cb9bd30327caf0091cae1dfd31a4338b81e986";
@@ -45,4 +42,4 @@ let
 
 in
 
-if inNixShell then shell else harg
+if nixpkgs.lib.inNixShell then shell else harg
