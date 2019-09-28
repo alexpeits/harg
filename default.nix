@@ -1,9 +1,17 @@
-{ pkgs ? import ./nix/nixpkgs.nix {} }:
+# to see ghc versions:
+# nix-instantiate --eval -E "with import <nixpkgs> {}; lib.attrNames haskell.compiler"
+{ pkgs ? import ./nix/nixpkgs.nix {}
+, compiler ? null
+}:
 
 let
 
-  harg = pkgs.haskellPackages.callPackage ./nix/harg.nix {
-    higgledy = pkgs.haskellPackages.callPackage ./nix/higgledy.nix {};
+  haskellPackages = if isNull compiler
+                    then pkgs.haskellPackages
+                    else pkgs.haskell.packages.${compiler};
+
+  harg = haskellPackages.callPackage ./nix/harg.nix {
+    higgledy = haskellPackages.callPackage ./nix/higgledy.nix {};
   };
 
   shell = pkgs.mkShell {
@@ -13,9 +21,9 @@ let
       alias ghcid="ghcid -a --command='cabal new-repl' --restart=harg.cabal"
     '';
     buildInputs = [
-      pkgs.haskellPackages.ghc
-      pkgs.haskellPackages.cabal-install
-      pkgs.haskellPackages.ghcid
+      haskellPackages.ghc
+      haskellPackages.cabal-install
+      haskellPackages.ghcid
     ];
   };
 
