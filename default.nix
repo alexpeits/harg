@@ -1,5 +1,5 @@
 # to see ghc versions:
-# nix-instantiate --eval -E "with import <nixpkgs> {}; lib.attrNames haskell.compiler"
+# nix-instantiate --eval -E "with import ./nix/nixpkgs.nix {}; lib.attrNames haskell.compiler"
 { pkgs ? import ./nix/nixpkgs.nix { }, compiler ? null }:
 
 let
