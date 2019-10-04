@@ -52,6 +52,6 @@ runDefaultStrSource
       where
         tryParse
           = either
-              (OptFoundNoParse . toOptError opt (Just "DefaultStrSource"))
+              (OptFoundNoParse . toOptError opt "DefaultStrSource")
               OptParsed
           . _optReader

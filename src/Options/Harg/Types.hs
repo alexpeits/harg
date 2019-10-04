@@ -78,9 +78,9 @@ data ArgumentOpt (attr :: [OptAttr]) a
 -- by @optparse-applicative@.
 data OptError
   = OptError
-      { _oeOpt    :: SomeOpt       -- ^ Existentially quantified 'Opt'
-      , _oeSource :: Maybe String  -- ^ Source name
-      , _oeDesc   :: String        -- ^ Error description
+      { _oeOpt    :: SomeOpt -- ^ Existentially quantified 'Opt'
+      , _oeSource :: String  -- ^ Source name
+      , _oeDesc   :: String  -- ^ Error description
       }
 
 -- | Existential wrapper for 'Opt', so that many options can be carried in
@@ -122,7 +122,7 @@ pureCtx
 
 toOptError
   :: Opt a
-  -> Maybe String
+  -> String
   -> String
   -> OptError
 toOptError

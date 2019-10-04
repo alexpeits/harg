@@ -33,10 +33,10 @@ ppOptErrors
       <> ppEnvVar (_optEnvVar opt)
 
 ppSource
-  :: Maybe String
+  :: String
   -> String
-ppSource
-  = maybe "" $ \s -> " (source: " <> s <> ")"
+ppSource s
+  = " (source: " <> s <> ")"
 
 ppEnvVar
   :: Maybe String

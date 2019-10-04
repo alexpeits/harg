@@ -71,4 +71,4 @@ runYAMLSource yaml opt
       -> Compose SourceRunResult f x
     toFailure exc (Compose o)
       = Compose
-        $ OptFoundNoParse (toOptError o (Just "YAMLSource") (displayException exc))
+        $ OptFoundNoParse (toOptError o "YAMLSource" (displayException exc))
