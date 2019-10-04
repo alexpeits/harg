@@ -5,7 +5,7 @@ module Options.Harg.Sources.Types where
 
 import Data.Functor.Compose  (Compose (..))
 import Data.Kind             (Type)
-import           Data.String (IsString(..))
+import Data.String           (IsString(..))
 
 import Options.Harg.Het.Prod
 import Options.Harg.Types
@@ -17,6 +17,13 @@ data SourceRunResult a
   | OptFoundNoParse OptError  -- ^ Option cannot be parsed from source
   | OptParsed a  -- ^ Successful parsing
   deriving Functor
+
+data SourceRunError
+  = SourceRunError
+      { _sreOpt        :: Maybe SomeOpt
+      , _sreSourceName :: String
+      , _sreError      :: String
+      }
 
 -- | This class enables a type that describes a source to fetch
 -- the source contents, potentially producing side effects (e.g. reading
@@ -45,7 +52,7 @@ class RunSource s a where
     :: Applicative f
     => s
     -> a (Compose Opt f)
-    -> [a (Compose SourceRunResult f)]
+    -> [Either SourceRunError (a (Compose SourceRunResult f))]
 
 instance
     ( RunSource l a

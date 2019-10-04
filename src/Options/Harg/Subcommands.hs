@@ -60,7 +60,7 @@ class Subcommands
        )
     => s
     -> AssocListF ts xs (Compose Opt f)
-    -> ([OptError], [Optparse.Mod Optparse.CommandFields (VariantF xs f)])
+    -> ([SourceRunError], [Optparse.Mod Optparse.CommandFields (VariantF xs f)])
 
 instance ExplSubcommands Z ts xs '[] => Subcommands ts xs where
   mapSubcommand = explMapSubcommand @Z @ts @xs @'[] SZ
@@ -79,7 +79,7 @@ class ExplSubcommands
     => SNat n
     -> s
     -> AssocListF ts xs (Compose Opt f)
-    -> ([OptError], [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)])
+    -> ([SourceRunError], [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)])
 
 instance ExplSubcommands n '[] '[] acc where
   explMapSubcommand _ _ _ = ([], [])

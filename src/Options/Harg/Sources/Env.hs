@@ -47,9 +47,9 @@ runEnvVarSource
      )
   => Environment
   -> a (Compose Opt f)
-  -> a (Compose SourceRunResult f)
+  -> Either SourceRunError (a (Compose SourceRunResult f))
 runEnvVarSource env
-  = B.bmap go
+  = Right . B.bmap go
   where
     go :: Compose Opt f x -> Compose SourceRunResult f x
     go (Compose opt@Opt{..})

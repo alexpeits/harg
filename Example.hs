@@ -37,18 +37,19 @@ yamlOpt
       ( long "yaml-config"
       . short 'y'
       . help "YAML config"
+      . defaultVal NoConfigFile
       )
 
 type SourceOpt
-  =  EnvSource
-  :* JSONSource
+  =  JSONSource
   :* YAMLSource
+  :* EnvSource
 
 srcOpt :: SourceOpt Opt
 srcOpt
-  =  EnvSource
-  :* JSONSource jsonOpt
+  =  JSONSource jsonOpt
   :* YAMLSource yamlOpt
+  :* EnvSource
 
 mainSubparser :: IO ()
 mainSubparser = do

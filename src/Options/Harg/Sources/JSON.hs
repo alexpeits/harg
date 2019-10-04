@@ -56,11 +56,11 @@ runJSONSource
      )
   => JSON.Value
   -> a (Compose Opt f)
-  -> a (Compose SourceRunResult f)
-runJSONSource json opt
+  -> Either SourceRunError (a (Compose SourceRunResult f))
+runJSONSource json _opt
   = case res of
-      JSON.Success v -> B.bmap toSuccess v
-      JSON.Error _e  -> B.bmap toFailure opt
+      JSON.Success v -> Right $ B.bmap toSuccess v
+      JSON.Error err -> Left $ toError err
   where
     res :: JSON.Result (a Maybe)
     res
@@ -68,6 +68,6 @@ runJSONSource json opt
     toSuccess :: Maybe x -> Compose SourceRunResult f x
     toSuccess mx
       = Compose $ pure <$> maybe OptNotFound OptParsed mx
-    toFailure :: Compose Opt f x -> Compose SourceRunResult f x
-    toFailure _
-      = Compose $ pure <$> OptNotFound
+    toError :: String -> SourceRunError
+    toError
+      = SourceRunError Nothing "JSONSource"

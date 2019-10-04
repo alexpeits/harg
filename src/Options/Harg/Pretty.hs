@@ -4,6 +4,7 @@ import Data.List          (intercalate, nubBy)
 import Data.Maybe         (fromMaybe)
 
 import Options.Harg.Types
+import Options.Harg.Sources.Types
 
 
 ppHelp
@@ -24,6 +25,29 @@ ppOptErrors
       =  _optLong l == _optLong r && sl == sr && dl == dr
     ppOptError :: OptError -> String
     ppOptError (OptError (SomeOpt opt) src desc)
+      =  "option "
+      <> fromMaybe "<no opt name>" (_optLong opt)
+      <> ": "
+      <> desc
+      <> "\n\t"
+      <> ppSource src
+      <> ppEnvVar (_optEnvVar opt)
+
+ppSourceRunErrors
+  :: [SourceRunError]
+  -> String
+ppSourceRunErrors
+  = intercalate "\n\n"
+  . map ppSourceRunError
+  where
+    ppSourceRunError :: SourceRunError -> String
+    ppSourceRunError (SourceRunError Nothing src desc)
+      =  "error: "
+      <> desc
+      <> "\n\t"
+      <> ppSource src
+
+    ppSourceRunError (SourceRunError (Just (SomeOpt opt)) src desc)
       =  "option "
       <> fromMaybe "<no opt name>" (_optLong opt)
       <> ": "
