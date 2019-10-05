@@ -28,8 +28,6 @@ let
       alias ghcid="ghcid -a --command='cabal new-repl' --restart=harg.cabal"
     '';
     buildInputs = [
-      haskellPackages.ghc
-      haskellPackages.cabal-install
       haskellPackages.ghcid
     ];
   };

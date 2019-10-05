@@ -1,5 +1,8 @@
 .PHONY: ghcid
 
+cabal-configure:
+	nix-shell --command 'cabal new-configure -w $$(which ghc)'
+
 ghcid:
 	ghcid -a --command="stack ghci -- src/**/*.hs Example.hs"
 
