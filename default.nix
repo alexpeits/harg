@@ -4,6 +4,8 @@
 
 let
 
+  inShell = pkgs.lib.inNixShell;
+
   haskellPackagesNoHoogle = if isNull compiler then
     pkgs.haskellPackages
   else
@@ -16,8 +18,10 @@ let
     });
   };
 
-  haskellPackages =
-    if withHoogle then haskellPackagesWithHoogle else haskellPackagesNoHoogle;
+  haskellPackages = if (inShell && withHoogle) then
+    haskellPackagesWithHoogle
+  else
+    haskellPackagesNoHoogle;
 
   higgledy-src = pkgs.fetchFromGitHub {
     owner = "i-am-tom";
@@ -40,4 +44,4 @@ let
     buildInputs = [ haskellPackages.ghcid ];
   };
 
-in if pkgs.lib.inNixShell then shell else harg
+in if inShell then shell else harg
