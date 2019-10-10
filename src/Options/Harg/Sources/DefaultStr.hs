@@ -28,30 +28,35 @@ instance GetSource DefaultStrSource f where
     = pure DefaultStrSourceVal
 
 instance
-    B.FunctorB a => RunSource DefaultStrSourceVal a where
+    ( B.FunctorB a
+    , B.TraversableB a
+    ) => RunSource DefaultStrSourceVal a where
   runSource DefaultStrSourceVal opt
     = [runDefaultStrSource opt]
 
+-- TODO: this looks very similar to EnvSource, perhaps unify
 runDefaultStrSource
   :: forall a f.
      ( B.FunctorB a
+     , B.TraversableB a
      , Applicative f
      )
   => a (Compose Opt f)
   -> Either SourceRunError (a (Compose SourceRunResult f))
 runDefaultStrSource
-  = Right . B.bmap go
+  = B.btraverse go
   where
-    go :: Compose Opt f x -> Compose SourceRunResult f x
+    go
+      :: Compose Opt f x
+      -> Either SourceRunError (Compose SourceRunResult f x)
     go (Compose opt@Opt{..})
-      = case _optDefaultStr of
-          Nothing
-            -> Compose $ pure <$> OptNotFound
-          Just str
-            -> Compose $ tryParse str
+      = maybe toNotFound parse _optDefaultStr
       where
-        tryParse
-          = either
-              (OptFoundNoParse . toOptError opt "DefaultStrSource")
-              OptParsed
-          . _optReader
+        parse
+          = either toErr toParsed . _optReader
+        toNotFound
+          = Right $ Compose $ pure <$> OptNotFound
+        toErr
+          = Left . SourceRunError (Just (SomeOpt opt)) "DefaultStrSource"
+        toParsed
+          = Right . Compose . OptParsed

@@ -14,7 +14,6 @@ import Options.Harg.Types
 -- | Holds errors that occur when running a source.
 data SourceRunResult a
   = OptNotFound  -- ^ Source doesn't include the option
-  | OptFoundNoParse OptError  -- ^ Option cannot be parsed from source
   | OptParsed a  -- ^ Successful parsing
   deriving Functor
 

@@ -8,7 +8,6 @@ import qualified Data.Barbie                as B
 import           Options.Harg.Sources.DefaultStr
 import           Options.Harg.Sources.Env
 import           Options.Harg.Sources.Types
-import           Options.Harg.Types
 
 
 -- | Accumulate all the successful source results and return them,
@@ -27,7 +26,7 @@ accumSourceResults
       -> ([SourceRunError], [a (Compose Maybe f)])
     accumResult res (e, a)
       = case res of
-          Left sre -> ([sre] <> e, a)
+          Left sre -> (sre : e, a)
           Right res' ->
             case B.btraverse go res' of
               (e', a') -> (e' <> e, a' : a)
@@ -36,9 +35,10 @@ accumSourceResults
       -> ([SourceRunError], Compose Maybe f x)
     go x
       = case getCompose x of
-          OptFoundNoParse (OptError o src desc) -> ([SourceRunError (Just o) src desc], Compose Nothing)
-          OptParsed a       -> ([], Compose (Just a))
-          _                 -> ([], Compose Nothing)
+          OptParsed a
+            -> ([], Compose (Just a))
+          OptNotFound
+            -> ([], Compose Nothing)
 
 type HiddenSources = DefaultStrSource
 
