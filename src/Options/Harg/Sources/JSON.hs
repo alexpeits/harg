@@ -7,6 +7,7 @@ module Options.Harg.Sources.JSON where
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Functor.Identity      (Identity(..))
 import           GHC.Generics               (Generic)
+import qualified Data.ByteString.Lazy       as LBS
 
 import qualified Data.Aeson                 as JSON
 import qualified Data.Barbie                as B
@@ -23,19 +24,13 @@ newtype JSONSource f = JSONSource (f ConfigFile)
 -- the user has specified @defaultVal NoConfigFile@. It holds the contents of
 -- the JSON file as a 'JSON.Value'.
 data JSONSourceVal
-  = JSONSourceVal JSON.Value
+  = JSONSourceVal LBS.ByteString
   | JSONSourceNotRequired
 
 instance GetSource JSONSource Identity where
   type SourceVal JSONSource = JSONSourceVal
-  getSource _ctx (JSONSource (Identity (ConfigFile path))) = do
-    contents <- readFileLBS path
-    case JSON.eitherDecode contents of
-      Right json
-        -> pure $ JSONSourceVal json
-      Left err
-        -> printErrAndExit
-            $ "Error decoding " <> path <> " to JSON: " <> err
+  getSource _ctx (JSONSource (Identity (ConfigFile path)))
+    = JSONSourceVal <$> readFileLBS path
   getSource _ctx (JSONSource (Identity NoConfigFile))
     = pure JSONSourceNotRequired
 
@@ -54,20 +49,22 @@ runJSONSource
      , JSON.FromJSON (a Maybe)
      , Applicative f
      )
-  => JSON.Value
+  => LBS.ByteString
   -> a (Compose Opt f)
   -> Either SourceRunError (a (Compose SourceRunResult f))
 runJSONSource json _opt
   = case res of
-      JSON.Success v -> Right $ B.bmap toSuccess v
-      JSON.Error err -> Left $ toError err
+      Right v  -> Right $ B.bmap toSuccess v
+      Left exc -> Left $ toError exc
   where
-    res :: JSON.Result (a Maybe)
+    res :: Either String (a Maybe)
     res
-      = JSON.fromJSON json
+      = JSON.eitherDecode json
+
     toSuccess :: Maybe x -> Compose SourceRunResult f x
     toSuccess mx
       = Compose $ pure <$> maybe OptNotFound OptParsed mx
+
     toError :: String -> SourceRunError
     toError
       = SourceRunError Nothing "JSONSource"
