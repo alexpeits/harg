@@ -58,9 +58,9 @@ runEnvVarSource env
       :: Compose Opt f x
       -> Either SourceRunError (Compose SourceRunResult f x)
     go (Compose opt@Opt{..})
-      = maybe toNotFound (maybeParse . lookupEnv env) _optEnvVar
+      = maybe toNotFound (parse . lookupEnv env) _optEnvVar
       where
-        maybeParse
+        parse
           = maybe toNotFound (either toErr toParsed . _optReader)
         toNotFound
           = Right $ Compose $ pure <$> OptNotFound

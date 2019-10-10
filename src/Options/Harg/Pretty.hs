@@ -1,5 +1,6 @@
 module Options.Harg.Pretty where
 
+import Control.Applicative        ((<|>))
 import Data.List                  (intercalate)
 import Data.Maybe                 (fromMaybe)
 
@@ -29,12 +30,16 @@ ppSourceRunErrors
 
     ppSourceRunError (SourceRunError (Just (SomeOpt opt)) src desc)
       =  "option "
-      <> fromMaybe "<no opt name>" (_optLong opt)
+      <> optId opt
       <> ": "
       <> desc
       <> "\n\t"
       <> ppSource src
       <> ppEnvVar (_optEnvVar opt)
+
+    optId Opt{..}
+      = fromMaybe "<no name available>"
+        $ _optLong <|> (pure <$> _optShort) <|> _optMetavar
 
 ppSource
   :: String
