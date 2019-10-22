@@ -1,7 +1,9 @@
 .PHONY: ghcid
 
+NIV_VERSION?=nixos-stable
+
 cabal-configure:
-	nix-shell --command 'cabal new-configure -w $$(which ghc)'
+	nix-shell --argstr pkgs ${NIV_VERSION} --command 'cabal new-configure -w $$(which ghc)'
 
 ghcid:
 	ghcid -a --command="stack ghci -- src/**/*.hs Example.hs"
@@ -14,3 +16,7 @@ haddock:
 
 haddock-hackage:
 	cabal new-haddock --haddock-options="--show-all --hyperlinked-source" --haddock-for-hackage
+
+list-ghcs:
+	nix-instantiate --eval -E "with import (import ./nix/sources.nix).${NIV_VERSION} {}; lib.attrNames haskell.compiler"
+
