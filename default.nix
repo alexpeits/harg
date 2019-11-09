@@ -39,8 +39,8 @@ let
     sha256 = "1vg9ha3knggyh5a76678y808c29v9p1mai9bq355q7amy0icy46j";
   };
 
-  harg = nixpkgs.haskellPackages.callCabal2nix "harg" harg-src {
-    higgledy = nixpkgs.haskellPackages.callCabal2nix "higgledy" higgledy-src { };
+  harg = haskellPackages.callCabal2nix "harg" harg-src {
+    higgledy = haskellPackages.callCabal2nix "higgledy" higgledy-src { };
   };
 
   shell = nixpkgs.mkShell {
