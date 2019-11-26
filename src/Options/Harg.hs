@@ -81,6 +81,7 @@ module Options.Harg
   , B.FunctorB
   , B.TraversableB
   , B.ProductB
+  , B.Rec (..)
 
   -- *** higgledy
   , HKD.HKD
