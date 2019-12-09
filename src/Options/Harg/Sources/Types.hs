@@ -24,9 +24,18 @@ data SourceRunError
       , _sreError      :: String
       }
 
--- | This class enables a type that describes a source to fetch
--- the source contents, potentially producing side effects (e.g. reading
--- a file).
+-- | Create a 'SourceRunError' by existentially wrapping an option in 'SomeOpt'.
+sourceRunError
+  :: forall a.
+     Opt a
+  -> String
+  -> String
+  -> SourceRunError
+sourceRunError
+  = SourceRunError . Just . SomeOpt
+
+-- | This class enables a type that describes a source to fetch the source
+-- contents, potentially producing side effects (e.g. reading a file).
 class GetSource
     (c :: (Type -> Type) -> Type)
     (f :: (Type -> Type)) where

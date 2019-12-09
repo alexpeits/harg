@@ -57,6 +57,6 @@ runDefaultStrSource
         toNotFound
           = Right $ Compose $ pure <$> OptNotFound
         toErr
-          = Left . SourceRunError (Just (SomeOpt opt)) "DefaultStrSource"
+          = Left . sourceRunError opt "DefaultStrSource"
         toParsed
           = Right . Compose . OptParsed

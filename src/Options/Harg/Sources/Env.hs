@@ -65,6 +65,6 @@ runEnvVarSource env
         toNotFound
           = Right $ Compose $ pure <$> OptNotFound
         toErr
-          = Left . SourceRunError (Just (SomeOpt opt)) "EnvSource"
+          = Left . sourceRunError opt "EnvSource"
         toParsed
           = Right . Compose . OptParsed
