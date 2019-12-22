@@ -1,8 +1,10 @@
 module Options.Harg.Pretty where
 
-import Data.List          (intercalate, nubBy)
-import Data.Maybe         (fromMaybe)
+import Control.Applicative        ((<|>))
+import Data.List                  (intercalate)
+import Data.Maybe                 (fromMaybe)
 
+import Options.Harg.Sources.Types
 import Options.Harg.Types
 
 
@@ -12,31 +14,38 @@ ppHelp
 ppHelp Opt{..}
   = (<> ppEnvVar _optEnvVar) <$> _optHelp
 
-ppOptErrors
-  :: [OptError]
+ppSourceRunErrors
+  :: [SourceRunError]
   -> String
-ppOptErrors
+ppSourceRunErrors
   = intercalate "\n\n"
-  . map ppOptError
-  . nubBy cmpOptErr
+  . map ppSourceRunError
   where
-    cmpOptErr (OptError (SomeOpt l) sl dl) (OptError (SomeOpt r) sr dr)
-      =  _optLong l == _optLong r && sl == sr && dl == dr
-    ppOptError :: OptError -> String
-    ppOptError (OptError (SomeOpt opt) src desc)
+    ppSourceRunError :: SourceRunError -> String
+    ppSourceRunError (SourceRunError Nothing src desc)
+      =  "error: "
+      <> desc
+      <> "\n\t"
+      <> ppSource src
+
+    ppSourceRunError (SourceRunError (Just (SomeOpt opt)) src desc)
       =  "option "
-      <> fromMaybe "<no opt name>" (_optLong opt)
+      <> optId opt
       <> ": "
       <> desc
       <> "\n\t"
       <> ppSource src
       <> ppEnvVar (_optEnvVar opt)
 
+    optId Opt{..}
+      = fromMaybe "<no name available>"
+        $ _optLong <|> (pure <$> _optShort) <|> _optMetavar
+
 ppSource
-  :: Maybe String
+  :: String
   -> String
-ppSource
-  = maybe "" $ \s -> " (source: " <> s <> ")"
+ppSource s
+  = " (source: " <> s <> ")"
 
 ppEnvVar
   :: Maybe String

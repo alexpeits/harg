@@ -344,8 +344,7 @@ argument p f
 -- with the default 'Left' value @unable to parse: \<input\>@.
 parseWith
   :: (String -> Maybe a)  -- ^ Original parser
-  -> String  -- ^ Input
-  -> Either String a
+  -> (String -> Either String a)
 parseWith parser s
   = maybe (Left err) Right (parser s)
   where

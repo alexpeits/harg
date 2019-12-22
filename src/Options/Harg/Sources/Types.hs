@@ -5,7 +5,7 @@ module Options.Harg.Sources.Types where
 
 import Data.Functor.Compose  (Compose (..))
 import Data.Kind             (Type)
-import           Data.String (IsString(..))
+import Data.String           (IsString(..))
 
 import Options.Harg.Het.Prod
 import Options.Harg.Types
@@ -14,13 +14,28 @@ import Options.Harg.Types
 -- | Holds errors that occur when running a source.
 data SourceRunResult a
   = OptNotFound  -- ^ Source doesn't include the option
-  | OptFoundNoParse OptError  -- ^ Option cannot be parsed from source
   | OptParsed a  -- ^ Successful parsing
   deriving Functor
 
--- | This class enables a type that describes a source to fetch
--- the source contents, potentially producing side effects (e.g. reading
--- a file).
+data SourceRunError
+  = SourceRunError
+      { _sreOpt        :: Maybe SomeOpt
+      , _sreSourceName :: String
+      , _sreError      :: String
+      }
+
+-- | Create a 'SourceRunError' by existentially wrapping an option in 'SomeOpt'.
+sourceRunError
+  :: forall a.
+     Opt a
+  -> String
+  -> String
+  -> SourceRunError
+sourceRunError
+  = SourceRunError . Just . SomeOpt
+
+-- | This class enables a type that describes a source to fetch the source
+-- contents, potentially producing side effects (e.g. reading a file).
 class GetSource
     (c :: (Type -> Type) -> Type)
     (f :: (Type -> Type)) where
@@ -45,7 +60,7 @@ class RunSource s a where
     :: Applicative f
     => s
     -> a (Compose Opt f)
-    -> [a (Compose SourceRunResult f)]
+    -> [Either SourceRunError (a (Compose SourceRunResult f))]
 
 instance
     ( RunSource l a

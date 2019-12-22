@@ -72,17 +72,6 @@ data ArgumentOpt (attr :: [OptAttr]) a
       , _aReader     :: OptReader a
       }
 
--- | Datatype that holds errors that arise when running the sources.
--- The reason why this is the only place where errors occur is that,
--- if something goes wrong when running the parser, it will be handled
--- by @optparse-applicative@.
-data OptError
-  = OptError
-      { _oeOpt    :: SomeOpt       -- ^ Existentially quantified 'Opt'
-      , _oeSource :: Maybe String  -- ^ Source name
-      , _oeDesc   :: String        -- ^ Error description
-      }
-
 -- | Existential wrapper for 'Opt', so that many options can be carried in
 -- a list.
 data SomeOpt where
@@ -119,11 +108,3 @@ ctxFromEnv env
 pureCtx :: Environment -> Args -> HargCtx
 pureCtx
   = HargCtx
-
-toOptError
-  :: Opt a
-  -> Maybe String
-  -> String
-  -> OptError
-toOptError
-  = OptError . SomeOpt

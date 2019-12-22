@@ -17,14 +17,14 @@ import           Options.Harg.Het.All            (All)
 import           Options.Harg.Het.HList          (AssocListF, MapAssocList(..))
 import           Options.Harg.Het.Prod           ((:*)(..))
 import           Options.Harg.Het.Variant        (VariantF)
-import           Options.Harg.Pretty             (ppOptErrors)
+import           Options.Harg.Pretty             (ppSourceRunErrors)
 import           Options.Harg.Sources            ( accumSourceResults
                                                  , DefaultSources, defaultSources
                                                  , HiddenSources, hiddenSources
                                                  )
-import           Options.Harg.Sources.Types      (GetSource(..), RunSource(..))
+import           Options.Harg.Sources.Types      (GetSource(..), RunSource(..), SourceRunError)
 import           Options.Harg.Subcommands        (Subcommands(..))
-import           Options.Harg.Types              (HargCtx(..), getCtx, Opt, OptError)
+import           Options.Harg.Types              (HargCtx(..), getCtx, Opt)
 import           Options.Harg.Util               (toDummyOpts, allToDummyOpts, compose)
 
 -- | Run the option parser and combine with values from the specified sources,
@@ -209,7 +209,7 @@ execParser HargCtx{..} parser
 
 failParser
   :: Optparse.Parser a
-  -> [OptError]
+  -> [SourceRunError]
   -> IO a
 failParser parser errs
   = Optparse.handleParseResult (Optparse.Failure failure)
@@ -223,7 +223,7 @@ failParser parser errs
     parserInfo
       = Optparse.info (Optparse.helper <*> parser) Optparse.forwardOptions
     errStr
-      = ppOptErrors errs
+      = ppSourceRunErrors errs
 
 -- | Run the optparse-applicative parser and return the
 -- 'Optparse.ParserResult'

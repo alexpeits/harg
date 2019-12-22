@@ -28,7 +28,9 @@ instance GetSource EnvSource f where
     = pure (EnvSourceVal _hcEnv)
 
 instance
-    B.FunctorB a => RunSource EnvSourceVal a where
+    ( B.FunctorB a
+    , B.TraversableB a
+    ) => RunSource EnvSourceVal a where
   runSource (EnvSourceVal e) opt
     = [runEnvVarSource e opt]
 
@@ -43,24 +45,26 @@ lookupEnv env x
 runEnvVarSource
   :: forall a f.
      ( B.FunctorB a
+     , B.TraversableB a
      , Applicative f
      )
   => Environment
   -> a (Compose Opt f)
-  -> a (Compose SourceRunResult f)
+  -> Either SourceRunError (a (Compose SourceRunResult f))
 runEnvVarSource env
-  = B.bmap go
+  = B.btraverse go
   where
-    go :: Compose Opt f x -> Compose SourceRunResult f x
+    go
+      :: Compose Opt f x
+      -> Either SourceRunError (Compose SourceRunResult f x)
     go (Compose opt@Opt{..})
-      = case _optEnvVar of
-          Nothing
-            -> Compose $ pure <$> OptNotFound
-          Just envVar
-            -> Compose $ maybe OptNotFound tryParse (lookupEnv env envVar)
+      = maybe toNotFound (parse . lookupEnv env) _optEnvVar
       where
-        tryParse
-          = either
-              (OptFoundNoParse . toOptError opt (Just "EnvSource"))
-              OptParsed
-          . _optReader
+        parse
+          = maybe toNotFound (either toErr toParsed . _optReader)
+        toNotFound
+          = Right $ Compose $ pure <$> OptNotFound
+        toErr
+          = Left . sourceRunError opt "EnvSource"
+        toParsed
+          = Right . Compose . OptParsed
