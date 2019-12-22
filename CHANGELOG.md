@@ -1,6 +1,6 @@
 # Changelog for harg
 
-## 0.5.0.0 [?]
+## 0.4.1.0 [?]
 
 - Parsers now stop immediately if a source error is encountered
 - Updated the JSON source to return a bytestring instead of an `aeson` `Value`
