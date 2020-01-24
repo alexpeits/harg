@@ -1,5 +1,5 @@
+{-# LANGUAGE PolyKinds    #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE PolyKinds #-}
 module Options.Harg.Het.All where
 
 import Data.Kind (Type, Constraint)

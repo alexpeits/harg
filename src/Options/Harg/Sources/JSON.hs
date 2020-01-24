@@ -4,10 +4,10 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Sources.JSON where
 
+import qualified Data.ByteString.Lazy       as LBS
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Functor.Identity      (Identity(..))
 import           GHC.Generics               (Generic)
-import qualified Data.ByteString.Lazy       as LBS
 
 import qualified Data.Aeson                 as JSON
 import qualified Data.Barbie                as B
