@@ -1,6 +1,8 @@
 {-# LANGUAGE AllowAmbiguousTypes  #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Options.Harg.Subcommands where
+module Options.Harg.Subcommands
+  ( Subcommands (..)
+  ) where
 
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Kind                  (Type)

@@ -1,4 +1,10 @@
-module Options.Harg.Sources where
+module Options.Harg.Sources
+  ( accumSourceResults
+  , HiddenSources
+  , hiddenSources
+  , DefaultSources
+  , defaultSources
+  ) where
 
 import           Data.Foldable                   (foldr')
 import           Data.Functor.Compose            (Compose (..))

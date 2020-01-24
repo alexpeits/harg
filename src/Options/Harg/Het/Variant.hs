@@ -3,7 +3,16 @@
 {-# LANGUAGE PatternSynonyms        #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE UndecidableInstances   #-}
-module Options.Harg.Het.Variant where
+module Options.Harg.Het.Variant
+  ( VariantF (..)
+  , fromVariantF
+  , InjectPosF (..)
+  , pattern In1
+  , pattern In2
+  , pattern In3
+  , pattern In4
+  , pattern In5
+  ) where
 
 import           Data.Kind            (Type)
 

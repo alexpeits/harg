@@ -5,7 +5,10 @@
 {-# LANGUAGE PolyKinds                  #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE UndecidableInstances       #-}
-module Options.Harg.Het.Prod where
+module Options.Harg.Het.Prod
+  ( (:*) (..)
+  , Tagged (..)
+  ) where
 
 import           Data.Functor.Identity (Identity)
 import           Data.Kind             (Type)

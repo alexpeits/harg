@@ -7,7 +7,12 @@
 {-# LANGUAGE UndecidableInstances       #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Options.Harg.Nested where
+module Options.Harg.Nested
+  ( Nested (..)
+  , nested
+  , getNested
+  , fromNested
+  ) where
 
 import           Data.Coerce           (Coercible, coerce)
 import           Data.Functor.Identity (Identity(..))

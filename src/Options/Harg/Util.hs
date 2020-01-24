@@ -1,5 +1,11 @@
 {-# LANGUAGE RankNTypes #-}
-module Options.Harg.Util where
+module Options.Harg.Util
+  ( toDummyOpts
+  , allToDummyOpts
+  , compose
+  , readFileBS
+  , readFileLBS
+  ) where
 
 import qualified Control.Exception          as Exc
 import qualified Data.ByteString            as BS

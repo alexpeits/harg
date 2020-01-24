@@ -1,4 +1,7 @@
-module Options.Harg.Config where
+module Options.Harg.Config
+  ( mkConfigParser
+  , getConfig
+  ) where
 
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Kind                  (Type)

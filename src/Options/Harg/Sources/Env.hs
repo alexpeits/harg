@@ -1,7 +1,10 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric  #-}
 {-# LANGUAGE TypeFamilies   #-}
-module Options.Harg.Sources.Env where
+module Options.Harg.Sources.Env
+  ( EnvSource (..)
+  , EnvSourceVal (..)
+  ) where
 
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Kind                  (Type)

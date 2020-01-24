@@ -1,4 +1,6 @@
-module Options.Harg.Cmdline where
+module Options.Harg.Cmdline
+  ( mkOptparseParser
+  ) where
 
 import           Control.Applicative  ((<|>))
 import           Data.Functor.Compose (Compose (..))

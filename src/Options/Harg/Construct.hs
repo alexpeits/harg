@@ -2,7 +2,27 @@
 {-# LANGUAGE TypeFamilies            #-}
 {-# LANGUAGE UndecidableInstances    #-}
 {-# LANGUAGE UndecidableSuperClasses #-}
-module Options.Harg.Construct where
+module Options.Harg.Construct
+  ( option
+  , flag
+  , switch
+  , switch'
+  , argument
+  , long
+  , short
+  , help
+  , metavar
+  , envVar
+  , defaultVal
+  , defaultStr
+  , required
+  , optional
+  , parseWith
+  , readParser
+  , strParser
+  , boolParser
+  , manyParser
+  ) where
 
 import Data.Char          (toLower)
 import Data.Kind          (Constraint)

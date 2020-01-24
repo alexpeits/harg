@@ -1,7 +1,9 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric  #-}
 {-# LANGUAGE TypeFamilies   #-}
-module Options.Harg.Sources.DefaultStr where
+module Options.Harg.Sources.DefaultStr
+  ( DefaultStrSource (..)
+  ) where
 
 import           Data.Functor.Compose       (Compose (..))
 import           Data.Kind                  (Type)

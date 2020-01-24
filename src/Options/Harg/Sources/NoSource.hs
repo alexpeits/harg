@@ -1,7 +1,10 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric  #-}
 {-# LANGUAGE TypeFamilies   #-}
-module Options.Harg.Sources.NoSource where
+module Options.Harg.Sources.NoSource
+  ( NoSource
+  , noSources
+  ) where
 
 import           Data.Kind                  (Type)
 import           GHC.Generics               (Generic)
