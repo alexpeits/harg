@@ -1,4 +1,4 @@
-# harg
+# harg :nut_and_bolt:
 
 [![Build Status](https://travis-ci.org/alexpeits/harg.svg?branch=master)](https://travis-ci.org/alexpeits/harg)
 [![Hackage](https://img.shields.io/hackage/v/harg.svg)](https://hackage.haskell.org/package/harg)
