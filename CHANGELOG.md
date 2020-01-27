@@ -1,5 +1,10 @@
 # Changelog for harg
 
+## 0.4.2.0 [2020.01.27]
+
+- Add explicit export and import lists
+- Some documentation fixes
+
 ## 0.4.1.0 [2019.12.22]
 
 - Parsers now stop immediately if a source error is encountered
