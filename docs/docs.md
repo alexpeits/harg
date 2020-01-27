@@ -1,25 +1,24 @@
 <!-- -*- tab-width: 2; -*- -->
 # harg
 
-[![Build Status](https://travis-ci.org/alexpeits/harg.svg?branch=master)](https://travis-ci.org/alexpeits/harg)
-[![Hackage](https://img.shields.io/hackage/v/harg.svg)](https://hackage.haskell.org/package/harg)
-
 `harg` is a library for configuring programs by scanning command line arguments,
 environment variables, default values and more. Under the hood, it uses a subset
 of [`optparse-applicative`](https://hackage.haskell.org/package/optparse-applicative)
 to expose regular arguments, switch arguments and subcommands. The library
 relies heavily on the use of higher kinded data (HKD) thanks to the
 [`barbies`](https://hackage.haskell.org/package/barbies) library. Using
-[`higgledy`](https://hackage.haskell.org/package/higgledy) also allows to have
-significantly less boilerplate code.
+[`higgledy`](https://hackage.haskell.org/package/higgledy) also helps reduce
+boilerplate code significantly.
 
 The main goal while developing `harg` was to not have to go through the usual
 pattern of manually `mappend`ing the results of command line parsing, env vars
 and defaults.
 
-# Usage
+This file is also a literate haskell file which is checked when tests are run,
+so all examples should compile and work, and be up to date with the latest
+version of the library.
 
-tl;dr: Take a look at the [example](https://github.com/alexpeits/harg/blob/master/Example.hs).
+# Usage
 
 Here are some different usage scenarios. Let's first enable some language
 extensions and add some imports:
@@ -798,15 +797,3 @@ There's a bit of a disconnect between `ConfigFile` and the ability to make
 optional options using `Maybe` and `optional`. The reason for it is that the
 type that `JSONSource` wraps is not polymorphic, since it needs to be a filepath
 specifically.
-
-# Roadmap
-
-- Better errors using `optparse-applicative`'s internals
-- Allow user to pass `optparse-applicative` preferences
-- Write tests
-
-# Credits
-
-- [jcpetruzza](https://github.com/jcpetruzza)
-- [i-am-tom](https://github.com/i-am-tom)
-- [jmackie](https://github.com/jmackie)
