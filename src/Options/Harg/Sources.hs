@@ -50,12 +50,10 @@ type HiddenSources = DefaultStrSource
 
 -- | Sources hidden from user that are always enabled
 hiddenSources :: HiddenSources f
-hiddenSources
-  = DefaultStrSource
+hiddenSources = DefaultStrSource
 
 type DefaultSources = EnvSource
 
 -- | Default sources, equivalent to 'EnvSource'
 defaultSources :: DefaultSources f
-defaultSources
-  = EnvSource
+defaultSources = EnvSource

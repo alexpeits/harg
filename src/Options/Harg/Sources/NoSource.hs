@@ -24,5 +24,4 @@ instance GetSource NoSource f where
 
 -- | Shorthand for writing 'NoSource'.
 noSources :: NoSource f
-noSources
-  = NoSource
+noSources = NoSource
