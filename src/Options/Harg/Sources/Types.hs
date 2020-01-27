@@ -10,11 +10,11 @@ module Options.Harg.Sources.Types
   , sourceRunError
   ) where
 
-import Data.Functor.Compose  (Compose (..))
+import Data.Functor.Compose  (Compose(..))
 import Data.Kind             (Type)
 import Data.String           (IsString(..))
 
-import Options.Harg.Het.Prod
+import Options.Harg.Het.Prod ((:*)(..))
 import Options.Harg.Types
 
 

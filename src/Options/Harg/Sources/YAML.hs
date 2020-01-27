@@ -17,7 +17,7 @@ import qualified Data.Yaml                  as YAML
 
 import           Options.Harg.Sources.Types
 import           Options.Harg.Types
-import           Options.Harg.Util
+import           Options.Harg.Util          (readFileBS)
 
 
 -- | Source that enables a parser to read options from a YAML file.

@@ -15,7 +15,6 @@ import           Data.Kind             (Type)
 import           GHC.Generics          (Generic)
 
 import qualified Data.Aeson            as JSON
-
 import qualified Data.Barbie           as B
 
 

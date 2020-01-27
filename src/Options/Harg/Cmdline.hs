@@ -10,7 +10,7 @@ import           Data.Maybe           (fromMaybe)
 import qualified Data.Barbie          as B
 import qualified Options.Applicative  as Optparse
 
-import           Options.Harg.Pretty
+import           Options.Harg.Pretty  (ppHelp)
 import           Options.Harg.Types
 
 

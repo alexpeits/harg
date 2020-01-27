@@ -12,13 +12,13 @@ import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
 import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
 
-import           Options.Harg.Cmdline
-import           Options.Harg.Het.All
-import           Options.Harg.Het.HList
+import           Options.Harg.Cmdline       (mkOptparseParser)
+import           Options.Harg.Het.All       (All)
+import           Options.Harg.Het.HList     (AssocListF(..))
 import           Options.Harg.Het.Nat
-import           Options.Harg.Het.Proofs
-import           Options.Harg.Het.Variant
-import           Options.Harg.Sources
+import           Options.Harg.Het.Proofs    (type (++), Proof(..), hgcastWith)
+import           Options.Harg.Het.Variant   (VariantF, InjectPosF(..))
+import           Options.Harg.Sources       (accumSourceResults)
 import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 

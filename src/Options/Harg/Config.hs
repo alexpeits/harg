@@ -9,9 +9,9 @@ import           Data.Kind                  (Type)
 import qualified Data.Barbie                as B
 import qualified Options.Applicative        as Optparse
 
-import           Options.Harg.Cmdline
-import           Options.Harg.Sources
-import           Options.Harg.Sources.Env
+import           Options.Harg.Cmdline       (mkOptparseParser)
+import           Options.Harg.Sources       (accumSourceResults)
+import           Options.Harg.Sources.Env   (EnvSourceVal(..))
 import           Options.Harg.Sources.Types
 import           Options.Harg.Types
 

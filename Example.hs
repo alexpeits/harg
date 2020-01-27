@@ -5,21 +5,13 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE TypeApplications   #-}
 {-# LANGUAGE TypeOperators      #-}
-
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Example where
 
-import           Data.Function         ((&))
-import           Data.Functor.Identity (Identity (..))
-import           Data.Kind             (Type)
-import           GHC.Generics          (Generic)
-import           System.Environment    (setEnv)
+import Data.Function         ((&))
+import Data.Functor.Identity (Identity (..))
+import GHC.Generics          (Generic)
 
-import qualified Data.Aeson            as JSON
-import qualified Data.Barbie           as B
-import qualified Data.ByteString.Lazy  as BS
-
-import           Options.Harg
+import Options.Harg
 
 
 jsonOpt :: Opt ConfigFile

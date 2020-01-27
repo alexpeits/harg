@@ -16,7 +16,7 @@ import qualified Data.Barbie                as B
 
 import           Options.Harg.Sources.Types
 import           Options.Harg.Types
-import           Options.Harg.Util
+import           Options.Harg.Util          (readFileLBS)
 
 -- | Source that enables a parser to read options from a JSON file.
 newtype JSONSource f = JSONSource (f ConfigFile)

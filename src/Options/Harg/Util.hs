@@ -17,7 +17,7 @@ import           System.Exit                (exitFailure)
 
 import qualified Data.Barbie                as B
 
-import           Options.Harg.Het.HList
+import           Options.Harg.Het.HList     (AssocListF, MapAssocList(..))
 import           Options.Harg.Types
 
 
