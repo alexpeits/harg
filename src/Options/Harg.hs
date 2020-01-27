@@ -15,8 +15,8 @@ module Options.Harg
   , fromSingle
 
   , Nested (..)
-  , nested
   , getNested
+  , nested
   , fromNested
 
   , AssocListF (..)
