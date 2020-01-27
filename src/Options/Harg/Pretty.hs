@@ -1,4 +1,7 @@
-module Options.Harg.Pretty where
+module Options.Harg.Pretty
+  ( ppHelp
+  , ppSourceRunErrors
+  ) where
 
 import Control.Applicative        ((<|>))
 import Data.List                  (intercalate)

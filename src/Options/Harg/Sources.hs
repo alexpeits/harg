@@ -1,4 +1,10 @@
-module Options.Harg.Sources where
+module Options.Harg.Sources
+  ( accumSourceResults
+  , HiddenSources
+  , hiddenSources
+  , DefaultSources
+  , defaultSources
+  ) where
 
 import           Data.Foldable                   (foldr')
 import           Data.Functor.Compose            (Compose (..))
@@ -44,12 +50,10 @@ type HiddenSources = DefaultStrSource
 
 -- | Sources hidden from user that are always enabled
 hiddenSources :: HiddenSources f
-hiddenSources
-  = DefaultStrSource
+hiddenSources = DefaultStrSource
 
 type DefaultSources = EnvSource
 
 -- | Default sources, equivalent to 'EnvSource'
 defaultSources :: DefaultSources f
-defaultSources
-  = EnvSource
+defaultSources = EnvSource

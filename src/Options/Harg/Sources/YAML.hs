@@ -2,7 +2,9 @@
 {-# LANGUAGE DeriveGeneric        #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Options.Harg.Sources.YAML where
+module Options.Harg.Sources.YAML
+  ( YAMLSource (..)
+  ) where
 
 import           Control.Exception          (displayException)
 import qualified Data.ByteString            as BS

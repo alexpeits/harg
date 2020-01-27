@@ -6,7 +6,11 @@
 {-# LANGUAGE RankNTypes           #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Options.Harg.Het.Proofs where
+module Options.Harg.Het.Proofs
+  ( type (++)
+  , Proof (..)
+  , hgcastWith
+  ) where
 
 import Data.Kind          (Type)
 import Data.Type.Equality

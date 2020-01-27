@@ -1,7 +1,14 @@
 {-# LANGUAGE DeriveFunctor        #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Options.Harg.Sources.Types where
+module Options.Harg.Sources.Types
+  ( GetSource (..)
+  , RunSource (..)
+  , ConfigFile (..)
+  , SourceRunResult (..)
+  , SourceRunError (..)
+  , sourceRunError
+  ) where
 
 import Data.Functor.Compose  (Compose (..))
 import Data.Kind             (Type)

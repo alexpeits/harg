@@ -2,7 +2,9 @@
 {-# LANGUAGE DeriveGeneric        #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Options.Harg.Sources.JSON where
+module Options.Harg.Sources.JSON
+  ( JSONSource (..)
+  ) where
 
 import qualified Data.ByteString.Lazy       as LBS
 import           Data.Functor.Compose       (Compose (..))

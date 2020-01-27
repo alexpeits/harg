@@ -4,7 +4,16 @@
 {-# LANGUAGE RankNTypes           #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Options.Harg.Operations where
+module Options.Harg.Operations
+  ( execOpt
+  , execOptDef
+  , execOptWithCtx
+  , execOptWithCtxDef
+  , execCommands
+  , execCommandsDef
+  , execCommandsWithCtx
+  , execCommandsWithCtxDef
+  ) where
 
 import           Data.Functor.Identity      (Identity(..))
 

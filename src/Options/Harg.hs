@@ -15,8 +15,8 @@ module Options.Harg
   , fromSingle
 
   , Nested (..)
-  , nested
   , getNested
+  , nested
   , fromNested
 
   , AssocListF (..)
@@ -37,7 +37,6 @@ module Options.Harg
   , defaultStr
   , required
   , optional
-  , toOpt
   , Opt
 
   -- ** Option parsers
@@ -50,8 +49,12 @@ module Options.Harg
   -- ** Executing options
   , execOpt
   , execOptDef
+  , execOptWithCtx
+  , execOptWithCtxDef
   , execCommands
   , execCommandsDef
+  , execCommandsWithCtx
+  , execCommandsWithCtxDef
 
   -- ** Option sources
   , EnvSource (..)

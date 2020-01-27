@@ -2,7 +2,13 @@
 {-# LANGUAGE RankNTypes           #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Options.Harg.Het.HList where
+module Options.Harg.Het.HList
+  ( MapAssocList (..)
+  , AssocListF (..)
+  , (:+)
+  , pattern (:+)
+  , (:->)
+  ) where
 
 import           Data.Kind    (Type)
 import           GHC.TypeLits (ErrorMessage(..), TypeError, Symbol)

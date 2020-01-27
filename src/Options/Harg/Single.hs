@@ -3,7 +3,11 @@
 {-# LANGUAGE PolyKinds                  #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE UndecidableInstances       #-}
-module Options.Harg.Single where
+module Options.Harg.Single
+  ( Single (..)
+  , single
+  , fromSingle
+  ) where
 
 import           Data.Functor.Identity (Identity(..))
 import qualified Data.Functor.Product  as P
