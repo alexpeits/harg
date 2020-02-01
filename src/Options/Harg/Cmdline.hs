@@ -1,6 +1,7 @@
-module Options.Harg.Cmdline
-  ( mkOptparseParser
-  ) where
+module Options.Harg.Cmdline where
+  -- ( mkOptparseParser
+  -- , execParserPure
+  -- ) where
 
 import           Control.Applicative  ((<|>))
 import           Data.Functor.Compose (Compose (..))
@@ -54,15 +55,15 @@ toOptionParser
   -> Compose Opt f a
   -> Compose Optparse.Parser f a
 toOptionParser sources (Compose opt@Opt{..})
-  = Compose $ Optparse.option (Optparse.eitherReader _optReader)
-      ( foldMap (fromMaybe mempty)
+  = Compose
+      $ Optparse.option (Optparse.eitherReader _optReader)
+      $ foldMap (fromMaybe mempty)
           [ Optparse.long <$> _optLong
           , Optparse.short <$> _optShort
           , Optparse.help <$> ppHelp opt
           , Optparse.metavar <$> _optMetavar
           , Optparse.value <$> (getCompose sources <|> _optDefaultVal)
           ]
-      )
 
 -- | Create a 'Optparse.Parser' for a 'FlagOpt', which results in an
 -- @optparse-applicative@ 'Optparse.flag'.
@@ -95,10 +96,22 @@ toArgumentParser
   -> Compose Opt f a
   -> Compose Optparse.Parser f a
 toArgumentParser sources (Compose opt@Opt{..})
-  = Compose $ Optparse.argument (Optparse.eitherReader _optReader)
-      ( foldMap (fromMaybe mempty)
+  = Compose
+      $ Optparse.argument (Optparse.eitherReader _optReader)
+      $ foldMap (fromMaybe mempty)
           [ Optparse.help <$> ppHelp opt
           , Optparse.metavar <$> _optMetavar
           , Optparse.value <$> (getCompose sources <|> _optDefaultVal)
           ]
-      )
+
+-- | Run the optparse-applicative parser and return the
+-- 'Optparse.ParserResult'
+execParserPure
+  :: [String]
+  -> Optparse.Parser a
+  -> Optparse.ParserResult a
+execParserPure args parser
+  = Optparse.execParserPure Optparse.defaultPrefs parserInfo args
+  where
+    parserInfo
+      = Optparse.info (Optparse.helper <*> parser) Optparse.forwardOptions

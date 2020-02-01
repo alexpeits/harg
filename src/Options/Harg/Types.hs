@@ -10,6 +10,7 @@ module Options.Harg.Types
   , OptReader
   , HargCtx (..)
   , Environment
+  , Args
   , getCtx
   , ctxFromArgs
   , ctxFromEnv
