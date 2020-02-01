@@ -9,7 +9,7 @@ bug-reports:    https://github.com/alexpeits/harg/issues
 author:         Alex Peitsinis
 maintainer:     alexpeitsinis@gmail.com
 stability:      Experimental
-copyright:      Copyright (c) 2019 Alex Peitsinis
+copyright:      Copyright (c) 2020 Alex Peitsinis
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
