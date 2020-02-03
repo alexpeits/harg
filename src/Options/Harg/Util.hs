@@ -47,6 +47,10 @@ toDummyOpts
 toDummyOpts
   = B.bmap toDummy
   where
+    toDummy
+      :: forall x.
+         Opt x
+      -> Compose Opt (Const m) x
     toDummy opt
       = Compose
       $ Const

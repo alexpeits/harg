@@ -43,32 +43,32 @@ srcOpt
   :* YAMLSource yamlOpt
   :* EnvSource
 
-mainSubparser :: IO ()
-mainSubparser = do
-  conf <- execCommands srcOpt configOpt
-  fromVariantF conf
-    (
-      \(db :* srv :* smth :* manyStuff)
-        -> AppC
-           <$> getNested (unTagged db)
-           <*> getNested (unTagged srv)
-           <*> getSingle (unTagged smth)
-           <*> getSingle (unTagged manyStuff)
-           & runIdentity
-           & print
-    )
-    (
-      \(db :* tst)
-         -> TestAppC
-            <$> getNested (unTagged db)
-            <*> getNested (unTagged tst)
-            & runIdentity
-            & print
-    )
+-- mainSubparser :: IO ()
+-- mainSubparser = do
+--   conf <- execCommands srcOpt configOpt
+--   fromVariantF conf
+--     (
+--       \(db :* srv :* smth :* manyStuff)
+--         -> AppC
+--            <$> getNested (unTagged db)
+--            <*> getNested (unTagged srv)
+--            <*> getSingle (unTagged smth)
+--            <*> getSingle (unTagged manyStuff)
+--            & runIdentity
+--            & print
+--     )
+--     (
+--       \(db :* tst)
+--          -> TestAppC
+--             <$> getNested (unTagged db)
+--             <*> getNested (unTagged tst)
+--             & runIdentity
+--             & print
+--     )
 
 mainParser :: IO ()
 mainParser = do
-  db :* srv :* smth :* manyStuff <- execOpt srcOpt appOpt
+  db :* srv :* smth :* manyStuff <- execOptDef appOpt
   let
     res
       = AppC
@@ -88,7 +88,7 @@ data AppC
       { _acDbConfig      :: DBConfig
       , _acServiceConfig :: ServiceConfig
       , _acSomething     :: Maybe Int
-      , _acManyStuff     :: [String]
+      , _acManyStuff     :: [Int]
       }
   deriving Show
 
@@ -96,7 +96,7 @@ type AppConfig
   =  Tagged "db" (Nested DBConfig)
   :* Tagged "srv" (Nested ServiceConfig)
   :* Tagged "smth" (Single (Maybe Int))
-  :* Tagged "manyStuff" (Single [String])
+  :* Tagged "manyStuff" (Single [Int])
 
 appOpt :: AppConfig Opt
 appOpt
@@ -113,7 +113,7 @@ appOpt
           . optional
           )
     manyStuff
-      = option (manyParser "," strParser)
+      = option (manyParser "," readParser)
           ( long "many"
           . envVar "MANY"
           . help "Many stuff"

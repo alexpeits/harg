@@ -11,8 +11,10 @@ import           Data.Functor.Compose            (Compose(..))
 
 import qualified Data.Barbie                     as B
 
+import           Options.Harg.Het.Prod           ((:*)(..))
 import           Options.Harg.Sources.DefaultStr (DefaultStrSource(..))
 import           Options.Harg.Sources.Env        (EnvSource(..))
+import           Options.Harg.Sources.Optparse   (OptparseSource(..))
 import           Options.Harg.Sources.Types
 
 
@@ -52,8 +54,8 @@ type HiddenSources = DefaultStrSource
 hiddenSources :: HiddenSources f
 hiddenSources = DefaultStrSource
 
-type DefaultSources = EnvSource
+type DefaultSources = OptparseSource :* EnvSource
 
 -- | Default sources, equivalent to 'EnvSource'
 defaultSources :: DefaultSources f
-defaultSources = EnvSource
+defaultSources = OptparseSource :* EnvSource
