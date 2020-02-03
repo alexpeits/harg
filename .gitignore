@@ -10,6 +10,7 @@ result/
 result
 .ghc.environment*
 
+.envrc
 .direnv/
 
 TAGS
