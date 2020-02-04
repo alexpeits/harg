@@ -55,6 +55,7 @@ module Options.Harg
   -- , execCommandsDef
   -- , execCommandsWithCtx
   -- , execCommandsWithCtxDef
+  , execOptWithConf
 
   -- ** Option sources
   , EnvSource (..)

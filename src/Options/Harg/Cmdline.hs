@@ -14,7 +14,6 @@ import qualified Options.Applicative  as Optparse
 import           Options.Harg.Pretty  (ppHelp)
 import           Options.Harg.Types
 
-
 -- | Create a 'Optparse.Parser' from a list of source results and an option
 -- parser. The source results are folded using '<|>' and then used as a single
 -- result.

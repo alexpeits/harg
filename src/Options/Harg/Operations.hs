@@ -10,6 +10,7 @@
 {-# OPTIONS_GHC -Wno-unused-local-binds #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 {-# OPTIONS_GHC -Wno-unused-matches #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 module Options.Harg.Operations where
   -- ( execOpt
   -- , execOptDef
@@ -110,15 +111,42 @@ execOptWithConf ctx@HargCtx{..} conf opts = do
   let
     combOpts :: (c :* FlipCompose a (Const String)) Opt
     combOpts = conf :* FlipCompose (toDummyOpts opts)
-    (_, res)
+
+    (errs, res)
       = accumSourceResults
-      $ runSource (OptparseSourceVal _hcArgs, EnvSourceVal _hcEnv) (compose Identity conf)
-    src
+      $ runSource (OptparseSourceVal _hcArgs, EnvSourceVal _hcEnv) (compose Identity combOpts)
+
+    config' :* _
       = foldl'
           (B.bzipWith (<|>))
-          (B.bmap (const (Compose Nothing)) conf)
+          (B.bmap (const (Compose Nothing)) combOpts)
           res
-  undefined
+
+    config :: c Identity
+    config
+      = case B.bsequence config' of
+          Nothing -> error "TODO: failed to get sources"
+          Just x -> x
+
+  putStrLn $ ppSourceRunErrors errs
+  sourceVals <- getSource ctx config
+
+  let
+    (errs, res)
+      = accumSourceResults
+      $ runSource sourceVals (compose Identity opts)
+
+    parsed
+      = foldl'
+          (B.bzipWith (<|>))
+          (B.bmap (const (Compose Nothing)) opts)
+          res
+
+  putStrLn $ ppSourceRunErrors errs
+
+  case B.bsequence parsed of
+    Nothing -> error "TODO: failed to get options"
+    Just x -> pure x
 
 -- | Run the option parser and combine with values from the specified sources,
 -- passing the context explicitly.

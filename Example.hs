@@ -68,7 +68,9 @@ srcOpt
 
 mainParser :: IO ()
 mainParser = do
-  db :* srv :* smth :* manyStuff <- execOptDef appOpt
+  ctx <- getCtx
+  db :* srv :* smth :* manyStuff <- execOptWithConf ctx defaultSources appOpt
+  -- db :* srv :* smth :* manyStuff <- execOptDef appOpt
   let
     res
       = AppC
