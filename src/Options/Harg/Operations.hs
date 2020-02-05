@@ -148,43 +148,43 @@ execOptWithConf ctx@HargCtx{..} conf opts = do
     Nothing -> error "TODO: failed to get options"
     Just x -> pure x
 
--- | Run the option parser and combine with values from the specified sources,
--- passing the context explicitly.
-execOptWithCtx
-  :: forall c a.
-     ( B.TraversableB a
-     , B.ProductB a
-     , B.TraversableB c
-     , B.ProductB c
-     , GetSource c Identity
-     , RunSource (SourceVal c) a
-     )
-  => HargCtx  -- ^ Context containing the environment and the cmdline args
-  -> c Opt    -- ^ Source options
-  -> a Opt    -- ^ Target configuration options
-  -> IO (a Identity)
-execOptWithCtx ctx conf opts = do
-  let
-    configParser
-      = mkConfigParser ctx $ compose Identity (conf :* hiddenSources)
-    dummyParser
-      = mkOptparseParser [] (toDummyOpts @String opts)
-  config <- getConfig ctx configParser dummyParser
-  sourceVals <- getSource ctx config
-  let
-    (errs, sources)
-      = accumSourceResults
-        $ runSource sourceVals (compose Identity opts)
-    parsed
-      = foldl'
-          (B.bzipWith (<|>))
-          (B.bmap (const (Compose Nothing)) opts)
-          sources
-  putStrLn "**"
-  putStrLn $ ppSourceRunErrors errs
-  pure $ case B.bsequence parsed of
-    Nothing -> error "TODO"
-    Just x -> x
+-- -- | Run the option parser and combine with values from the specified sources,
+-- -- passing the context explicitly.
+-- execOptWithCtx
+--   :: forall c a.
+--      ( B.TraversableB a
+--      , B.ProductB a
+--      , B.TraversableB c
+--      , B.ProductB c
+--      , GetSource c Identity
+--      , RunSource (SourceVal c) a
+--      )
+--   => HargCtx  -- ^ Context containing the environment and the cmdline args
+--   -> c Opt    -- ^ Source options
+--   -> a Opt    -- ^ Target configuration options
+--   -> IO (a Identity)
+-- execOptWithCtx ctx conf opts = do
+--   let
+--     configParser
+--       = mkConfigParser ctx $ compose Identity (conf :* hiddenSources)
+--     dummyParser
+--       = mkOptparseParser [] (toDummyOpts @String opts)
+--   config <- getConfig ctx configParser dummyParser
+--   sourceVals <- getSource ctx config
+--   let
+--     (errs, sources)
+--       = accumSourceResults
+--         $ runSource sourceVals (compose Identity opts)
+--     parsed
+--       = foldl'
+--           (B.bzipWith (<|>))
+--           (B.bmap (const (Compose Nothing)) opts)
+--           sources
+--   putStrLn "**"
+--   putStrLn $ ppSourceRunErrors errs
+--   pure $ case B.bsequence parsed of
+--     Nothing -> error "TODO"
+--     Just x -> x
     -- optParser
       -- = mkOptparseParser sources (compose Identity opts)
     -- parser that includes the configuration options, otherwise parsing
@@ -196,45 +196,45 @@ execOptWithCtx ctx conf opts = do
   --         else failParser allParser errs
 
 -- | Run the option parser and combine with values from the specified sources
-execOpt
-  :: forall c a.
-     ( B.TraversableB a
-     , B.ProductB a
-     , B.TraversableB c
-     , B.ProductB c
-     , GetSource c Identity
-     , RunSource (SourceVal c) a
-     )
-  => c Opt  -- ^ Source options
-  -> a Opt  -- ^ Target configuration options
-  -> IO (a Identity)
-execOpt conf opts = do
-  ctx <- getCtx
-  execOptWithCtx ctx conf opts
+-- execOpt
+--   :: forall c a.
+--      ( B.TraversableB a
+--      , B.ProductB a
+--      , B.TraversableB c
+--      , B.ProductB c
+--      , GetSource c Identity
+--      , RunSource (SourceVal c) a
+--      )
+--   => c Opt  -- ^ Source options
+--   -> a Opt  -- ^ Target configuration options
+--   -> IO (a Identity)
+-- execOpt conf opts = do
+--   ctx <- getCtx
+--   execOptWithCtx ctx conf opts
 
 -- | Run the option parser only with default sources (environment variables),
 -- passing the context explicitly.
-execOptWithCtxDef
-  :: forall a.
-     ( B.TraversableB a
-     , B.ProductB a
-     )
-  => HargCtx  -- ^ Context containing the environment and the cmdline args
-  -> a Opt    -- ^ Target configuration options
-  -> IO (a Identity)
-execOptWithCtxDef ctx
-  = execOptWithCtx ctx defaultSources
+-- execOptWithCtxDef
+--   :: forall a.
+--      ( B.TraversableB a
+--      , B.ProductB a
+--      )
+--   => HargCtx  -- ^ Context containing the environment and the cmdline args
+--   -> a Opt    -- ^ Target configuration options
+--   -> IO (a Identity)
+-- execOptWithCtxDef ctx
+--   = execOptWithCtx ctx defaultSources
 
 -- | Run the option parser only with default sources (environment variables)
-execOptDef
-  :: forall a.
-     ( B.TraversableB a
-     , B.ProductB a
-     )
-  => a Opt -- ^ Target configuration options
-  -> IO (a Identity)
-execOptDef
-  = execOpt defaultSources
+-- execOptDef
+--   :: forall a.
+--      ( B.TraversableB a
+--      , B.ProductB a
+--      )
+--   => a Opt -- ^ Target configuration options
+--   -> IO (a Identity)
+-- execOptDef
+--   = execOpt defaultSources
 
 -- -- | Run the subcommand parser and combine with values from the specified
 -- -- sources, passing the context explicitly.

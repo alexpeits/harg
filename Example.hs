@@ -69,7 +69,7 @@ srcOpt
 mainParser :: IO ()
 mainParser = do
   ctx <- getCtx
-  db :* srv :* smth :* manyStuff <- execOptWithConf ctx defaultSources appOpt
+  db :* srv :* smth :* manyStuff <- execOptWithConf ctx (JSONSource jsonOpt :* defaultSources) appOpt
   -- db :* srv :* smth :* manyStuff <- execOptDef appOpt
   let
     res
@@ -202,6 +202,7 @@ srvConf
           ( long "port"
           . help "Web service port"
           . defaultStr "25000"
+          . envVar "PORT"
           )
       )
       ( switch

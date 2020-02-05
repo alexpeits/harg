@@ -25,7 +25,7 @@ mkOptparseParser
      )
   => [a (Compose Maybe f)]  -- ^ Source results
   -> a (Compose Opt f)      -- ^ Target configuration options
-  -> Optparse.Parser (a f)
+  -> Optparse.Parser (a (Compose Maybe f))
 mkOptparseParser sources opts
   = B.bsequence $ B.bzipWith mkParser srcOpts opts
   where
@@ -40,7 +40,7 @@ mkOptparseParser sources opts
 mkParser
   :: Compose Maybe f a   -- ^ Accumulated source results
   -> Compose Opt f a     -- ^ Target option
-  -> Compose Optparse.Parser f a
+  -> Compose Optparse.Parser (Compose Maybe f) a
 mkParser srcs opt@(Compose Opt{..})
   = case _optType of
       OptionOptType      -> toOptionParser srcs opt
@@ -52,9 +52,11 @@ mkParser srcs opt@(Compose Opt{..})
 toOptionParser
   :: Compose Maybe f a
   -> Compose Opt f a
-  -> Compose Optparse.Parser f a
+  -> Compose Optparse.Parser (Compose Maybe f) a
 toOptionParser sources (Compose opt@Opt{..})
   = Compose
+      $ fmap Compose
+      $ Optparse.optional
       $ Optparse.option (Optparse.eitherReader _optReader)
       $ foldMap (fromMaybe mempty)
           [ Optparse.long <$> _optLong
@@ -70,9 +72,11 @@ toFlagParser
   :: Compose Maybe f a
   -> Compose Opt f a
   -> f a
-  -> Compose Optparse.Parser f a
+  -> Compose Optparse.Parser (Compose Maybe f) a
 toFlagParser sources (Compose opt@Opt{..}) active
   = Compose
+    $ fmap Compose
+    $ Optparse.optional
     $ case mDef of
         Nothing ->
           Optparse.flag' active modifiers
@@ -93,9 +97,11 @@ toFlagParser sources (Compose opt@Opt{..}) active
 toArgumentParser
   :: Compose Maybe f a
   -> Compose Opt f a
-  -> Compose Optparse.Parser f a
+  -> Compose Optparse.Parser (Compose Maybe f) a
 toArgumentParser sources (Compose opt@Opt{..})
   = Compose
+      $ fmap Compose
+      $ Optparse.optional
       $ Optparse.argument (Optparse.eitherReader _optReader)
       $ foldMap (fromMaybe mempty)
           [ Optparse.help <$> ppHelp opt

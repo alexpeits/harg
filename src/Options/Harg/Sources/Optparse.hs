@@ -45,7 +45,7 @@ runOptparseSource args opts
   = go $ B.bsequence $ B.bmap mkParser opts
   where
     go
-      :: Optparse.Parser (a f)
+      :: Optparse.Parser (a (Compose Maybe f))
       -> Either SourceRunError (a (Compose SourceRunResult f))
     go parser
       = case Cli.execParserPure args parser of
@@ -53,13 +53,22 @@ runOptparseSource args opts
           Optparse.Failure err
             -> Left $ SourceRunError Nothing "Optparse" (show err)
           Optparse.Success res
-            -> Right $ B.bmap (Compose . OptParsed) res
+            -> Right $ B.bmap toSuccess res
           _
             -> Left $ SourceRunError Nothing "Optparse" "unknown"
+
+    toSuccess
+      :: Compose Maybe f x
+      -> Compose SourceRunResult f x
+    toSuccess
+      = Compose
+      . maybe OptNotFound OptParsed
+      . getCompose
+
     mkParser
       :: forall x.
          Compose Opt f x
-      -> Compose Optparse.Parser f x
+      -> Compose Optparse.Parser (Compose Maybe f) x
     mkParser
       -- TODO
       = Cli.mkParser (Compose Nothing)

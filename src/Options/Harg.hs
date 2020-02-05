@@ -47,10 +47,10 @@ module Options.Harg
   , manyParser
 
   -- ** Executing options
-  , execOpt
-  , execOptDef
-  , execOptWithCtx
-  , execOptWithCtxDef
+  -- , execOpt
+  -- , execOptDef
+  -- , execOptWithCtx
+  -- , execOptWithCtxDef
   -- , execCommands
   -- , execCommandsDef
   -- , execCommandsWithCtx

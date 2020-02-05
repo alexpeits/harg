@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-unused-imports #-}
 module Options.Harg.Config
   ( mkConfigParser
   , getConfig
@@ -27,12 +28,13 @@ mkConfigParser
   => HargCtx
   -> c (Compose Opt f)
   -> Optparse.Parser (c f)
-mkConfigParser HargCtx{..} conf
-  = mkOptparseParser envC conf
-  where
-    (_, envC)
-      = accumSourceResults
-        $ runSource (EnvSourceVal _hcEnv) conf
+mkConfigParser = undefined
+-- mkConfigParser HargCtx{..} conf
+--   = mkOptparseParser envC conf
+--   where
+--     (_, envC)
+--       = accumSourceResults
+--         $ runSource (EnvSourceVal _hcEnv) conf
 
 -- | Run two option parsers in parallel and return the result of the
 -- first one. This is used with the configuration parser being the first
