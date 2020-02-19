@@ -1,4 +1,4 @@
-{ pkgs, haskellPackages }:
+{ pkgs, self, super }:
 
 let
 
@@ -9,4 +9,4 @@ let
     sha256 = "1vg9ha3knggyh5a76678y808c29v9p1mai9bq355q7amy0icy46j";
   };
 
-in { higgledy = haskellPackages.callCabal2nix "higgledy" higgledy-src { }; }
+in { higgledy = self.callCabal2nix "higgledy" higgledy-src { }; }

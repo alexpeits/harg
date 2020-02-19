@@ -25,27 +25,28 @@ let
     });
   };
 
-  haskellPackages = if (inShell && withHoogle) then
+  haskellPackagesBase = if (inShell && withHoogle) then
     haskellPackagesWithHoogle
   else
     haskellPackagesNoHoogle;
 
   src = nixpkgs.nix-gitignore.gitignoreSource [ ] ./.;
+  drv = haskellPackages.callCabal2nix "harg" src { };
 
-  overrides = import ./nix/overrides.nix {
-    pkgs = nixpkgs;
-    haskellPackages = haskellPackages;
+  haskellPackages = haskellPackagesBase.override {
+    overrides = self: super:
+      let
+        packages = import ./nix/overrides.nix {
+          pkgs = nixpkgs;
+          self = self;
+          super = super;
+        };
+      in packages // { "harg" = drv; };
   };
 
-  harg = haskellPackages.callCabal2nix "harg" src overrides;
-
   shell = nixpkgs.mkShell {
-    inputsFrom = [ harg.env ];
-    shellHook = ''
-      alias ghcid-orig="$(which ghcid)"
-      alias ghcid="ghcid -a --command='cabal new-repl' --restart=harg.cabal"
-    '';
+    inputsFrom = [ haskellPackages.harg.env ];
     buildInputs = [ haskellPackages.ghcid haskellPackages.cabal-install ];
   };
 
-in if inShell then shell else harg
+in if inShell then shell else haskellPackages.harg
