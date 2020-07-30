@@ -27,5 +27,4 @@ jobs:
         nix-build
     - name: Test
       run: |
-        echo 'tests: True' > cabal.project.local
-        nix-shell --command 'cabal new-test'
+        nix-shell --command 'cabal new-test docs-test'
