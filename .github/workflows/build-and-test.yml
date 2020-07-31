@@ -1,8 +1,6 @@
 name: "Build and test"
 on:
   pull_request:
-    branches:
-    - master
   push:
     branches:
     - master
@@ -24,7 +22,10 @@ jobs:
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - name: Build
       run: |
-        nix-build
+        nix-shell --command 'make build'
     - name: Test
       run: |
-        nix-shell --command 'cabal new-test docs-test'
+        nix-shell --command 'make test'
+    - name: Haddock
+      run: |
+        nix-shell --command 'make haddock'

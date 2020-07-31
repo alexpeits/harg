@@ -1,6 +1,8 @@
-.PHONY: ghcid
+.PHONY: test
 
 NIV_VERSION?=nixos-stable
+HOOGLE_PORT?=8888
+HADDOCK_CMD=cabal new-haddock --haddock-options='--show-all --hyperlinked-source'
 
 cabal-configure:
 	nix-shell --argstr pkgs ${NIV_VERSION} --command 'cabal new-configure -w $$(which ghc)'
@@ -14,14 +16,20 @@ ghcid-stack:
 dist:
 	cabal new-sdist
 
+build:
+	cabal new-build
+
+test:
+	cabal new-test
+
 haddock:
-	cabal new-haddock --haddock-options="--show-all --hyperlinked-source"
+	${HADDOCK_CMD}
 
 haddock-hackage:
-	cabal new-haddock --haddock-options="--show-all --hyperlinked-source" --haddock-for-hackage
+	${HADDOCK_CMD} --haddock-for-hackage
 
 hoogle:
-	hoogle server --port 8888 --local
+	hoogle server --port ${HOOGLE_PORT} --local
 
 list-ghcs:
 	nix-instantiate --eval -E "with import (import ./nix/sources.nix).${NIV_VERSION} {}; lib.attrNames haskell.compiler"

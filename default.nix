@@ -30,7 +30,17 @@ let
   else
     haskellPackagesNoHoogle;
 
-  src = nixpkgs.nix-gitignore.gitignoreSource [ ] ./.;
+  # src = nixpkgs.nix-gitignore.gitignoreSource [ ] ./.;
+  srcRegex = [
+    "^docs.*$"
+    "^harg.cabal$"
+    "^LICENSE$"
+    "^README.md$"
+    "^Setup.hs$"
+    "^src.*$"
+    "^test.*$"
+  ];
+  src = nixpkgs.lib.sourceByRegex ./. srcRegex;
   drv = haskellPackages.callCabal2nix "harg" src { };
 
   haskellPackages = haskellPackagesBase.override {

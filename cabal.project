@@ -1,5 +1,0 @@
-packages: .
-
-documentation:            true
-haddock-internal:         true
-haddock-hyperlink-source: true
