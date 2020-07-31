@@ -22,10 +22,4 @@ jobs:
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - name: Build
       run: |
-        nix-shell --command 'make build'
-    - name: Test
-      run: |
-        nix-shell --command 'make test'
-    - name: Haddock
-      run: |
-        nix-shell --command 'make haddock'
+        nix-shell --command 'make build && make test && make haddock'
