@@ -20,6 +20,9 @@ jobs:
       with:
         name: alexpeits-gh-actions
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - name: Build
+    - name: Build, test, haddock
       run: |
-        nix-shell --command 'make build && make test && make haddock'
+        nix-shell --command 'cabal new-configure --enable-tests --test-show-details=direct'
+        nix-shell --command 'make build'
+        nix-shell --command 'make test'
+        nix-shell --command 'make haddock'
