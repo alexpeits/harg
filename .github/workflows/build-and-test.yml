@@ -6,7 +6,7 @@ on:
     - master
 jobs:
   cabal-nix:
-    name: cabal & nix: Build and test with 
+    name: cabal and nix: Build and test
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -48,7 +48,7 @@ jobs:
       with:
         persist-credentials: false
     - uses: actions/setup-haskell@v1.1
-      name: Setup ghc & stack
+      name: Setup ghc and stack
       with:
         ghc-version: ${{ matrix.ghc }}
         stack-version: ${{ matrix.stack }}
