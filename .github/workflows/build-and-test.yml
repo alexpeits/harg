@@ -30,7 +30,7 @@ jobs:
         path: |
           ~/.cabal/packages
           ~/.cabal/store
-        key: ${{ runner.os }}-${{ matrix.nixpkgs}}-${{ matrix.ghc }}
+        key: ${{ runner.os }}-${{ matrix.nixpkgs }}-${{ matrix.ghc }}
     - name: Setup cabal
       run: nix-shell --argstr pkgs ${{ matrix.nixpkgs }} --argstr compiler ${{ matrix.ghc }} --arg withHoogle false --run 'cabal update'
     - name: Build
