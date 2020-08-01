@@ -6,7 +6,7 @@ on:
     - master
 jobs:
   cabal-nix:
-    name: Build and test with cabal+nix
+    name: cabal+nix
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -28,15 +28,15 @@ jobs:
           ~/.cabal/store
         key: ${{ runner.os }}-ghc-8.6.5
     - name: Setup cabal
-      run: make cabal-update
+      run: nix-shell --run 'cabal update'
     - name: Build
-      run: make build
+      run: nix-shell --run 'cabal new-build'
     - name: Test
-      run: make test
+      run: nix-shell --run 'cabal new-test'
     - name: Haddock
-      run: make haddock
+      run: nix-shell --run 'cabal new-haddock --haddock-options="--show-all"'
   stack:
-    name: Build and test with stack
+    name: stack
     runs-on: ubuntu-latest
     strategy:
       matrix:
