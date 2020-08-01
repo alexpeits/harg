@@ -1,6 +1,6 @@
 # to see ghc versions:
 # nix-instantiate --eval -E "with import ./nix/nixpkgs.nix {}; lib.attrNames haskell.compiler"
-{ pkgs ? null, compiler ? null }:
+{ pkgs ? null, compiler ? null, withHoogle ? true }:
 
 let
 
@@ -46,7 +46,7 @@ let
       haskellPackages.ghcid
       haskellPackages.cabal-install
     ];
-    withHoogle = true;
+    withHoogle = withHoogle;
   };
 
 in

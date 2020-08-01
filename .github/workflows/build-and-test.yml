@@ -20,9 +20,20 @@ jobs:
       with:
         name: alexpeits-gh-actions
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+    - name: Setup cabal user-config
+      run: nix-shell --run 'cabal user-config update'
     - name: Build
-      run: nix-shell --command 'make build'
-    - name: Test
-      run: nix-shell --command 'make test'
-    - name: Haddock
-      run: nix-shell --command 'make haddock'
+      run: |
+        ls -la
+        nix-shell --run 'cabal new-build'
+    - name: Configure cabal project
+      run: |
+        ls -la
+        nix-shell --run 'cabal new-build'
+        make cabal-configure
+        cat cabal.project.local
+        ls -la
+    - name: Build
+      run: cabal new-build
+    - name: Build
+      run: cabal new-test

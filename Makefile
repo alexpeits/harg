@@ -5,7 +5,7 @@ HOOGLE_PORT?=8888
 HADDOCK_CMD=cabal new-haddock --haddock-options='--show-all --hyperlinked-source'
 
 cabal-configure:
-	nix-shell --argstr pkgs ${NIV_VERSION} --command 'cabal new-configure -w $$(which ghc)'
+	nix-shell --argstr pkgs ${NIV_VERSION} --arg withHoogle false --run 'cabal new-configure --enable-tests -w $$(which ghc)'
 
 ghcid:
 	ghcid -a --command='cabal new-repl' --restart=harg.cabal
