@@ -1,6 +1,6 @@
 # harg :nut_and_bolt:
 
-[![Build Status](https://travis-ci.org/alexpeits/harg.svg?branch=master)](https://travis-ci.org/alexpeits/harg)
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Falexpeits%2Fharg%2Fbadge&style=flat)](https://actions-badge.atrox.dev/alexpeits/harg/goto)
 [![Hackage](https://img.shields.io/hackage/v/harg.svg)](https://hackage.haskell.org/package/harg)
 
 `harg` is a library for configuring programs by scanning command line arguments,
