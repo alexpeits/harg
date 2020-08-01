@@ -20,20 +20,18 @@ jobs:
       with:
         name: alexpeits-gh-actions
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - name: Setup cabal user-config
-      run: nix-shell --run 'cabal user-config update'
+    - name: Setup cabal
+      run: nix-shell --run 'cabal update'
+    - name: Cache ~/.cabal/packages and ~/.cabal/store
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cabal/packages
+          ~/.cabal/store
+        key: ${{ runner.os }}-ghc-8.6.5
     - name: Build
-      run: |
-        ls -la
-        nix-shell --run 'cabal new-build'
-    - name: Configure cabal project
-      run: |
-        ls -la
-        nix-shell --run 'cabal new-build'
-        make cabal-configure
-        cat cabal.project.local
-        ls -la
-    - name: Build
-      run: cabal new-build
-    - name: Build
-      run: cabal new-test
+      run: nix-shell --run 'cabal new-build'
+    - name: Test
+      run: nix-shell --run 'cabal new-test'
+    - name: Haddock
+      run: nix-shell --run 'cabal new-haddock'
