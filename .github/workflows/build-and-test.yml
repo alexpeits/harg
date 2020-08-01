@@ -30,8 +30,8 @@ jobs:
           ~/.cabal/store
         key: ${{ runner.os }}-ghc-8.6.5
     - name: Build
-      run: nix-shell --run 'cabal new-build'
+      run: make build
     - name: Test
-      run: nix-shell --run 'cabal new-test'
+      run: make test
     - name: Haddock
-      run: nix-shell --run 'cabal new-haddock'
+      run: make haddock
