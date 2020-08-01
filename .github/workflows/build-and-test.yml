@@ -20,8 +20,6 @@ jobs:
       with:
         name: alexpeits-gh-actions
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - name: Setup cabal
-      run: make cabal-update
     - name: Cache ~/.cabal/packages and ~/.cabal/store
       uses: actions/cache@v2
       with:
@@ -29,6 +27,8 @@ jobs:
           ~/.cabal/packages
           ~/.cabal/store
         key: ${{ runner.os }}-ghc-8.6.5
+    - name: Setup cabal
+      run: make cabal-update
     - name: Build
       run: make build
     - name: Test
