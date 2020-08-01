@@ -8,6 +8,9 @@ NIX_SHELL_CMD=nix-shell --argstr pkgs ${NIV_VERSION} --arg withHoogle false
 configure:
 	${NIX_SHELL_CMD} --run 'cabal new-configure -w $$(which ghc)'
 
+cabal-update:
+	${NIX_SHELL_CMD} --run 'cabal update'
+
 build:
 	${NIX_SHELL_CMD} --run 'cabal new-build'
 
