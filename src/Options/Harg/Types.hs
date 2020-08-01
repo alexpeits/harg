@@ -118,7 +118,7 @@ ctxFromArgs args
 
 ctxFromEnv :: Environment -> IO HargCtx
 ctxFromEnv env
-  = HargCtx <$> pure env <*> getArgs
+  = HargCtx env <$> getArgs
 
 pureCtx :: Environment -> Args -> HargCtx
 pureCtx

@@ -9,16 +9,16 @@ configure:
 	${NIX_SHELL_CMD} --run 'cabal new-configure -w $$(which ghc)'
 
 dist:
-	${NIX_SHELL_CMD} --run 'cabal new-sdist'
+	cabal new-sdist
 
 haddock:
-	${NIX_SHELL_CMD} --run '${HADDOCK_CMD}'
+	${HADDOCK_CMD}
 
 haddock-hackage:
-	${NIX_SHELL_CMD} --run '${HADDOCK_CMD} --haddock-for-hackage'
+	${HADDOCK_CMD} --haddock-for-hackage
 
 ghcid:
-	${NIX_SHELL_CMD} --run 'ghcid -a --command="cabal new-repl" --restart=harg.cabal'
+	ghcid -a --command="cabal new-repl" --restart=harg.cabal
 
 ghcid-stack:
 	ghcid -a --command='stack ghci -- src/**/*.hs Example.hs'
