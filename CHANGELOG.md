@@ -1,5 +1,12 @@
 # Changelog for harg
 
+## 0.4.2.1 [2020.08.01]
+
+Only cosmetic and functional changes, no library changes:
+
+- Minor CI tweaks
+- Format everything with ormolu
+
 ## 0.4.2.0 [2020.01.27]
 
 - Add explicit export and import lists

@@ -1,9 +1,9 @@
 cabal-version:      2.4
 name:               harg
-version:            0.4.2.0
+version:            0.4.2.1
 license:            BSD-3-Clause
 license-file:       LICENSE
-copyright:          Copyright (c) 2019 Alex Peitsinis
+copyright:          Copyright (c) 2020 Alex Peitsinis
 maintainer:         alexpeitsinis@gmail.com
 author:             Alex Peitsinis
 stability:          Experimental
