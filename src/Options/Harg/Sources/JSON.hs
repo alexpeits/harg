@@ -1,22 +1,22 @@
-{-# LANGUAGE DeriveAnyClass       #-}
-{-# LANGUAGE DeriveGeneric        #-}
-{-# LANGUAGE TypeFamilies         #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+
 module Options.Harg.Sources.JSON
-  ( JSONSource (..)
-  ) where
+  ( JSONSource (..),
+  )
+where
 
-import qualified Data.ByteString.Lazy       as LBS
-import           Data.Functor.Compose       (Compose (..))
-import           Data.Functor.Identity      (Identity(..))
-import           GHC.Generics               (Generic)
-
-import qualified Data.Aeson                 as JSON
-import qualified Data.Barbie                as B
-
-import           Options.Harg.Sources.Types
-import           Options.Harg.Types
-import           Options.Harg.Util          (readFileLBS)
+import qualified Data.Aeson as JSON
+import qualified Data.Barbie as B
+import qualified Data.ByteString.Lazy as LBS
+import Data.Functor.Compose (Compose (..))
+import Data.Functor.Identity (Identity (..))
+import GHC.Generics (Generic)
+import Options.Harg.Sources.Types
+import Options.Harg.Types
+import Options.Harg.Util (readFileLBS)
 
 -- | Source that enables a parser to read options from a JSON file.
 newtype JSONSource f = JSONSource (f ConfigFile)
@@ -31,42 +31,44 @@ data JSONSourceVal
 
 instance GetSource JSONSource Identity where
   type SourceVal JSONSource = JSONSourceVal
-  getSource _ctx (JSONSource (Identity (ConfigFile path)))
-    = JSONSourceVal <$> readFileLBS path
-  getSource _ctx (JSONSource (Identity NoConfigFile))
-    = pure JSONSourceNotRequired
+  getSource _ctx (JSONSource (Identity (ConfigFile path))) =
+    JSONSourceVal <$> readFileLBS path
+  getSource _ctx (JSONSource (Identity NoConfigFile)) =
+    pure JSONSourceNotRequired
 
 instance
-    ( JSON.FromJSON (a Maybe)
-    , B.FunctorB a
-    ) => RunSource JSONSourceVal a where
-  runSource (JSONSourceVal j) opt
-    = [runJSONSource j opt]
-  runSource JSONSourceNotRequired _
-    = []
+  ( JSON.FromJSON (a Maybe),
+    B.FunctorB a
+  ) =>
+  RunSource JSONSourceVal a
+  where
+  runSource (JSONSourceVal j) opt =
+    [runJSONSource j opt]
+  runSource JSONSourceNotRequired _ =
+    []
 
-runJSONSource
-  :: forall a f.
-     ( B.FunctorB a
-     , JSON.FromJSON (a Maybe)
-     , Applicative f
-     )
-  => LBS.ByteString
-  -> a (Compose Opt f)
-  -> Either SourceRunError (a (Compose SourceRunResult f))
-runJSONSource json _opt
-  = case res of
-      Right v  -> Right $ B.bmap toSuccess v
-      Left exc -> Left $ toError exc
+runJSONSource ::
+  forall a f.
+  ( B.FunctorB a,
+    JSON.FromJSON (a Maybe),
+    Applicative f
+  ) =>
+  LBS.ByteString ->
+  a (Compose Opt f) ->
+  Either SourceRunError (a (Compose SourceRunResult f))
+runJSONSource json _opt =
+  case res of
+    Right v -> Right $ B.bmap toSuccess v
+    Left exc -> Left $ toError exc
   where
     res :: Either String (a Maybe)
-    res
-      = JSON.eitherDecode json
+    res =
+      JSON.eitherDecode json
 
     toSuccess :: Maybe x -> Compose SourceRunResult f x
-    toSuccess mx
-      = Compose $ pure <$> maybe OptNotFound OptParsed mx
+    toSuccess mx =
+      Compose $ pure <$> maybe OptNotFound OptParsed mx
 
     toError :: String -> SourceRunError
-    toError
-      = SourceRunError Nothing "JSONSource"
+    toError =
+      SourceRunError Nothing "JSONSource"

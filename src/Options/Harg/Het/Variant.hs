@@ -1,25 +1,24 @@
-{-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE PatternSynonyms        #-}
-{-# LANGUAGE TypeFamilies           #-}
-{-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 module Options.Harg.Het.Variant
-  ( VariantF (..)
-  , fromVariantF
-  , InjectPosF (..)
-  , pattern In1
-  , pattern In2
-  , pattern In3
-  , pattern In4
-  , pattern In5
-  ) where
+  ( VariantF (..),
+    fromVariantF,
+    InjectPosF (..),
+    pattern In1,
+    pattern In2,
+    pattern In3,
+    pattern In4,
+    pattern In5,
+  )
+where
 
-import           Data.Kind            (Type)
-
-import qualified Data.Barbie          as B
-
-import           Options.Harg.Het.Nat
-
+import qualified Data.Barbie as B
+import Data.Kind (Type)
+import Options.Harg.Het.Nat
 
 -- | A Variant is similar to nested 'Either's. For example, @Variant '[Int,
 -- Bool, Char]@ is isomorphic to @Either Int (Either Bool Char)@. 'VariantF'
@@ -32,32 +31,36 @@ import           Options.Harg.Het.Nat
 --   getFromVariant :: Variant '[Int, Bool, String] -> Bool
 --   getFromVariant (ThereF (HereF b)) = b
 -- @
---
 data VariantF (xs :: [(Type -> Type) -> Type]) (f :: Type -> Type) where
-  HereF  :: x f           -> VariantF (x ': xs) f
+  HereF :: x f -> VariantF (x ': xs) f
   ThereF :: VariantF xs f -> VariantF (y ': xs) f
 
 instance
-    ( B.FunctorB x
-    , B.FunctorB (VariantF xs)
-    ) => B.FunctorB (VariantF (x ': xs)) where
-  bmap nat (HereF x)   = HereF $ B.bmap nat x
+  ( B.FunctorB x,
+    B.FunctorB (VariantF xs)
+  ) =>
+  B.FunctorB (VariantF (x ': xs))
+  where
+  bmap nat (HereF x) = HereF $ B.bmap nat x
   bmap nat (ThereF xs) = ThereF $ B.bmap nat xs
 
 instance B.FunctorB (VariantF '[]) where
   bmap _ _ = error "Impossible: empty variant"
 
 instance
-    ( B.TraversableB x
-    , B.TraversableB (VariantF xs)
-    ) => B.TraversableB (VariantF (x ': xs)) where
-  btraverse nat (HereF x)   = HereF <$> B.btraverse nat x
+  ( B.TraversableB x,
+    B.TraversableB (VariantF xs)
+  ) =>
+  B.TraversableB (VariantF (x ': xs))
+  where
+  btraverse nat (HereF x) = HereF <$> B.btraverse nat x
   btraverse nat (ThereF xs) = ThereF <$> B.btraverse nat xs
 
 instance B.TraversableB (VariantF '[]) where
   btraverse _ _ = error "Impossible: empty variant"
 
 -- * Helpers for pattern-matching on variants
+
 pattern In1 :: x1 f -> VariantF (x1 ': xs) f
 pattern In1 x = HereF x
 
@@ -74,6 +77,7 @@ pattern In5 :: x5 f -> VariantF (x1 ': x2 ': x3 ': x4 ': x5 ': xs) f
 pattern In5 x = ThereF (In4 x)
 
 -- https://github.com/i-am-tom/learn-me-a-haskell/blob/master/src/OneOf/Fold.hs
+
 -- | Create the signature needed for 'FromVariantF' to work. This constructs a
 -- function that takes as arguments functions that can act upon each item in
 -- the list that the 'VariantF' holds. For example, @VariantF [a, b, c]
@@ -82,7 +86,6 @@ pattern In5 x = ThereF (In4 x)
 -- @
 --   VariantF [a, b, c] f -> (a f -> r) -> (b f -> r) -> (c f -> r) -> r
 -- @
---
 type family FoldSignatureF (xs :: [(Type -> Type) -> Type]) r f where
   FoldSignatureF (x ': xs) r f = (x f -> r) -> FoldSignatureF xs r f
   FoldSignatureF '[] r f = r
@@ -91,16 +94,18 @@ class FromVariantF xs result f where
   fromVariantF :: VariantF xs f -> FoldSignatureF xs result f
 
 instance FromVariantF '[x] result f where
-  fromVariantF (HereF  x) f = f x
+  fromVariantF (HereF x) f = f x
   fromVariantF (ThereF _) _ = error "Impossible: empty variant"
 
 instance
-    ( tail ~ (x' ': xs)
-    , FromVariantF tail result f
-    , IgnoreF tail result f
-    ) => FromVariantF (x ': x' ': xs) result f where
+  ( tail ~ (x' ': xs),
+    FromVariantF tail result f,
+    IgnoreF tail result f
+  ) =>
+  FromVariantF (x ': x' ': xs) result f
+  where
   fromVariantF (ThereF x) _ = fromVariantF @_ @result x
-  fromVariantF (HereF  x) f = ignoreF @tail (f x)
+  fromVariantF (HereF x) f = ignoreF @tail (f x)
 
 class IgnoreF (args :: [(Type -> Type) -> Type]) result f where
   ignoreF :: result -> FoldSignatureF args result f
@@ -117,11 +122,13 @@ instance IgnoreF xs result f => IgnoreF (x ': xs) result f where
 -- the variant holds, can give the injection @b f -> VariantF [a, b, c] f@.
 -- The injection can as well be constructed without providing the position, but
 -- it helps in case @x@ is not unique in @xs@.
-class InjectPosF
+class
+  InjectPosF
     (n :: Nat)
     (x :: (Type -> Type) -> Type)
     (xs :: [(Type -> Type) -> Type])
-    | n xs -> x where
+    | n xs -> x
+  where
   injectPosF :: SNat n -> (x f -> VariantF xs f)
 
 instance InjectPosF Z x (x ': xs) where

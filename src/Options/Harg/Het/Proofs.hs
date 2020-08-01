@@ -1,28 +1,29 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 -- | This module provides type-level functions that need proofs to work
 -- properly.
-{-# LANGUAGE AllowAmbiguousTypes  #-}
-{-# LANGUAGE InstanceSigs         #-}
-{-# LANGUAGE PolyKinds            #-}
-{-# LANGUAGE RankNTypes           #-}
-{-# LANGUAGE TypeFamilies         #-}
-{-# LANGUAGE UndecidableInstances #-}
 module Options.Harg.Het.Proofs
-  ( type (++)
-  , Proof (..)
-  , hgcastWith
-  ) where
+  ( type (++),
+    Proof (..),
+    hgcastWith,
+  )
+where
 
-import Data.Kind          (Type)
+import Data.Kind (Type)
 import Data.Type.Equality
-
 
 -- | Same as 'Data.Type.Equality.gcastWith' but for heterogeneous propositional
 -- equality
-hgcastWith
-  :: forall (a :: k) (b :: k') (r :: Type).
-     (a :~~: b)
-  -> (a ~~ b => r)
-  -> r
+hgcastWith ::
+  forall (a :: k) (b :: k') (r :: Type).
+  (a :~~: b) ->
+  (a ~~ b => r) ->
+  r
 hgcastWith HRefl x = x
 
 -- * Concatenation of type-level lists
@@ -33,9 +34,8 @@ hgcastWith HRefl x = x
 -- > :kind! '[Int, Bool] ++ '[Char, Maybe Int]
 -- '[Int, Bool, Char, Maybe Int]
 -- @
---
 type family (xs :: [k]) ++ (ts :: [k]) = (res :: [k]) where
-  '[]       ++ ys = ys
+  '[] ++ ys = ys
   (x ': xs) ++ ys = x ': (xs ++ ys)
 
 -- | Proof that appending an empty list to any list has no effect on the latter.
@@ -61,9 +61,7 @@ instance Proof '[] y zs where
 
 -- | Induction on the tail of the list
 instance Proof xs y (z ': zs) => Proof (x ': xs) y (z ': zs) where
-  proof
-    ::   x ': (xs ++ (y ': z ': zs))
-    :~~: x ': ((xs ++ '[y]) ++ (z ': zs))
+  proof :: x ': (xs ++ (y ': z ': zs)) :~~: x ': ((xs ++ '[y]) ++ (z ': zs))
   proof = hgcastWith (proof @xs @y @(z ': zs)) HRefl
 
 instance Proof '[] y '[] where

@@ -1,57 +1,55 @@
 module Options.Harg.Pretty
-  ( ppHelp
-  , ppSourceRunErrors
-  ) where
+  ( ppHelp,
+    ppSourceRunErrors,
+  )
+where
 
-import Control.Applicative        ((<|>))
-import Data.List                  (intercalate)
-import Data.Maybe                 (fromMaybe)
-
+import Control.Applicative ((<|>))
+import Data.List (intercalate)
+import Data.Maybe (fromMaybe)
 import Options.Harg.Sources.Types
 import Options.Harg.Types
 
+ppHelp ::
+  Opt a ->
+  Maybe String
+ppHelp Opt {..} =
+  (<> ppEnvVar _optEnvVar) <$> _optHelp
 
-ppHelp
-  :: Opt a
-  -> Maybe String
-ppHelp Opt{..}
-  = (<> ppEnvVar _optEnvVar) <$> _optHelp
-
-ppSourceRunErrors
-  :: [SourceRunError]
-  -> String
-ppSourceRunErrors
-  = intercalate "\n\n"
-  . map ppSourceRunError
+ppSourceRunErrors ::
+  [SourceRunError] ->
+  String
+ppSourceRunErrors =
+  intercalate "\n\n"
+    . map ppSourceRunError
   where
     ppSourceRunError :: SourceRunError -> String
-    ppSourceRunError (SourceRunError Nothing src desc)
-      =  "error: "
-      <> desc
-      <> "\n\t"
-      <> ppSource src
+    ppSourceRunError (SourceRunError Nothing src desc) =
+      "error: "
+        <> desc
+        <> "\n\t"
+        <> ppSource src
+    ppSourceRunError (SourceRunError (Just (SomeOpt opt)) src desc) =
+      "option "
+        <> optId opt
+        <> ": "
+        <> desc
+        <> "\n\t"
+        <> ppSource src
+        <> ppEnvVar (_optEnvVar opt)
 
-    ppSourceRunError (SourceRunError (Just (SomeOpt opt)) src desc)
-      =  "option "
-      <> optId opt
-      <> ": "
-      <> desc
-      <> "\n\t"
-      <> ppSource src
-      <> ppEnvVar (_optEnvVar opt)
+    optId Opt {..} =
+      fromMaybe "<no name available>" $
+        _optLong <|> (pure <$> _optShort) <|> _optMetavar
 
-    optId Opt{..}
-      = fromMaybe "<no name available>"
-        $ _optLong <|> (pure <$> _optShort) <|> _optMetavar
+ppSource ::
+  String ->
+  String
+ppSource s =
+  " (source: " <> s <> ")"
 
-ppSource
-  :: String
-  -> String
-ppSource s
-  = " (source: " <> s <> ")"
-
-ppEnvVar
-  :: Maybe String
-  -> String
-ppEnvVar
-  = maybe "" $ \s -> " (env var: " <> s <> ")"
+ppEnvVar ::
+  Maybe String ->
+  String
+ppEnvVar =
+  maybe "" $ \s -> " (env var: " <> s <> ")"

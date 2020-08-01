@@ -1,117 +1,114 @@
 {-# LANGUAGE PatternSynonyms #-}
+
 module Options.Harg
   ( -- * Summary
     -- $summary
 
     -- ** Option declaration
-    option
-  , flag
-  , switch
-  , switch'
-  , argument
+    option,
+    flag,
+    switch,
+    switch',
+    argument,
+    Single (..),
+    single,
+    fromSingle,
+    Nested (..),
+    getNested,
+    nested,
+    fromNested,
+    AssocListF (..),
+    (:+),
+    pattern (:+),
+    (:->),
+    (:*) (..),
+    Tagged (..),
 
-  , Single (..)
-  , single
-  , fromSingle
+    -- ** Option modifiers
+    long,
+    short,
+    help,
+    metavar,
+    envVar,
+    defaultVal,
+    defaultStr,
+    required,
+    optional,
+    Opt,
 
-  , Nested (..)
-  , getNested
-  , nested
-  , fromNested
+    -- ** Option parsers
+    parseWith,
+    readParser,
+    strParser,
+    boolParser,
+    manyParser,
 
-  , AssocListF (..)
-  , (:+)
-  , pattern (:+)
-  , (:->)
+    -- ** Executing options
+    execOpt,
+    execOptDef,
+    execOptWithCtx,
+    execOptWithCtxDef,
+    execCommands,
+    execCommandsDef,
+    execCommandsWithCtx,
+    execCommandsWithCtxDef,
 
-  , (:*) (..)
-  , Tagged (..)
+    -- ** Option sources
+    EnvSource (..),
+    JSONSource (..),
+    YAMLSource (..),
+    ConfigFile (..),
+    noSources,
+    defaultSources,
 
-  -- ** Option modifiers
-  , long
-  , short
-  , help
-  , metavar
-  , envVar
-  , defaultVal
-  , defaultStr
-  , required
-  , optional
-  , Opt
+    -- ** Parser context
+    getCtx,
+    ctxFromArgs,
+    ctxFromEnv,
+    pureCtx,
 
-  -- ** Option parsers
-  , parseWith
-  , readParser
-  , strParser
-  , boolParser
-  , manyParser
+    -- ** Variant
+    VariantF (..),
+    fromVariantF,
+    pattern In1,
+    pattern In2,
+    pattern In3,
+    pattern In4,
+    pattern In5,
 
-  -- ** Executing options
-  , execOpt
-  , execOptDef
-  , execOptWithCtx
-  , execOptWithCtxDef
-  , execCommands
-  , execCommandsDef
-  , execCommandsWithCtx
-  , execCommandsWithCtxDef
+    -- ** Re-exports
 
-  -- ** Option sources
-  , EnvSource (..)
-  , JSONSource (..)
-  , YAMLSource (..)
-  , ConfigFile (..)
-  , noSources
-  , defaultSources
+    -- *** barbies
+    B.FunctorB,
+    B.TraversableB,
+    B.ProductB,
+    B.Rec (..),
 
-  -- ** Parser context
-  , getCtx
-  , ctxFromArgs
-  , ctxFromEnv
-  , pureCtx
+    -- *** higgledy
+    HKD.HKD,
+    HKD.Build,
+    HKD.build,
+    HKD.Construct,
+    HKD.construct,
+  )
+where
 
-  -- ** Variant
-  , VariantF (..)
-  , fromVariantF
-  , pattern In1
-  , pattern In2
-  , pattern In3
-  , pattern In4
-  , pattern In5
-
-  -- ** Re-exports
-  -- *** barbies
-  , B.FunctorB
-  , B.TraversableB
-  , B.ProductB
-  , B.Rec (..)
-
-  -- *** higgledy
-  , HKD.HKD
-  , HKD.Build
-  , HKD.build
-  , HKD.Construct
-  , HKD.construct
-  ) where
-
-import           Options.Harg.Construct
-import           Options.Harg.Het.HList
-import           Options.Harg.Het.Prod
-import           Options.Harg.Het.Variant
-import           Options.Harg.Nested
-import           Options.Harg.Operations
-import           Options.Harg.Single
-import           Options.Harg.Sources
-import           Options.Harg.Sources.Env
-import           Options.Harg.Sources.JSON
-import           Options.Harg.Sources.NoSource
-import           Options.Harg.Sources.Types
-import           Options.Harg.Sources.YAML
-import           Options.Harg.Types
-
-import qualified Data.Barbie                   as B
-import qualified Data.Generic.HKD              as HKD
-
+import qualified Data.Barbie as B
+import qualified Data.Generic.HKD as HKD
+import Options.Harg.Construct
+import Options.Harg.Het.HList
+import Options.Harg.Het.Prod
+import Options.Harg.Het.Variant
+import Options.Harg.Nested
+import Options.Harg.Operations
+import Options.Harg.Single
+import Options.Harg.Sources
+import Options.Harg.Sources.Env
+import Options.Harg.Sources.JSON
+import Options.Harg.Sources.NoSource
+import Options.Harg.Sources.Types
+import Options.Harg.Sources.YAML
+import Options.Harg.Types
 
 -- $summary
 --

@@ -1,7 +1,8 @@
 module Options.Harg.Het.Nat
-  ( Nat (..)
-  , SNat (..)
-  ) where
+  ( Nat (..),
+    SNat (..),
+  )
+where
 
 -- | Type-level Peano natural number.
 data Nat

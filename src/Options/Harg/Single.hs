@@ -1,22 +1,22 @@
-{-# LANGUAGE DerivingStrategies         #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE PolyKinds                  #-}
-{-# LANGUAGE StandaloneDeriving         #-}
-{-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 module Options.Harg.Single
-  ( Single (..)
-  , single
-  , fromSingle
-  ) where
+  ( Single (..),
+    single,
+    fromSingle,
+  )
+where
 
-import           Data.Functor.Identity (Identity(..))
-import qualified Data.Functor.Product  as P
-import           Data.Kind             (Type)
-import           GHC.Generics          (Generic)
-
-import qualified Data.Aeson            as JSON
-import qualified Data.Barbie           as B
-
+import qualified Data.Aeson as JSON
+import qualified Data.Barbie as B
+import Data.Functor.Identity (Identity (..))
+import qualified Data.Functor.Product as P
+import Data.Kind (Type)
+import GHC.Generics (Generic)
 
 -- | @Single a f@ is a newtype around @f a@, which allows mixing non-nested
 -- with nested values when creating configuration parsers, using
@@ -33,10 +33,9 @@ import qualified Data.Barbie           as B
 --     where
 --       ...
 -- @
-newtype Single (a :: Type) (f :: Type -> Type)
-  = Single
-      { getSingle :: f a
-      }
+newtype Single (a :: Type) (f :: Type -> Type) = Single
+  { getSingle :: f a
+  }
 
 -- | Wrap a value into a 'Single'.
 single :: f a -> Single a f
@@ -47,7 +46,9 @@ fromSingle :: Single a Identity -> a
 fromSingle = runIdentity . getSingle
 
 deriving instance (Show a, Show (f a)) => Show (Single a f)
+
 deriving newtype instance Generic (f a) => Generic (Single a f)
+
 deriving newtype instance JSON.FromJSON (f a) => JSON.FromJSON (Single a f)
 
 instance B.FunctorB (Single a) where

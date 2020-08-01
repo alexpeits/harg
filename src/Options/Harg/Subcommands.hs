@@ -1,26 +1,26 @@
-{-# LANGUAGE AllowAmbiguousTypes  #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE UndecidableInstances #-}
+
 module Options.Harg.Subcommands
-  ( Subcommands (..)
-  ) where
+  ( Subcommands (..),
+  )
+where
 
-import           Data.Functor.Compose       (Compose (..))
-import           Data.Kind                  (Type)
-import           Data.Proxy                 (Proxy (..))
-import           GHC.TypeLits               (KnownSymbol, Symbol, symbolVal)
-
-import qualified Data.Barbie                as B
-import qualified Options.Applicative        as Optparse
-
-import           Options.Harg.Cmdline       (mkOptparseParser)
-import           Options.Harg.Het.All       (All)
-import           Options.Harg.Het.HList     (AssocListF(..))
-import           Options.Harg.Het.Nat
-import           Options.Harg.Het.Proofs    (type (++), Proof(..), hgcastWith)
-import           Options.Harg.Het.Variant   (VariantF, InjectPosF(..))
-import           Options.Harg.Sources       (accumSourceResults)
-import           Options.Harg.Sources.Types
-import           Options.Harg.Types
+import qualified Data.Barbie as B
+import Data.Functor.Compose (Compose (..))
+import Data.Kind (Type)
+import Data.Proxy (Proxy (..))
+import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
+import qualified Options.Applicative as Optparse
+import Options.Harg.Cmdline (mkOptparseParser)
+import Options.Harg.Het.All (All)
+import Options.Harg.Het.HList (AssocListF (..))
+import Options.Harg.Het.Nat
+import Options.Harg.Het.Proofs (Proof (..), hgcastWith, type (++))
+import Options.Harg.Het.Variant (InjectPosF (..), VariantF)
+import Options.Harg.Sources (accumSourceResults)
+import Options.Harg.Sources.Types
+import Options.Harg.Types
 
 -- | This class can be used with an 'AssocList'. It returns the appropriate
 -- list of 'Optparse.CommandFields' in order to create a subcommand parser.
@@ -52,36 +52,38 @@ import           Options.Harg.Types
 -- Should return @VariantF '[RunConfig, TestConfig] Identity@. In order to do
 -- that, it will inject @RunConfig@ based on its position (0) using @HereF@,
 -- and @TestConfig@ using @ThereF . HereF@ because its position is 1.
---
-class Subcommands
+class
+  Subcommands
     (ts :: [Symbol])
-    (xs :: [(Type -> Type) -> Type]) where
-  mapSubcommand
-    :: ( All (RunSource s) xs
-       , Applicative f
-       )
-    => s
-    -> AssocListF ts xs (Compose Opt f)
-    -> ([SourceRunError], [Optparse.Mod Optparse.CommandFields (VariantF xs f)])
+    (xs :: [(Type -> Type) -> Type])
+  where
+  mapSubcommand ::
+    ( All (RunSource s) xs,
+      Applicative f
+    ) =>
+    s ->
+    AssocListF ts xs (Compose Opt f) ->
+    ([SourceRunError], [Optparse.Mod Optparse.CommandFields (VariantF xs f)])
 
 instance ExplSubcommands Z ts xs '[] => Subcommands ts xs where
   mapSubcommand = explMapSubcommand @Z @ts @xs @'[] SZ
 
-
 -- | More general version of 'Subcommands'.
-class ExplSubcommands
+class
+  ExplSubcommands
     (n :: Nat)
     (ts :: [Symbol])
     (xs :: [(Type -> Type) -> Type])
-    (acc :: [(Type -> Type) -> Type]) where
-  explMapSubcommand
-    :: ( All (RunSource s) xs
-       , Applicative f
-       )
-    => SNat n
-    -> s
-    -> AssocListF ts xs (Compose Opt f)
-    -> ([SourceRunError], [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)])
+    (acc :: [(Type -> Type) -> Type])
+  where
+  explMapSubcommand ::
+    ( All (RunSource s) xs,
+      Applicative f
+    ) =>
+    SNat n ->
+    s ->
+    AssocListF ts xs (Compose Opt f) ->
+    ([SourceRunError], [Optparse.Mod Optparse.CommandFields (VariantF (acc ++ xs) f)])
 
 instance ExplSubcommands n '[] '[] acc where
   explMapSubcommand _ _ _ = ([], [])
@@ -89,36 +91,41 @@ instance ExplSubcommands n '[] '[] acc where
 -- ok wait
 -- hear me out:
 instance
-    ( ExplSubcommands (S n) ts xs (as ++ '[x])
-      -- get the correct injection into the variant by position
-    , InjectPosF n x (as ++ (x ': xs))
-    , B.TraversableB x
-    , B.ProductB x
-    , KnownSymbol t
-      -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
-    , Proof as x xs
-    ) => ExplSubcommands n (t ': ts) (x ': xs) as where
-
-  explMapSubcommand n srcs (ACons opt opts)
-    = (thisErr ++ restErr, sc : rest)
+  ( ExplSubcommands (S n) ts xs (as ++ '[x]),
+    -- get the correct injection into the variant by position
+    InjectPosF n x (as ++ (x ': xs)),
+    B.TraversableB x,
+    B.ProductB x,
+    KnownSymbol t,
+    -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
+    Proof as x xs
+  ) =>
+  ExplSubcommands n (t ': ts) (x ': xs) as
+  where
+  explMapSubcommand n srcs (ACons opt opts) =
+    (thisErr ++ restErr, sc : rest)
     where
-      (thisErr, sc)
-        = subcommand
-      (restErr, rest)
-        = hgcastWith (proof @as @x @xs)
-          $ explMapSubcommand
-              @(S n) @ts @xs @(as ++ '[x])
-              (SS n) srcs opts
-      subcommand
-        = let
-            (errs, src)
-              = accumSourceResults $ runSource srcs opt
-            parser
-              = mkOptparseParser src opt
-            tag
-              = symbolVal (Proxy :: Proxy t)
-            cmd
-              = Optparse.command tag
-                $ injectPosF n
+      (thisErr, sc) =
+        subcommand
+      (restErr, rest) =
+        hgcastWith (proof @as @x @xs) $
+          explMapSubcommand
+            @(S n)
+            @ts
+            @xs
+            @(as ++ '[x])
+            (SS n)
+            srcs
+            opts
+      subcommand =
+        let (errs, src) =
+              accumSourceResults $ runSource srcs opt
+            parser =
+              mkOptparseParser src opt
+            tag =
+              symbolVal (Proxy :: Proxy t)
+            cmd =
+              Optparse.command tag $
+                injectPosF n
                   <$> Optparse.info (Optparse.helper <*> parser) mempty
-          in (errs, cmd)
+         in (errs, cmd)

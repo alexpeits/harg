@@ -1,110 +1,104 @@
-cabal-version: 2.4
+cabal-version:      2.4
+name:               harg
+version:            0.4.2.0
+license:            BSD-3-Clause
+license-file:       LICENSE
+copyright:          Copyright (c) 2019 Alex Peitsinis
+maintainer:         alexpeitsinis@gmail.com
+author:             Alex Peitsinis
+stability:          Experimental
+homepage:           https://github.com/alexpeits/harg
+bug-reports:        https://github.com/alexpeits/harg/issues
+synopsis:           Haskell program configuration using higher kinded data
+description:
+    Please see the README on GitHub at <https://github.com/alexpeits/harg#readme>
 
-name:           harg
-version:        0.4.2.0
-synopsis:       Haskell program configuration using higher kinded data
-description:    Please see the README on GitHub at <https://github.com/alexpeits/harg#readme>
-homepage:       https://github.com/alexpeits/harg
-bug-reports:    https://github.com/alexpeits/harg/issues
-author:         Alex Peitsinis
-maintainer:     alexpeitsinis@gmail.com
-stability:      Experimental
-copyright:      Copyright (c) 2019 Alex Peitsinis
-license:        BSD-3-Clause
-license-file:   LICENSE
-build-type:     Simple
-category:       System, CLI, Options, Parsing, HKD
+category:           System, CLI, Options, Parsing, HKD
+build-type:         Simple
 extra-source-files:
     README.md
     CHANGELOG.md
 
 source-repository head
-  type: git
-  location: https://github.com/alexpeits/harg
+    type:     git
+    location: https://github.com/alexpeits/harg
 
 library
-  exposed-modules:    Options.Harg
-                      Options.Harg.Cmdline
-                      Options.Harg.Config
-                      Options.Harg.Construct
-                      Options.Harg.Het.All
-                      Options.Harg.Het.HList
-                      Options.Harg.Het.Nat
-                      Options.Harg.Het.Prod
-                      Options.Harg.Het.Proofs
-                      Options.Harg.Het.Variant
-                      Options.Harg.Nested
-                      Options.Harg.Operations
-                      Options.Harg.Pretty
-                      Options.Harg.Single
-                      Options.Harg.Sources
-                      Options.Harg.Sources.DefaultStr
-                      Options.Harg.Sources.Env
-                      Options.Harg.Sources.JSON
-                      Options.Harg.Sources.NoSource
-                      Options.Harg.Sources.Types
-                      Options.Harg.Sources.YAML
-                      Options.Harg.Subcommands
-                      Options.Harg.Types
-                      Options.Harg.Util
-  hs-source-dirs:     src
-  default-extensions: DataKinds
-                      FlexibleContexts
-                      FlexibleInstances
-                      GADTs
-                      KindSignatures
-                      LambdaCase
-                      MultiParamTypeClasses
-                      RecordWildCards
-                      ScopedTypeVariables
-                      TypeApplications
-                      TypeOperators
-  ghc-options:        -Wall
-                      -Wno-unticked-promoted-constructors
-  build-depends:      base >=4.7 && <5
-                    , aeson >= 1.4.2 && < 1.5
-                    , barbies >= 1.1.0 && < 1.2
-                    , bytestring >= 0.10.8 && < 0.11
-                    , directory >= 1.3.3 && < 1.4
-                    , higgledy >= 0.3.0 && < 0.4
-                    , optparse-applicative >= 0.14.3 && < 0.15
-                    , split >= 0.2.3 && < 0.3
-                    , text >= 1.2.3 && < 1.3
-                    , yaml >= 0.11.0 && < 0.12
-  default-language:   Haskell2010
+    exposed-modules:
+        Options.Harg
+        Options.Harg.Cmdline
+        Options.Harg.Config
+        Options.Harg.Construct
+        Options.Harg.Het.All
+        Options.Harg.Het.HList
+        Options.Harg.Het.Nat
+        Options.Harg.Het.Prod
+        Options.Harg.Het.Proofs
+        Options.Harg.Het.Variant
+        Options.Harg.Nested
+        Options.Harg.Operations
+        Options.Harg.Pretty
+        Options.Harg.Single
+        Options.Harg.Sources
+        Options.Harg.Sources.DefaultStr
+        Options.Harg.Sources.Env
+        Options.Harg.Sources.JSON
+        Options.Harg.Sources.NoSource
+        Options.Harg.Sources.Types
+        Options.Harg.Sources.YAML
+        Options.Harg.Subcommands
+        Options.Harg.Types
+        Options.Harg.Util
+
+    hs-source-dirs:     src
+    default-language:   Haskell2010
+    default-extensions:
+        DataKinds FlexibleContexts FlexibleInstances GADTs KindSignatures
+        LambdaCase MultiParamTypeClasses RecordWildCards
+        ScopedTypeVariables TypeApplications TypeOperators
+
+    ghc-options:        -Wall -Wno-unticked-promoted-constructors
+    build-depends:
+        base >=4.7 && <5,
+        aeson >=1.4.2 && <1.5,
+        barbies >=1.1.0 && <1.2,
+        bytestring >=0.10.8 && <0.11,
+        directory >=1.3.3 && <1.4,
+        higgledy >=0.3.0 && <0.4,
+        optparse-applicative >=0.14.3 && <0.15,
+        split >=0.2.3 && <0.3,
+        text >=1.2.3 && <1.3,
+        yaml >=0.11.0 && <0.12
 
 test-suite harg-test
-  type:             exitcode-stdio-1.0
-  main-is:          Spec.hs
-  hs-source-dirs:   test
-  ghc-options:      -Wall
-                    -Wno-unticked-promoted-constructors
-                    -threaded
-                    -rtsopts
-                    -with-rtsopts=-N
-  build-depends:    base
-                  , harg
-  default-language: Haskell2010
+    type:             exitcode-stdio-1.0
+    main-is:          Main.hs
+    hs-source-dirs:   test
+    default-language: Haskell2010
+    ghc-options:
+        -Wall -Wno-unticked-promoted-constructors -threaded -rtsopts
+        -with-rtsopts=-N
+
+    build-depends:
+        base -any,
+        harg -any
 
 test-suite docs-test
-  type:               exitcode-stdio-1.0
-  hs-source-dirs:     docs
-  main-is:            docs.lhs
-  ghc-options:        -Wall
-                      -Wno-unticked-promoted-constructors
-                      -threaded
-                      -Wall
-                      -fno-warn-incomplete-patterns
-                      -fno-warn-missing-signatures
-                      -fno-warn-name-shadowing
-                      -fno-warn-type-defaults
-                      -fno-warn-unused-top-binds
-                      -pgmL markdown-unlit
-  build-depends:      base
-                    , aeson
-                    , barbies
-                    , higgledy
-                    , optparse-applicative
-                    , harg
-  build-tool-depends: markdown-unlit:markdown-unlit
-  default-language:   Haskell2010
+    type:               exitcode-stdio-1.0
+    main-is:            docs.lhs
+    build-tool-depends: markdown-unlit:markdown-unlit -any
+    hs-source-dirs:     docs
+    default-language:   Haskell2010
+    ghc-options:
+        -Wall -Wno-unticked-promoted-constructors -threaded -Wall
+        -fno-warn-incomplete-patterns -fno-warn-missing-signatures
+        -fno-warn-name-shadowing -fno-warn-type-defaults
+        -fno-warn-unused-top-binds -pgmL markdown-unlit
+
+    build-depends:
+        base -any,
+        aeson -any,
+        barbies -any,
+        higgledy -any,
+        optparse-applicative -any,
+        harg -any

@@ -1,19 +1,18 @@
 {-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric  #-}
-{-# LANGUAGE TypeFamilies   #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TypeFamilies #-}
+
 module Options.Harg.Sources.DefaultStr
-  ( DefaultStrSource (..)
-  ) where
+  ( DefaultStrSource (..),
+  )
+where
 
-import           Data.Functor.Compose       (Compose (..))
-import           Data.Kind                  (Type)
-import           GHC.Generics               (Generic)
-
-import qualified Data.Barbie                as B
-
-import           Options.Harg.Sources.Types
-import           Options.Harg.Types
-
+import qualified Data.Barbie as B
+import Data.Functor.Compose (Compose (..))
+import Data.Kind (Type)
+import GHC.Generics (Generic)
+import Options.Harg.Sources.Types
+import Options.Harg.Types
 
 -- | Source that enables a parser to read options from defaults that are provided
 -- as strings (unparsed).
@@ -26,39 +25,41 @@ data DefaultStrSourceVal = DefaultStrSourceVal
 
 instance GetSource DefaultStrSource f where
   type SourceVal DefaultStrSource = DefaultStrSourceVal
-  getSource HargCtx{..} _
-    = pure DefaultStrSourceVal
+  getSource HargCtx {..} _ =
+    pure DefaultStrSourceVal
 
 instance
-    ( B.FunctorB a
-    , B.TraversableB a
-    ) => RunSource DefaultStrSourceVal a where
-  runSource DefaultStrSourceVal opt
-    = [runDefaultStrSource opt]
+  ( B.FunctorB a,
+    B.TraversableB a
+  ) =>
+  RunSource DefaultStrSourceVal a
+  where
+  runSource DefaultStrSourceVal opt =
+    [runDefaultStrSource opt]
 
 -- TODO: this looks very similar to EnvSource, perhaps unify
-runDefaultStrSource
-  :: forall a f.
-     ( B.FunctorB a
-     , B.TraversableB a
-     , Applicative f
-     )
-  => a (Compose Opt f)
-  -> Either SourceRunError (a (Compose SourceRunResult f))
-runDefaultStrSource
-  = B.btraverse go
+runDefaultStrSource ::
+  forall a f.
+  ( B.FunctorB a,
+    B.TraversableB a,
+    Applicative f
+  ) =>
+  a (Compose Opt f) ->
+  Either SourceRunError (a (Compose SourceRunResult f))
+runDefaultStrSource =
+  B.btraverse go
   where
-    go
-      :: Compose Opt f x
-      -> Either SourceRunError (Compose SourceRunResult f x)
-    go (Compose opt@Opt{..})
-      = maybe toNotFound parse _optDefaultStr
+    go ::
+      Compose Opt f x ->
+      Either SourceRunError (Compose SourceRunResult f x)
+    go (Compose opt@Opt {..}) =
+      maybe toNotFound parse _optDefaultStr
       where
-        parse
-          = either toErr toParsed . _optReader
-        toNotFound
-          = Right $ Compose $ pure <$> OptNotFound
-        toErr
-          = Left . sourceRunError opt "DefaultStrSource"
-        toParsed
-          = Right . Compose . OptParsed
+        parse =
+          either toErr toParsed . _optReader
+        toNotFound =
+          Right $ Compose $ pure <$> OptNotFound
+        toErr =
+          Left . sourceRunError opt "DefaultStrSource"
+        toParsed =
+          Right . Compose . OptParsed
