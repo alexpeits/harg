@@ -8,29 +8,20 @@ NIX_SHELL_CMD=nix-shell --argstr pkgs ${NIV_VERSION} --arg withHoogle false
 configure:
 	${NIX_SHELL_CMD} --run 'cabal new-configure -w $$(which ghc)'
 
-cabal-update:
-	${NIX_SHELL_CMD} --run 'cabal update'
-
-build:
-	${NIX_SHELL_CMD} --run 'cabal new-build'
-
-test:
-	${NIX_SHELL_CMD} --run 'cabal new-test'
+dist:
+	${NIX_SHELL_CMD} --run 'cabal new-sdist'
 
 haddock:
 	${NIX_SHELL_CMD} --run '${HADDOCK_CMD}'
+
+haddock-hackage:
+	${NIX_SHELL_CMD} --run '${HADDOCK_CMD} --haddock-for-hackage'
 
 ghcid:
 	${NIX_SHELL_CMD} --run 'ghcid -a --command="cabal new-repl" --restart=harg.cabal'
 
 ghcid-stack:
 	ghcid -a --command='stack ghci -- src/**/*.hs Example.hs'
-
-dist:
-	${NIX_SHELL_CMD} --run 'cabal new-sdist'
-
-haddock-hackage:
-	${NIX_SHELL_CMD} --run '${HADDOCK_CMD} --haddock-for-hackage'
 
 hoogle:
 	nix-shell --argstr pkgs ${NIV_VERSION} --run 'hoogle server --port ${HOOGLE_PORT} --local'

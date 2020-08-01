@@ -11,16 +11,16 @@
         "url": "https://github.com/NixOS/nixpkgs-channels/archive/8bf142e001b6876b021c8ee90c2c7cec385fe8e9.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
-    "nixpkgs-master": {
-        "branch": "749dccbedbc9d538f94f172a705c5784cf5a752e",
-        "description": "Nix Packages collection",
-        "homepage": null,
+    "nixpkgs-unstable": {
+        "branch": "nixpkgs-unstable",
+        "description": "A read-only mirror of NixOS/nixpkgs tracking the released channels. Send issues and PRs to",
+        "homepage": "https://github.com/NixOS/nixpkgs",
         "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "749dccbedbc9d538f94f172a705c5784cf5a752e",
-        "sha256": "15xrxzfnpx1hm4s36srvb71zzjm6j2dnk7g3v33x51qmf8bp9mw9",
+        "repo": "nixpkgs-channels",
+        "rev": "5ad1cdafe15d4ea79ae6abcddc360dd2de35b44e",
+        "sha256": "1nn602v3ssj79rxdfl3ical10c1d632vji9nv2h0dqslmycg4aws",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/749dccbedbc9d538f94f172a705c5784cf5a752e.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs-channels/archive/5ad1cdafe15d4ea79ae6abcddc360dd2de35b44e.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }
