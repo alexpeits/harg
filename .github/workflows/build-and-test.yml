@@ -31,13 +31,13 @@ jobs:
           ~/.cabal/store
         key: ${{ runner.os }}-${{ matrix.ghc }}
     - name: Setup cabal
-      run: nix-shell --argstr compiler ${{ matrix.ghc }} --run 'cabal update'
+      run: nix-shell --argstr compiler ${{ matrix.ghc }} --arg withHoogle false --run 'cabal update'
     - name: Build
-      run: nix-shell --argstr compiler ${{ matrix.ghc }} --run 'cabal new-build'
+      run: nix-shell --argstr compiler ${{ matrix.ghc }} --arg withHoogle false --run 'cabal new-build'
     - name: Test
-      run: nix-shell --argstr compiler ${{ matrix.ghc }} --run 'cabal new-test'
+      run: nix-shell --argstr compiler ${{ matrix.ghc }} --arg withHoogle false --run 'cabal new-test'
     - name: Haddock
-      run: nix-shell --argstr compiler ${{ matrix.ghc }} --run 'cabal new-haddock --haddock-options="--show-all"'
+      run: nix-shell --argstr compiler ${{ matrix.ghc }} --arg withHoogle false --run 'cabal new-haddock --haddock-options="--show-all"'
   stack:
     name: stack
     runs-on: ubuntu-latest
