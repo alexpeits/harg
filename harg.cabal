@@ -65,7 +65,7 @@ library
         bytestring >=0.10.8 && <0.11,
         directory >=1.3.3 && <1.4,
         higgledy >=0.4.1 && <0.5,
-        optparse-applicative >=0.14.3 && <0.15,
+        optparse-applicative >=0.15.1 && <0.16,
         split >=0.2.3 && <0.3,
         text >=1.2.3 && <1.3,
         yaml >=0.11.0 && <0.12
@@ -80,13 +80,13 @@ test-suite harg-test
         -with-rtsopts=-N
 
     build-depends:
-        base -any,
-        harg -any
+        base,
+        harg
 
 test-suite docs-test
     type:               exitcode-stdio-1.0
     main-is:            docs.lhs
-    build-tool-depends: markdown-unlit:markdown-unlit -any
+    build-tool-depends: markdown-unlit:markdown-unlit >=0.5.0 && <0.6
     hs-source-dirs:     docs
     default-language:   Haskell2010
     ghc-options:
@@ -96,9 +96,9 @@ test-suite docs-test
         -fno-warn-unused-top-binds -pgmL markdown-unlit
 
     build-depends:
-        base -any,
-        aeson -any,
-        barbies -any,
-        higgledy -any,
-        optparse-applicative -any,
-        harg -any
+        base,
+        aeson,
+        barbies,
+        higgledy,
+        optparse-applicative,
+        harg

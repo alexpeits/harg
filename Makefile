@@ -1,6 +1,6 @@
 .PHONY: test
 
-NIV_VERSION?=nixos-stable
+NIV_VERSION?=nixos
 HOOGLE_PORT?=8888
 HADDOCK_CMD=cabal new-haddock --haddock-options="--show-all --hyperlinked-source"
 NIX_SHELL_CMD=nix-shell --argstr pkgs ${NIV_VERSION} --arg withHoogle false
@@ -31,6 +31,7 @@ hlint:
 	hlint src/ test/ Example.hs
 
 format:
+	nixpkgs-fmt default.nix nix/overrides.nix
 	cabal format
 	ormolu ${ORMOLU_ARGS} -i $$(find src/ test/ -name '*.hs')
 	ormolu ${ORMOLU_ARGS} -i Example.hs
