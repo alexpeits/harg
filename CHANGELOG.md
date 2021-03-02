@@ -1,5 +1,22 @@
 # Changelog for harg
 
+## 0.5.0.0 [2021.03.02]
+
+Library updates:
+
+- Add support for ghc >= 8.8 by updating `barbies` and `higgledy`. This means
+  that **support is dropped** for ghc <= 8.2 (because of `barbies`)
+- Expose `HasX` classes from `Construct.hs`
+- Because of changes in `barbies`, `ApplicativeB` is exposed from `Options.Harg`
+  instead of `ProductB`
+
+CI & development updates:
+
+- Update nix sources for using cached ghc v8.8.4 and dependencies
+- Add stack configuration for ghc v8.8.4 (lts-16.31 resolver)
+- Update github actions workflow to build both v8.8.4 and v8.6.5 with cabal and
+  stack
+
 ## 0.4.2.1 [2020.08.01]
 
 Only cosmetic and functional changes, no library changes:
