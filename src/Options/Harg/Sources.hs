@@ -7,7 +7,7 @@ module Options.Harg.Sources
   )
 where
 
-import qualified Data.Barbie as B
+import qualified Barbies as B
 import Data.Foldable (foldr')
 import Data.Functor.Compose (Compose (..))
 import Options.Harg.Sources.DefaultStr (DefaultStrSource (..))

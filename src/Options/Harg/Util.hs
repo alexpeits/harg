@@ -9,8 +9,8 @@ module Options.Harg.Util
   )
 where
 
+import qualified Barbies as B
 import qualified Control.Exception as Exc
-import qualified Data.Barbie as B
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import Data.Functor.Compose (Compose (..))

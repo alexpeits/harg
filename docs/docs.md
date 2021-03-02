@@ -38,9 +38,8 @@ import           Data.Functor.Identity (Identity (..))
 import           Data.Kind             (Type)
 import           GHC.Generics          (Generic)
 
-import qualified Data.Barbie           as B
+import qualified Barbies               as B
 import           Data.Aeson            (FromJSON)
-import           Data.Generic.HKD      (HKD, build, construct)
 
 import           Options.Harg
 
@@ -173,7 +172,7 @@ data FlatConfigB f
       , _fcDirB    :: f String
       , _fcLogB    :: f Bool
       }
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 ```
 
 I also derived some required instances that come from the `barbies` package.
@@ -225,8 +224,8 @@ which works in a similar fashion as servant's `:<|>` type. This type is defined
 in `Options.Harg.Het.Prod` and is called `:*` (the `*` stands for product). This
 type stores barbie-like types and also keeps the `f` handy: `data (a :* b) f = a
 f :* b f`. This is also easily made an instance of `Generic`, `FunctorB`,
-`TraversableB` and `ProductB`. With all that, let's rewrite the options value
-and the function to get the configuration:
+`TraversableB` and `ApplicativeB`. With all that, let's rewrite the options
+value and the function to get the configuration:
 
 ``` haskell
 flatConfigOpt2
@@ -351,21 +350,21 @@ data ConfigB f
       , _cServiceB :: ServiceConfigB f
       , _cDirB     :: f String
       }
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 
 data DbConfigB f
   = DbConfigB
       { _dcHostB :: f String
       , _dcPortB :: f Int
       }
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 
 data ServiceConfigB f
   = ServiceConfigB
       { _scPortB :: f Int
       , _scLogB  :: f Bool
       }
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 ```
 
 To define the option parser, we need option parsers for every type inside it.
@@ -417,7 +416,7 @@ data ConfigH f
       , _cServiceH :: HKD ServiceConfig f
       , _cDirH     :: f String
       }
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 
 configOpt2 :: ConfigH Opt
 configOpt2

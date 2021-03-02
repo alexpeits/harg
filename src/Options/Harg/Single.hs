@@ -11,8 +11,8 @@ module Options.Harg.Single
   )
 where
 
+import qualified Barbies as B
 import qualified Data.Aeson as JSON
-import qualified Data.Barbie as B
 import Data.Functor.Identity (Identity (..))
 import qualified Data.Functor.Product as P
 import Data.Kind (Type)
@@ -57,6 +57,6 @@ instance B.FunctorB (Single a) where
 instance B.TraversableB (Single a) where
   btraverse nat (Single p) = Single <$> nat p
 
-instance B.ProductB (Single a) where
+instance B.ApplicativeB (Single a) where
   bprod (Single l) (Single r) = Single (P.Pair l r)
-  buniq = Single
+  bpure = Single

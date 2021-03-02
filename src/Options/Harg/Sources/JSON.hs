@@ -8,8 +8,8 @@ module Options.Harg.Sources.JSON
   )
 where
 
+import qualified Barbies as B
 import qualified Data.Aeson as JSON
-import qualified Data.Barbie as B
 import qualified Data.ByteString.Lazy as LBS
 import Data.Functor.Compose (Compose (..))
 import Data.Functor.Identity (Identity (..))
@@ -20,7 +20,7 @@ import Options.Harg.Util (readFileLBS)
 
 -- | Source that enables a parser to read options from a JSON file.
 newtype JSONSource f = JSONSource (f ConfigFile)
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 
 -- | The result of reading a JSON file. @JSONSourceNotRequired@ is used when
 -- the user has specified @defaultVal NoConfigFile@. It holds the contents of

@@ -7,7 +7,7 @@ module Options.Harg.Sources.DefaultStr
   )
 where
 
-import qualified Data.Barbie as B
+import qualified Barbies as B
 import Data.Functor.Compose (Compose (..))
 import Data.Kind (Type)
 import GHC.Generics (Generic)
@@ -17,7 +17,7 @@ import Options.Harg.Types
 -- | Source that enables a parser to read options from defaults that are provided
 -- as strings (unparsed).
 data DefaultStrSource (f :: Type -> Type) = DefaultStrSource
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 
 -- | Value of 'DefaultStrSource' is a dummy value, as the default string option can
 -- be found inside the 'Opt' ('_optDefaultStr').

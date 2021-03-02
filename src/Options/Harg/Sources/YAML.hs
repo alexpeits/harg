@@ -8,8 +8,8 @@ module Options.Harg.Sources.YAML
   )
 where
 
+import qualified Barbies as B
 import Control.Exception (displayException)
-import qualified Data.Barbie as B
 import qualified Data.ByteString as BS
 import Data.Functor.Compose (Compose (..))
 import Data.Functor.Identity (Identity (..))
@@ -21,7 +21,7 @@ import Options.Harg.Util (readFileBS)
 
 -- | Source that enables a parser to read options from a YAML file.
 newtype YAMLSource f = YAMLSource (f ConfigFile)
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 
 -- | The result of reading a YAML file. @YAMLSourceNotRequired@ is used when
 -- the user has specified @defaultVal NoConfigFile@. It holds the contents of

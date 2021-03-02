@@ -80,8 +80,8 @@ test-suite harg-test
         -with-rtsopts=-N
 
     build-depends:
-        base,
-        harg
+        base -any,
+        harg -any
 
 test-suite docs-test
     type:               exitcode-stdio-1.0
@@ -96,9 +96,9 @@ test-suite docs-test
         -fno-warn-unused-top-binds -pgmL markdown-unlit
 
     build-depends:
-        base,
-        aeson,
-        barbies,
-        higgledy,
-        optparse-applicative,
-        harg
+        base -any,
+        aeson -any,
+        barbies -any,
+        higgledy -any,
+        optparse-applicative -any,
+        harg -any

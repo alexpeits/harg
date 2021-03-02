@@ -16,7 +16,7 @@ module Options.Harg.Operations
   )
 where
 
-import qualified Data.Barbie as B
+import qualified Barbies as B
 import Data.Functor.Identity (Identity (..))
 import qualified Options.Applicative as Optparse
 import Options.Harg.Cmdline (mkOptparseParser)
@@ -43,9 +43,9 @@ import Options.Harg.Util (allToDummyOpts, compose, toDummyOpts)
 execOptWithCtx ::
   forall c a.
   ( B.TraversableB a,
-    B.ProductB a,
+    B.ApplicativeB a,
     B.TraversableB c,
-    B.ProductB c,
+    B.ApplicativeB c,
     GetSource c Identity,
     RunSource (SourceVal c) a
   ) =>
@@ -81,9 +81,9 @@ execOptWithCtx ctx conf opts = do
 execOpt ::
   forall c a.
   ( B.TraversableB a,
-    B.ProductB a,
+    B.ApplicativeB a,
     B.TraversableB c,
-    B.ProductB c,
+    B.ApplicativeB c,
     GetSource c Identity,
     RunSource (SourceVal c) a
   ) =>
@@ -101,7 +101,7 @@ execOpt conf opts = do
 execOptWithCtxDef ::
   forall a.
   ( B.TraversableB a,
-    B.ProductB a
+    B.ApplicativeB a
   ) =>
   -- | Context containing the environment and the cmdline args
   HargCtx ->
@@ -115,7 +115,7 @@ execOptWithCtxDef ctx =
 execOptDef ::
   forall a.
   ( B.TraversableB a,
-    B.ProductB a
+    B.ApplicativeB a
   ) =>
   -- | Target configuration options
   a Opt ->
@@ -129,7 +129,7 @@ execCommandsWithCtx ::
   forall c ts xs.
   ( B.TraversableB (VariantF xs),
     B.TraversableB c,
-    B.ProductB c,
+    B.ApplicativeB c,
     Subcommands ts xs,
     GetSource c Identity,
     All (RunSource (SourceVal (c :* HiddenSources))) xs,
@@ -173,7 +173,7 @@ execCommands ::
   forall c ts xs.
   ( B.TraversableB (VariantF xs),
     B.TraversableB c,
-    B.ProductB c,
+    B.ApplicativeB c,
     Subcommands ts xs,
     GetSource c Identity,
     All (RunSource (SourceVal (c :* HiddenSources))) xs,

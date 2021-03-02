@@ -12,7 +12,7 @@ module Options.Harg.Het.HList
   )
 where
 
-import qualified Data.Barbie as B
+import qualified Barbies as B
 import Data.Kind (Type)
 import GHC.TypeLits (ErrorMessage (..), Symbol, TypeError)
 

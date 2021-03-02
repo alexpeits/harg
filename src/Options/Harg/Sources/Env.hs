@@ -8,7 +8,7 @@ module Options.Harg.Sources.Env
   )
 where
 
-import qualified Data.Barbie as B
+import qualified Barbies as B
 import Data.Functor.Compose (Compose (..))
 import Data.Kind (Type)
 import Data.List (find)
@@ -18,7 +18,7 @@ import Options.Harg.Types
 
 -- | Source that enables a parser to read options from environment variables.
 data EnvSource (f :: Type -> Type) = EnvSource
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 
 -- | Value of 'EnvSource', which is an association list between environment
 -- variable names and values (strings).
