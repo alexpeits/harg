@@ -23,6 +23,16 @@ module Options.Harg.Construct
     strParser,
     boolParser,
     manyParser,
+    HasLong,
+    HasShort,
+    HasHelp,
+    HasMetavar,
+    HasEnvVar,
+    HasDefaultVal,
+    HasDefaultStr,
+    HasRequired,
+    HasOptional,
+    IsOpt,
   )
 where
 
