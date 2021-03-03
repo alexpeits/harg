@@ -1,6 +1,6 @@
 # to see ghc versions:
 # nix-instantiate --eval -E "with import ./nix/nixpkgs.nix {}; lib.attrNames haskell.compiler"
-{ pkgs ? null, compiler ? null, withHoogle ? true }:
+{ pkgs ? null, compiler ? null, withHoogle ? true, buildDocsTest ? false }:
 let
   sources = import ./nix/sources.nix;
   nixpkgs =
@@ -35,8 +35,11 @@ let
           self = self;
           super = super;
         };
+        extraCabal2nixOptions =
+          nixpkgs.lib.optionalString buildDocsTest "-fbuilddocstest";
         src = nixpkgs.lib.sourceByRegex ./. srcRegex;
-        drv = self.callCabal2nix "harg" src { };
+        drv =
+          self.callCabal2nixWithOptions "harg" src extraCabal2nixOptions { };
       in
       hsPkgs // { harg = drv; };
   };

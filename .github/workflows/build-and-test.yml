@@ -35,7 +35,7 @@ jobs:
     - name: Build
       run: nix-shell --argstr compiler ${{ matrix.ghc }} --arg withHoogle false --run 'cabal new-build'
     - name: Test
-      run: nix-shell --argstr compiler ${{ matrix.ghc }} --arg withHoogle false --run 'cabal new-test'
+      run: nix-shell --argstr compiler ${{ matrix.ghc }} --arg buildDocsTest true --arg withHoogle false --run 'cabal new-test -fbuilddocstest'
     - name: Haddock
       run: nix-shell --argstr compiler ${{ matrix.ghc }} --arg withHoogle false --run 'cabal new-haddock --haddock-options="--show-all"'
   stack:
@@ -63,4 +63,4 @@ jobs:
     - name: Build
       run: stack --stack-yaml=stack-${{ matrix.ghc }}.yaml build
     - name: Test
-      run: stack --stack-yaml=stack-${{ matrix.ghc }}.yaml test
+      run: stack --stack-yaml=stack-${{ matrix.ghc }}.yaml test --flag harg:builddocstest
