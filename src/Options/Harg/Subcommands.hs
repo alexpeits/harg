@@ -6,7 +6,7 @@ module Options.Harg.Subcommands
   )
 where
 
-import qualified Data.Barbie as B
+import qualified Barbies as B
 import Data.Functor.Compose (Compose (..))
 import Data.Kind (Type)
 import Data.Proxy (Proxy (..))
@@ -95,7 +95,7 @@ instance
     -- get the correct injection into the variant by position
     InjectPosF n x (as ++ (x ': xs)),
     B.TraversableB x,
-    B.ProductB x,
+    B.ApplicativeB x,
     KnownSymbol t,
     -- prove that xs ++ (y : ys) ~ (xs ++ [y]) ++ ys
     Proof as x xs

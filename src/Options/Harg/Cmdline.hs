@@ -3,8 +3,8 @@ module Options.Harg.Cmdline
   )
 where
 
+import qualified Barbies as B
 import Control.Applicative ((<|>))
-import qualified Data.Barbie as B
 import Data.Functor.Compose (Compose (..))
 import Data.List (foldl')
 import Data.Maybe (fromMaybe)
@@ -19,7 +19,7 @@ mkOptparseParser ::
   forall f a.
   ( Applicative f,
     B.TraversableB a,
-    B.ProductB a
+    B.ApplicativeB a
   ) =>
   -- | Source results
   [a (Compose Maybe f)] ->

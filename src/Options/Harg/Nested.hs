@@ -15,8 +15,8 @@ module Options.Harg.Nested
   )
 where
 
+import qualified Barbies as B
 import qualified Data.Aeson as JSON
-import qualified Data.Barbie as B
 import Data.Coerce (Coercible, coerce)
 import Data.Functor.Identity (Identity (..))
 import qualified Data.Generic.HKD as HKD
@@ -100,7 +100,7 @@ deriving newtype instance JSON.FromJSON (HKD.HKD b f) => JSON.FromJSON (Nested b
 
 deriving newtype instance B.FunctorB (HKD.HKD b) => B.FunctorB (Nested b)
 
-deriving newtype instance B.ProductB (HKD.HKD b) => B.ProductB (Nested b)
+deriving newtype instance B.ApplicativeB (HKD.HKD b) => B.ApplicativeB (Nested b)
 
 instance (B.TraversableB (HKD.HKD b)) => B.TraversableB (Nested b) where
   btraverse nat (Nested hkd) = Nested <$> B.btraverse nat hkd

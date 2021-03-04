@@ -12,9 +12,9 @@ module Options.Harg.Het.Prod
   )
 where
 
+import qualified Barbies as B
 import Data.Aeson ((.!=), (.:?))
 import qualified Data.Aeson as JSON
-import qualified Data.Barbie as B
 import Data.Functor.Identity (Identity)
 import Data.Kind (Type)
 import Data.Proxy (Proxy (..))
@@ -40,7 +40,7 @@ data
   )
     (f :: Type -> Type)
   = a f :* b f
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 
 infixr 4 :*
 
@@ -69,17 +69,17 @@ instance B.FunctorB a => B.FunctorB (Tagged t a) where
 instance B.TraversableB a => B.TraversableB (Tagged t a) where
   btraverse nat (Tagged x) = Tagged <$> B.btraverse nat x
 
-instance B.ProductB a => B.ProductB (Tagged t a) where
+instance B.ApplicativeB a => B.ApplicativeB (Tagged t a) where
   bprod (Tagged l) (Tagged r) = Tagged (B.bprod l r)
-  buniq f = Tagged (B.buniq f)
+  bpure f = Tagged (B.bpure f)
 
 -- The following JSON instances need to work if and only if all elements in
 -- the product are `Tagged`, hence the weird pattern matches
 instance
   ( JSON.FromJSON (a Maybe),
     JSON.FromJSON (b' Maybe),
-    B.ProductB a,
-    B.ProductB b',
+    B.ApplicativeB a,
+    B.ApplicativeB b',
     KnownSymbol ta,
     b' ~ (Tagged tb b :* c)
   ) =>
@@ -89,14 +89,14 @@ instance
     JSON.withObject ":*" $
       \o ->
         (:*)
-          <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy ta)) .!= B.buniq Nothing
+          <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy ta)) .!= B.bpure Nothing
           <*> JSON.parseJSON (JSON.Object o)
 
 instance
   ( JSON.FromJSON (a Maybe),
     JSON.FromJSON (b Maybe),
-    B.ProductB a,
-    B.ProductB b,
+    B.ApplicativeB a,
+    B.ApplicativeB b,
     KnownSymbol ta,
     KnownSymbol tb
   ) =>
@@ -106,5 +106,5 @@ instance
     JSON.withObject ":*" $
       \o ->
         (:*)
-          <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy ta)) .!= B.buniq Nothing
-          <*> o .:? Tx.pack (symbolVal (Proxy :: Proxy tb)) .!= B.buniq Nothing
+          <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy ta)) .!= B.bpure Nothing
+          <*> o .:? Tx.pack (symbolVal (Proxy :: Proxy tb)) .!= B.bpure Nothing

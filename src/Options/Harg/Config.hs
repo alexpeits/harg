@@ -4,7 +4,7 @@ module Options.Harg.Config
   )
 where
 
-import qualified Data.Barbie as B
+import qualified Barbies as B
 import Data.Functor.Compose (Compose (..))
 import Data.Kind (Type)
 import qualified Options.Applicative as Optparse
@@ -20,7 +20,7 @@ mkConfigParser ::
   forall f c.
   ( Applicative f,
     B.TraversableB c,
-    B.ProductB c
+    B.ApplicativeB c
   ) =>
   HargCtx ->
   c (Compose Opt f) ->

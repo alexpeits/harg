@@ -1,6 +1,6 @@
 .PHONY: test
 
-NIV_VERSION?=nixos-stable
+NIV_VERSION?=nixos
 HOOGLE_PORT?=8888
 HADDOCK_CMD=cabal new-haddock --haddock-options="--show-all --hyperlinked-source"
 NIX_SHELL_CMD=nix-shell --argstr pkgs ${NIV_VERSION} --arg withHoogle false
@@ -27,11 +27,15 @@ ghcid-stack:
 hoogle:
 	nix-shell --argstr pkgs ${NIV_VERSION} --run 'hoogle server --port ${HOOGLE_PORT} --local'
 
+test:
+	nix-shell --argstr pkgs ${NIV_VERSION} --arg buildDocsTest true --run 'cabal new-test -fbuilddocstest'
+
 hlint:
 	hlint src/ test/ Example.hs
 
 format:
-	cabal format
+	nixpkgs-fmt default.nix nix/overrides.nix
+	# cabal format
 	ormolu ${ORMOLU_ARGS} -i $$(find src/ test/ -name '*.hs')
 	ormolu ${ORMOLU_ARGS} -i Example.hs
 

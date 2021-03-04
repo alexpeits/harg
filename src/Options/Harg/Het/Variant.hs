@@ -16,7 +16,7 @@ module Options.Harg.Het.Variant
   )
 where
 
-import qualified Data.Barbie as B
+import qualified Barbies as B
 import Data.Kind (Type)
 import Options.Harg.Het.Nat
 

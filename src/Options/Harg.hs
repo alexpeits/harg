@@ -81,7 +81,7 @@ module Options.Harg
     -- *** barbies
     B.FunctorB,
     B.TraversableB,
-    B.ProductB,
+    B.ApplicativeB,
     B.Rec (..),
 
     -- *** higgledy
@@ -93,7 +93,7 @@ module Options.Harg
   )
 where
 
-import qualified Data.Barbie as B
+import qualified Barbies as B
 import qualified Data.Generic.HKD as HKD
 import Options.Harg.Construct
 import Options.Harg.Het.HList

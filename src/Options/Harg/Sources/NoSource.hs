@@ -8,14 +8,14 @@ module Options.Harg.Sources.NoSource
   )
 where
 
-import qualified Data.Barbie as B
+import qualified Barbies as B
 import Data.Kind (Type)
 import GHC.Generics (Generic)
 import Options.Harg.Sources.Types
 
 -- | Throwaway type whose 'GetSource' instance returns no value.
 data NoSource (f :: Type -> Type) = NoSource
-  deriving (Generic, B.FunctorB, B.TraversableB, B.ProductB)
+  deriving (Generic, B.FunctorB, B.TraversableB, B.ApplicativeB)
 
 instance GetSource NoSource f where
   type SourceVal NoSource = ()
