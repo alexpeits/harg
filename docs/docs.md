@@ -441,7 +441,7 @@ getConfig2 = do
         <*> dir
 ```
 
-### 2. Using products
+### 3. Using products
 
 Recall from previously that there's the `Single` type which in general turns `f
 b` into `b f`. This means that, by using `Single` for the directory option, all
