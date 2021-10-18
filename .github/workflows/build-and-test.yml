@@ -17,7 +17,7 @@ jobs:
       with:
         persist-credentials: false
     - name: Install nix
-      uses: cachix/install-nix-action@v13
+      uses: cachix/install-nix-action@v14.1
     - name: Setup cachix
       uses: cachix/cachix-action@v10
       with:
