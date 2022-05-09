@@ -23,15 +23,6 @@ import qualified Data.Generic.HKD as HKD
 import Data.Kind (Type)
 import GHC.Generics (Generic)
 
--- Orphan HKD FromJSON instance
-instance
-  JSON.GFromJSON JSON.Zero (HKD.HKD_ f structure) =>
-  JSON.FromJSON (HKD.HKD structure f)
-  where
-  parseJSON =
-    fmap HKD.HKD
-      . JSON.gParseJSON JSON.defaultOptions JSON.NoFromArgs
-
 -- | Newtype wrapper around 'HKD.HKD'.
 newtype Nested (b :: Type) (f :: Type -> Type)
   = Nested (HKD.HKD b f)

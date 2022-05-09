@@ -15,12 +15,13 @@ where
 import qualified Barbies as B
 import Data.Aeson ((.!=), (.:?))
 import qualified Data.Aeson as JSON
+import qualified Data.Aeson.Key as JSON.Key
 import Data.Functor.Identity (Identity)
 import Data.Kind (Type)
 import Data.Proxy (Proxy (..))
 import qualified Data.Text as Tx
 import GHC.Generics (Generic)
-import GHC.TypeLits (KnownSymbol, symbolVal)
+import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
 
 -- | Infix version of 'Data.Functor.Product'. Allows to combine
 -- higher-kinded types, and keep them partially applied until needed:
@@ -89,7 +90,7 @@ instance
     JSON.withObject ":*" $
       \o ->
         (:*)
-          <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy ta)) .!= B.bpure Nothing
+          <$> o .:? symbolToKey (Proxy @ta) .!= B.bpure Nothing
           <*> JSON.parseJSON (JSON.Object o)
 
 instance
@@ -106,5 +107,9 @@ instance
     JSON.withObject ":*" $
       \o ->
         (:*)
-          <$> o .:? Tx.pack (symbolVal (Proxy :: Proxy ta)) .!= B.bpure Nothing
-          <*> o .:? Tx.pack (symbolVal (Proxy :: Proxy tb)) .!= B.bpure Nothing
+          <$> o .:? symbolToKey (Proxy @ta) .!= B.bpure Nothing
+          <*> o .:? symbolToKey (Proxy @tb) .!= B.bpure Nothing
+
+symbolToKey :: forall (k :: Symbol). KnownSymbol k => Proxy k -> JSON.Key
+symbolToKey p =
+  JSON.Key.fromText (Tx.pack (symbolVal p))

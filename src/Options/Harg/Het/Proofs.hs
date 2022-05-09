@@ -4,6 +4,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE TypeFamilyDependencies #-}
 
 -- | This module provides type-level functions that need proofs to work
 -- properly.
@@ -20,7 +21,7 @@ import Data.Type.Equality
 -- | Same as 'Data.Type.Equality.gcastWith' but for heterogeneous propositional
 -- equality
 hgcastWith ::
-  forall (a :: k) (b :: k') (r :: Type).
+  forall {k} {k'} (a :: k) (b :: k') (r :: Type).
   (a :~~: b) ->
   (a ~~ b => r) ->
   r
