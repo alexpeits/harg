@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
@@ -15,7 +16,9 @@ where
 import qualified Barbies as B
 import Data.Aeson ((.!=), (.:?))
 import qualified Data.Aeson as JSON
+#if MIN_VERSION_aeson(2,0,0)
 import qualified Data.Aeson.Key as JSON.Key
+#endif
 import Data.Functor.Identity (Identity)
 import Data.Kind (Type)
 import Data.Proxy (Proxy (..))
@@ -110,6 +113,12 @@ instance
           <$> o .:? symbolToKey (Proxy @ta) .!= B.bpure Nothing
           <*> o .:? symbolToKey (Proxy @tb) .!= B.bpure Nothing
 
+#if MIN_VERSION_aeson(2,0,0)
 symbolToKey :: forall (k :: Symbol). KnownSymbol k => Proxy k -> JSON.Key
 symbolToKey p =
   JSON.Key.fromText (Tx.pack (symbolVal p))
+#else
+symbolToKey :: forall (k :: Symbol). KnownSymbol k => Proxy k -> Tx.Text
+symbolToKey p =
+  Tx.pack (symbolVal p)
+#endif
