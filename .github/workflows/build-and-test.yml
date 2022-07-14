@@ -24,7 +24,7 @@ jobs:
         name: alexpeits-gh-actions
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - name: Cache ~/.cabal/packages and ~/.cabal/store
-      uses: actions/cache@v2.1.6
+      uses: actions/cache@v3.0.5
       with:
         path: |
           ~/.cabal/packages
@@ -55,7 +55,7 @@ jobs:
       with:
         ghc-version: ${{ matrix.ghc }}
         stack-version: ${{ matrix.stack }}
-    - uses: actions/cache@v2.1.6
+    - uses: actions/cache@v3.0.5
       name: Cache ~/.stack
       with:
         path: ~/.stack
