@@ -59,7 +59,7 @@ jobs:
 
     - name: Test
       run: |
-        cabal test all
+        cabal test all -f builddocstest
 
     - name: Documentation
       run: |
