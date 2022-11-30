@@ -1,5 +1,20 @@
 # Changelog for harg
 
+## 0.6.0.0 [2022.11.30]
+
+Library updates:
+
+- Add support for ghc <= 9.2
+- Support aeson 2 (while maintaining support for aeson 1)
+- Remove orphan FromJSON HKD instance
+
+CI & development updates:
+
+- Remove nix
+- Add stack configuration for ghc v8.10.7 (lts-18.28 resolver) and ghc v9.0.2
+  (lts-19.6 resolver)
+- Use `haskell/actions` github action to test with both cabal and stack
+
 ## 0.5.0.0 [2021.03.02]
 
 Library updates:
