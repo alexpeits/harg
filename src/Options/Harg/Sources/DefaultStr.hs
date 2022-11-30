@@ -25,7 +25,7 @@ data DefaultStrSourceVal = DefaultStrSourceVal
 
 instance GetSource DefaultStrSource f where
   type SourceVal DefaultStrSource = DefaultStrSourceVal
-  getSource HargCtx {..} _ =
+  getSource HargCtx {} _ =
     pure DefaultStrSourceVal
 
 instance

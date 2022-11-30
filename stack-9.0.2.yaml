@@ -1,0 +1,9 @@
+resolver: lts-19.6
+
+allow-newer: true
+
+packages:
+- .
+
+extra-deps:
+- higgledy-0.4.2.0@sha256:7be6bd61fb75cfd04d0b292b61afe0a0548fe726311bdf5484d446bec3a7bebc,2260

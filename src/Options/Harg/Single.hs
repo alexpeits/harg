@@ -59,4 +59,4 @@ instance B.TraversableB (Single a) where
 
 instance B.ApplicativeB (Single a) where
   bprod (Single l) (Single r) = Single (P.Pair l r)
-  bpure = Single
+  bpure x = Single x

@@ -1,8 +1,10 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilyDependencies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | This module provides type-level functions that need proofs to work
@@ -19,11 +21,20 @@ import Data.Type.Equality
 
 -- | Same as 'Data.Type.Equality.gcastWith' but for heterogeneous propositional
 -- equality
+
+#if __GLASGOW_HASKELL__ < 900
 hgcastWith ::
-  forall (a :: k) (b :: k') (r :: Type).
+  forall k k' (a :: k) (b :: k') (r :: Type).
   (a :~~: b) ->
   (a ~~ b => r) ->
   r
+#else
+hgcastWith ::
+  forall {k} {k'} (a :: k) (b :: k') (r :: Type).
+  (a :~~: b) ->
+  (a ~~ b => r) ->
+  r
+#endif
 hgcastWith HRefl x = x
 
 -- * Concatenation of type-level lists
