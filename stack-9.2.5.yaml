@@ -6,5 +6,4 @@ packages:
 - .
 
 extra-deps:
-- github: i-am-tom/higgledy
-  commit: 22c511f7a81d6c939c8fe984e38335e8165f6eca
+- higgledy-0.4.2.1
